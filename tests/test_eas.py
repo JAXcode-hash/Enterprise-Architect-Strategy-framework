@@ -49,6 +49,25 @@ class TestCatalogue(unittest.TestCase):
         self.assertIn("data.nonprod.masked", CAT.expand(["data.nonprod.synthetic"]))
         self.assertIn("resilience.multi-az", CAT.expand(["resilience.multi-region"]))
 
+    def test_no_option_may_require_type_1_logging(self):
+        # Type 1 requirements belong to the central security monitoring function.
+        # No initiative and no domain gets to demand one. A domain that needs
+        # attribution requires ingestion compatibility; one that needs evidence
+        # requires Type 2.
+        for o in CAT.options:
+            self.assertNotIn("secops.log.type1", o.requires,
+                             f"{o.id} demands Type 1 - only the monitoring function decides that")
+
+    def test_no_signal_may_mandate_type_1_logging(self):
+        for key, spec in CAT.signals_def["signals"].items():
+            self.assertNotIn("secops.log.type1", spec.get("mandates", []),
+                             f"signal {key} mandates Type 1, which no brief can do")
+
+    def test_delivering_centrally_implies_ingestion_compatibility(self):
+        for cap in ("secops.log.type1", "secops.log.type2"):
+            self.assertIn("secops.ingestion.compatible", CAT.expand([cap]),
+                          f"{cap} must imply conformance to the ingestion standards")
+
     def test_every_domain_offers_a_spread_of_postures(self):
         for dom in CAT.domains:
             postures = {o.posture for o in CAT.options_for(dom.key)}
@@ -211,6 +230,34 @@ class TestOrchestrator(unittest.TestCase):
             self.assertEqual(recon.coverage["cells_contradiction"], 0, name)
             self.assertEqual(recon.coverage["mandates_unmet"], 0, name)
             self.assertEqual(recon.gaps, [], f"{name}: {[g.detail for g in recon.gaps]}")
+
+    def test_engagement_driven_posture_is_reachable_and_coherent(self):
+        # The operating model makes "nothing forwarded until asked" a legitimate
+        # position. A contained change should be able to take it cleanly.
+        _i, _r, selection, recon = self._run(SIMPLE)
+        self.assertEqual(selection["secops"].id, "SEC-01")
+        self.assertEqual(recon.coverage["cells_contradiction"], 0)
+        self.assertEqual(recon.coverage["mandates_unmet"], 0)
+
+    def test_engagement_driven_posture_on_a_regulated_estate_is_challenged(self):
+        # The same position on a regulated, exposed estate must not pass quietly:
+        # it should leave the mandate unmet and raise the combination risks.
+        _i, _r, selection, recon = self._run(REGULATED, overrides={"secops": "SEC-01"})
+        self.assertEqual(selection["secops"].id, "SEC-01")
+        self.assertGreater(recon.coverage["mandates_unmet"], 0,
+                           "a regulated brief must still require Type 2 and ingestion readiness")
+        sources = {r.source.split()[0] for r in recon.emergent_risks}
+        self.assertIn("R-E16", sources, "IBS + engagement-driven must raise the evidence risk")
+        self.assertTrue(any(r.severity == "C" for r in recon.emergent_risks))
+
+    def test_a_hardened_estate_cannot_report_nothing(self):
+        # Options that depend on central logging must be pulled down with it.
+        _i, _r, unforced, _rec = self._run(REGULATED)
+        _i2, _r2, forced, _rec2 = self._run(REGULATED, overrides={"secops": "SEC-01"})
+        downgraded = [k for k in CAT.domain_keys()
+                      if unforced[k].effort_rank > forced[k].effort_rank]
+        self.assertGreaterEqual(len(downgraded), 3,
+                                "forcing SEC-01 must cascade into the domains that need it")
 
     def test_matrix_is_square_and_complete(self):
         _i, _r, _s, recon = self._run(REGULATED)

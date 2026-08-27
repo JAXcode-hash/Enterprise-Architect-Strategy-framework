@@ -64,6 +64,37 @@ Two things make the intake more than pattern matching:
 | GRC | Governance, Risk & Compliance | `validate-grc` |
 | ENV | Environment Parity & Route-to-Live | `validate-env-parity-rtl` |
 
+#### Logging is modelled on ownership, not content
+
+The SecOps domain encodes this organisation's three-type operating model, in which each type is
+owned by a different function and the ownership decides who is obliged to do what:
+
+- **Type 1 — Security Event Detection and Handling.** Owned by the central security monitoring
+  function, driven by their threat modelling. Requirements are *dynamic*. Technology owners do
+  not implement proactively; they are engaged when a source is required.
+- **Type 2 — Security Compliance Reporting.** Owned by security governance and compliance, who
+  determine what regulatory and audit obligations require and configure retention on the
+  enterprise compliance platform.
+- **Type 3 — General and Operational Logging.** The technology owner's own decision. Not
+  centrally mandated, not centrally provided.
+
+A team therefore has **no obligation to log a source neither central function has identified**.
+Two consequences are enforced in the framework:
+
+- **No brief can mandate Type 1**, and no domain may require it — only the monitoring function
+  decides. A domain that needs attribution requires *ingestion compatibility* instead; a domain
+  that needs evidence requires *Type 2*. A test asserts this holds.
+- **Ingestion compatibility becomes the load-bearing design property.** Since requirements
+  change with the threat landscape, the real architectural question is what it costs when the
+  monitoring function asks. The anchor `Estimated effort to connect a newly requested source`
+  makes that cost arguable rather than rhetorical.
+
+The five SecOps options are postures toward this model — from engagement-driven with no
+compatibility designed in, through ingestion-compatible-by-design, to an embedded detection
+partnership. Forcing the cheapest posture onto a regulated estate makes the framework cascade
+downgrades through five other domains, because a hardened estate that reports nothing centrally
+is not a coherent position.
+
 Each domain offers 3–5 options spanning tactical to strategic. An option is a full posture
 bundle, not a feature: what it costs, how long it takes, what it does for security and for
 regulatory evidencing, the checklist it brings, the questions it opens, the numbers it needs
@@ -117,7 +148,7 @@ python3 -m eas show <project-id>                          # manifest and latest 
 
 # Iterate — the base plate is a living artefact until the verdict reaches Stable
 python3 -m eas set <project-id> data-security DATA-04     # fix a domain's position
-python3 -m eas pin <project-id> secops "Type 1 log volume" "420 GB/day" "40 GB/day" "5 GB/day"
+python3 -m eas pin <project-id> secops "Type 2 compliance log volume" "420 GB/day" "40 GB/day" "5 GB/day"
 python3 -m eas run <project-id>                           # re-reconcile
 
 python3 -m eas catalogue                                  # every domain and option

@@ -86,7 +86,7 @@ def render(catalogue, project, intake, selection, recon, roadmap) -> str:
     out += [
         f"| Public edge | External users and partners | "
         f"{'WAF and managed edge protection' if 'network.ingress.waf' in caps else '**No WAF selected**'} "
-        f"| Type 1 events to SIEM |",
+        f"| {'Type 1 sources delivered' if 'secops.log.type1' in caps else 'Not centrally observed'} |",
         f"| Application plane | Service-to-service calls | {edge_authz} ({integ.id}) "
         f"| {'Per-edge logging' if 'integration.per-edge-logging' in caps else '**Not logged per edge**'} |",
         f"| East-west | Peer services | "
@@ -99,7 +99,7 @@ def render(catalogue, project, intake, selection, recon, roadmap) -> str:
         f"| {'Egress detection' if 'secops.detection.egress' in caps else '**No egress detection**'} |",
         f"| Control plane | Workloads to IdP / PDP / KMS | "
         f"{'Federated workload identity' if 'identity.workload.federated' in caps else 'Platform-native credentials'} ({iam.id}) "
-        f"| Type 1 events ({sec.id}) |",
+        f"| {'Type 1 sources delivered' if 'secops.log.type1' in caps else 'Standards-ready, awaiting engagement' if 'secops.ingestion.compatible' in caps else '**Neither connected nor ingestion-compatible**'} ({sec.id}) |",
         "",
     ]
     out += [f"Network position: `{net.id}` - {net.name}.", ""]

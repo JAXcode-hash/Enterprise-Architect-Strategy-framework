@@ -103,7 +103,7 @@ class Project:
         proj.write_json("inputs/anchors.json", {
             "_note": (
                 "Pin volumetric anchors per environment as they land, e.g. "
-                "{\"secops\": {\"Type 1 log volume\": {\"prod\": \"420 GB/day\", "
+                "{\"secops\": {\"Type 2 compliance log volume\": {\"prod\": \"420 GB/day\", "
                 "\"rtl\": \"40 GB/day\", \"devtest\": \"5 GB/day\"}}}. Re-run to move the "
                 "verdict on."
             )

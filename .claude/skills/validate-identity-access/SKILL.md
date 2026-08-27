@@ -101,7 +101,7 @@ Authentication federates to the enterprise IdP; authorisation moves out of appli
 
 **Imposes on / gives others:** `identity.pdp.central`, `identity.subject-schema`, `identity.secrets.managed`, `identity.federation.external`
 
-**Requires from others:** `network.reach.control-plane`, `secops.log.type1`, `platform.iac.governed`
+**Requires from others:** `network.reach.control-plane`, `platform.iac.governed`, `secops.log.type2`
 
 **Checklist**
 
@@ -147,7 +147,7 @@ Workloads authenticate with short-lived federated credentials issued against pla
 
 **Imposes on / gives others:** `identity.workload.federated`, `identity.privileged.jit`, `identity.pdp.central`, `identity.subject-schema`, `identity.secrets.managed`, `identity.mtls.identity`
 
-**Requires from others:** `platform.workload.identity`, `network.reach.control-plane`, `secops.log.type1`, `secops.detection.identity`, `platform.iac.governed`
+**Requires from others:** `platform.workload.identity`, `network.reach.control-plane`, `secops.detection.identity`, `platform.iac.governed`, `secops.ingestion.compatible`
 
 **Checklist**
 
@@ -198,7 +198,7 @@ Every workload carries a cryptographic identity (SPIFFE-style) used for mTLS pee
 
 **Imposes on / gives others:** `identity.workload.federated`, `identity.mtls.identity`, `identity.pdp.central`, `identity.privileged.jit`, `identity.subject-schema`, `identity.secrets.managed`, `identity.federation.external`
 
-**Requires from others:** `platform.workload.identity`, `network.segmentation.micro`, `network.reach.control-plane`, `secops.log.type1`, `secops.detection.identity`, `platform.iac.governed`, `platform.parity.pipeline`
+**Requires from others:** `platform.workload.identity`, `network.segmentation.micro`, `network.reach.control-plane`, `secops.detection.identity`, `platform.iac.governed`, `platform.parity.pipeline`, `secops.ingestion.compatible`
 
 **Checklist**
 
@@ -248,7 +248,7 @@ Customer and third-party identity is handled by a dedicated CIAM/broker tier sep
 
 **Imposes on / gives others:** `identity.federation.external`, `identity.subject-schema`, `identity.secrets.managed`
 
-**Requires from others:** `network.ingress.waf`, `secops.detection.identity`, `secops.log.type1`, `data.classification.per-flow`
+**Requires from others:** `network.ingress.waf`, `secops.detection.identity`, `data.classification.per-flow`, `secops.ingestion.compatible`
 
 **Checklist**
 
@@ -312,7 +312,8 @@ These are the shared tags the orchestrator reconciles on. They are not free text
 - `platform.parity.pipeline` - The same pipeline builds every environment; RTL is not hand-crafted. *(owned by PLAT)*
 - `platform.workload.identity` - The platform can mint and attest workload identity. *(owned by PLAT)*
 - `secops.detection.identity` - Detection content exists for identity abuse and privilege escalation. *(owned by SEC)*
-- `secops.log.type1` - A security/audit logging pipeline exists with regulatory retention. *(owned by SEC)*
+- `secops.ingestion.compatible` - Log pipelines are built to the approved security log ingestion standards - format, transport, authentication and integration pattern - so a future Type 1 or Type 2 requirement is a connection rather than a rebuild, whether or not the system is connected today. *(owned by SEC)*
+- `secops.log.type2` - Compliance reporting logs are delivered to the enterprise compliance logging platform with the retention the security governance and compliance function requires. *(owned by SEC)*
 
 ## Where this domain's content lives
 

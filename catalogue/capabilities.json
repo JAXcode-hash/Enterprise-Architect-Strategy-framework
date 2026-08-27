@@ -132,15 +132,23 @@
     },
     "secops.log.type1": {
       "owner": "SEC",
-      "desc": "A security/audit logging pipeline exists with regulatory retention."
+      "desc": "Security event detection sources for this scope have been agreed with the central security monitoring function and are delivered using approved ingestion patterns."
     },
     "secops.log.type2": {
       "owner": "SEC",
-      "desc": "An operational/observability pipeline exists for health and performance."
+      "desc": "Compliance reporting logs are delivered to the enterprise compliance logging platform with the retention the security governance and compliance function requires."
     },
-    "secops.log.separated": {
+    "secops.log.type3": {
       "owner": "SEC",
-      "desc": "Type 1 and Type 2 are separated at ingestion - different retention, access and cost."
+      "desc": "Operational and observability logging is implemented locally, at the technology owner's discretion. Not centrally mandated and not centrally provided."
+    },
+    "secops.ingestion.compatible": {
+      "owner": "SEC",
+      "desc": "Log pipelines are built to the approved security log ingestion standards - format, transport, authentication and integration pattern - so a future Type 1 or Type 2 requirement is a connection rather than a rebuild, whether or not the system is connected today."
+    },
+    "secops.requirements.registered": {
+      "owner": "SEC",
+      "desc": "This scope is represented in the central log requirements register, so both security functions know it exists and can engage when their requirements change."
     },
     "secops.detection.egress": {
       "owner": "SEC",
@@ -253,10 +261,6 @@
     "resilience.multi-region": [
       "resilience.multi-az"
     ],
-    "secops.log.separated": [
-      "secops.log.type1",
-      "secops.log.type2"
-    ],
     "network.egress.inspected": [
       "network.flowlogs"
     ],
@@ -268,6 +272,12 @@
     ],
     "grc.evidence.automated": [
       "grc.control.mapping"
+    ],
+    "secops.log.type1": [
+      "secops.ingestion.compatible"
+    ],
+    "secops.log.type2": [
+      "secops.ingestion.compatible"
     ]
   },
   "_implies_note": "A stronger position satisfies a weaker requirement. Fully synthetic non-prod satisfies a requirement for masked non-prod; multi-region satisfies multi-AZ. Without this the orchestrator raises false contradictions between two positions that agree."

@@ -162,7 +162,7 @@ Traffic is served from more than one region concurrently. Regional loss is absor
 
 **Imposes on / gives others:** `resilience.multi-az`, `resilience.multi-region`, `resilience.failover.tested`, `resilience.backup.tested`, `resilience.capacity.headroom`
 
-**Requires from others:** `network.residency.pinned`, `data.key.customer-managed`, `platform.parity.pipeline`, `integration.async.idempotent`, `secops.log.type2`
+**Requires from others:** `network.residency.pinned`, `data.key.customer-managed`, `platform.parity.pipeline`, `integration.async.idempotent`, `secops.log.type3`
 
 **Checklist**
 
@@ -223,7 +223,7 @@ These are the shared tags the orchestrator reconciles on. They are not free text
 - `integration.async.idempotent` - Asynchronous paths are idempotent and handle replay and poison messages. *(owned by INT)*
 - `network.residency.pinned` - Routing and every failover path stay inside the declared residency boundary. *(owned by NET)*
 - `platform.parity.pipeline` - The same pipeline builds every environment; RTL is not hand-crafted. *(owned by PLAT)*
-- `secops.log.type2` - An operational/observability pipeline exists for health and performance. *(owned by SEC)*
+- `secops.log.type3` - Operational and observability logging is implemented locally, at the technology owner's discretion. Not centrally mandated and not centrally provided. *(owned by SEC)*
 
 ## Where this domain's content lives
 

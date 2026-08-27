@@ -6,11 +6,29 @@
       "name": "Single-region multi-AZ with backup-based recovery",
       "summary": "The service survives the loss of one availability zone. Regional failure is recovered from backup, giving an RTO measured in hours to days. Restore is tested on a stated cadence.",
       "posture": "tactical",
-      "provides": ["resilience.multi-az", "resilience.backup.tested"],
+      "provides": [
+        "resilience.multi-az",
+        "resilience.backup.tested"
+      ],
       "requires": [],
-      "fit": {"cost-constrained": 3, "time-pressured": 2, "tier-T1": 3, "tier-T2": 1, "small-scale": 2, "data-residency": 1, "high-availability": -3, "payments": -2, "multi-region": -2, "tier-T4": -2},
-      "effort_weeks": 6, "effort_band": "S", "cost_band": "S",
-      "security_score": 3, "reg_score": 2, "ops_burden": 2,
+      "fit": {
+        "cost-constrained": 3,
+        "time-pressured": 2,
+        "tier-T1": 3,
+        "tier-T2": 1,
+        "small-scale": 2,
+        "data-residency": 1,
+        "high-availability": -3,
+        "payments": -2,
+        "multi-region": -2,
+        "tier-T4": -2
+      },
+      "effort_weeks": 6,
+      "effort_band": "S",
+      "cost_band": "S",
+      "security_score": 3,
+      "reg_score": 2,
+      "ops_burden": 2,
       "checklist": [
         "RTO and RPO stated per service tier and agreed with the service owner",
         "AZ topology recorded and the failure mode for each stateful component understood",
@@ -20,45 +38,155 @@
         "capacity headroom stated against measured peak, not estimated peak"
       ],
       "questions": [
-        {"question": "Is failover between AZs ever actually tested, or only asserted in the design?", "owner_role": "Resilience Lead", "blocking": true},
-        {"question": "Does the measured restore time meet the stated RTO, or is the RTO an aspiration derived from the backup schedule?", "owner_role": "Service Owner", "blocking": true},
-        {"question": "Do the summed volumetric anchors from Network, Data and SecOps fit the provisioned capacity at peak?", "owner_role": "Capacity Manager", "blocking": true},
-        {"question": "Are the keys required to decrypt a restored backup themselves recoverable in the same scenario?", "owner_role": "Data Architect", "blocking": true}
+        {
+          "question": "Is failover between AZs ever actually tested, or only asserted in the design?",
+          "owner_role": "Resilience Lead",
+          "blocking": true
+        },
+        {
+          "question": "Does the measured restore time meet the stated RTO, or is the RTO an aspiration derived from the backup schedule?",
+          "owner_role": "Service Owner",
+          "blocking": true
+        },
+        {
+          "question": "Do the summed volumetric anchors from Network, Data and SecOps fit the provisioned capacity at peak?",
+          "owner_role": "Capacity Manager",
+          "blocking": true
+        },
+        {
+          "question": "Are the keys required to decrypt a restored backup themselves recoverable in the same scenario?",
+          "owner_role": "Data Architect",
+          "blocking": true
+        }
       ],
       "anchors": [
-        {"metric": "RTO per service tier", "unit": "hours", "critical": true},
-        {"metric": "RPO per service tier", "unit": "minutes", "critical": true},
-        {"metric": "Availability zones", "unit": "count", "critical": true},
-        {"metric": "Backup volume", "unit": "GB", "critical": true},
-        {"metric": "Backup frequency", "unit": "per day", "critical": false},
-        {"metric": "Measured restore time", "unit": "hours", "critical": true, "note": "Measured, not designed - the gap between the two is the finding."},
-        {"metric": "Restore test cadence", "unit": "months", "critical": true},
-        {"metric": "Capacity headroom above measured peak", "unit": "%", "critical": true},
-        {"metric": "Peak concurrency", "unit": "count", "critical": true}
+        {
+          "metric": "RTO per service tier",
+          "unit": "hours",
+          "critical": true
+        },
+        {
+          "metric": "RPO per service tier",
+          "unit": "minutes",
+          "critical": true
+        },
+        {
+          "metric": "Availability zones",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Backup volume",
+          "unit": "GB",
+          "critical": true
+        },
+        {
+          "metric": "Backup frequency",
+          "unit": "per day",
+          "critical": false
+        },
+        {
+          "metric": "Measured restore time",
+          "unit": "hours",
+          "critical": true,
+          "note": "Measured, not designed - the gap between the two is the finding."
+        },
+        {
+          "metric": "Restore test cadence",
+          "unit": "months",
+          "critical": true
+        },
+        {
+          "metric": "Capacity headroom above measured peak",
+          "unit": "%",
+          "critical": true
+        },
+        {
+          "metric": "Peak concurrency",
+          "unit": "count",
+          "critical": true
+        }
       ],
       "risks": [
-        {"category": "operational", "severity": "H", "statement": "A regional failure means an outage measured in hours to days, which is unlikely to sit inside an impact tolerance if the service turns out to be an important business service.", "mitigation": "Confirm the service's classification before fixing this option; if it is an important business service, the regional position has to change."},
-        {"category": "legal-reg", "severity": "M", "statement": "Operational resilience expectations require impact tolerances to be evidenced as achievable, and an untested restore does not evidence anything.", "mitigation": "Test restore end to end including key recovery, and record the measured time as the evidenced RTO."},
-        {"category": "security", "severity": "M", "statement": "Backups frequently carry the same data as production with weaker access control, making them a preferred target and a common exfiltration route.", "mitigation": "Apply production-equivalent access control and encryption to backups, and log backup access as Type 1."},
-        {"category": "workaround", "severity": "M", "statement": "Restore tests are commonly performed on a small representative data set rather than at full volume, so the measured time does not predict the real one.", "mitigation": "Test at production volume at least annually and record the measured figure against the claimed RTO."}
+        {
+          "category": "operational",
+          "severity": "H",
+          "statement": "A regional failure means an outage measured in hours to days, which is unlikely to sit inside an impact tolerance if the service turns out to be an important business service.",
+          "mitigation": "Confirm the service's classification before fixing this option; if it is an important business service, the regional position has to change."
+        },
+        {
+          "category": "legal-reg",
+          "severity": "M",
+          "statement": "Operational resilience expectations require impact tolerances to be evidenced as achievable, and an untested restore does not evidence anything.",
+          "mitigation": "Test restore end to end including key recovery, and record the measured time as the evidenced RTO."
+        },
+        {
+          "category": "security",
+          "severity": "M",
+          "statement": "Backups frequently carry the same data as production with weaker access control, making them a preferred target and a common exfiltration route.",
+          "mitigation": "Apply production-equivalent access control and encryption to backups, and log backup access as Type 1."
+        },
+        {
+          "category": "workaround",
+          "severity": "M",
+          "statement": "Restore tests are commonly performed on a small representative data set rather than at full volume, so the measured time does not predict the real one.",
+          "mitigation": "Test at production volume at least annually and record the measured figure against the claimed RTO."
+        }
       ],
-      "controls": ["ISO 27001 A.5.29", "ISO 27001 A.5.30", "ISO 27001 A.8.13", "ISO 27001 A.8.14", "NIST 800-53 CP-2", "NIST 800-53 CP-9", "NIST 800-53 CP-10", "DORA Art.11", "DORA Art.12"],
+      "controls": [
+        "ISO 27001 A.5.29",
+        "ISO 27001 A.5.30",
+        "ISO 27001 A.8.13",
+        "ISO 27001 A.8.14",
+        "NIST 800-53 CP-2",
+        "NIST 800-53 CP-9",
+        "NIST 800-53 CP-10",
+        "DORA Art.11",
+        "DORA Art.12"
+      ],
       "lld_notes": [
         "Record per component: AZ distribution, stateful/stateless, failure behaviour and recovery path.",
         "State the backup chain including where the decryption keys live and how they are recovered."
       ],
-      "hld_notes": ["The HLD should state the regional failure position plainly - it is the resilience decision that matters most and is most often left implicit."]
+      "hld_notes": [
+        "The HLD should state the regional failure position plainly - it is the resilience decision that matters most and is most often left implicit."
+      ]
     },
     {
       "id": "RES-02",
       "name": "Active-passive multi-region with tested failover",
       "summary": "A warm standby in a second region with data replication, an agreed failover trigger and rehearsed execution. RTO in minutes to a small number of hours, RPO bounded by replication lag.",
       "posture": "balanced",
-      "provides": ["resilience.multi-az", "resilience.multi-region", "resilience.backup.tested", "resilience.failover.tested", "resilience.capacity.headroom"],
-      "requires": ["network.residency.pinned", "data.key.customer-managed", "platform.parity.pipeline"],
-      "fit": {"high-availability": 3, "multi-region": 3, "regulated": 2, "payments": 2, "tier-T2": 1, "tier-T3": 3, "customer-facing": 2, "cost-constrained": -2, "tier-T1": -3, "data-residency": -1},
-      "effort_weeks": 20, "effort_band": "L", "cost_band": "L",
-      "security_score": 4, "reg_score": 4, "ops_burden": 3,
+      "provides": [
+        "resilience.multi-az",
+        "resilience.multi-region",
+        "resilience.backup.tested",
+        "resilience.failover.tested",
+        "resilience.capacity.headroom"
+      ],
+      "requires": [
+        "network.residency.pinned",
+        "data.key.customer-managed",
+        "platform.parity.pipeline"
+      ],
+      "fit": {
+        "high-availability": 3,
+        "multi-region": 3,
+        "regulated": 2,
+        "payments": 2,
+        "tier-T2": 1,
+        "tier-T3": 3,
+        "customer-facing": 2,
+        "cost-constrained": -2,
+        "tier-T1": -3,
+        "data-residency": -1
+      },
+      "effort_weeks": 20,
+      "effort_band": "L",
+      "cost_band": "L",
+      "security_score": 4,
+      "reg_score": 4,
+      "ops_burden": 3,
       "checklist": [
         "failover trigger defined: who decides, on what signal, and within what time",
         "failover rehearsed at production scale with the measured time recorded",
@@ -70,49 +198,175 @@
         "DNS and connectivity behaviour on failover proven, not assumed"
       ],
       "questions": [
-        {"question": "Has failover been executed at production scale, and what was the measured time against the stated RTO?", "owner_role": "Resilience Lead", "blocking": true},
-        {"question": "Does the failover path or the replication path cross a residency boundary the Data domain has declared closed?", "owner_role": "Network Architect", "blocking": true},
-        {"question": "Are all third-party dependencies available in the standby region, or does failover leave the service partially functional?", "owner_role": "Third-Party Risk", "blocking": true},
-        {"question": "Is failback rehearsed, or is the plan to fail over and then work out how to return?", "owner_role": "Resilience Lead", "blocking": true},
-        {"question": "Is standby capacity sized for full load, and is that capacity actually reserved rather than assumed available?", "owner_role": "Capacity Manager", "blocking": false}
+        {
+          "question": "Has failover been executed at production scale, and what was the measured time against the stated RTO?",
+          "owner_role": "Resilience Lead",
+          "blocking": true
+        },
+        {
+          "question": "Does the failover path or the replication path cross a residency boundary the Data domain has declared closed?",
+          "owner_role": "Network Architect",
+          "blocking": true
+        },
+        {
+          "question": "Are all third-party dependencies available in the standby region, or does failover leave the service partially functional?",
+          "owner_role": "Third-Party Risk",
+          "blocking": true
+        },
+        {
+          "question": "Is failback rehearsed, or is the plan to fail over and then work out how to return?",
+          "owner_role": "Resilience Lead",
+          "blocking": true
+        },
+        {
+          "question": "Is standby capacity sized for full load, and is that capacity actually reserved rather than assumed available?",
+          "owner_role": "Capacity Manager",
+          "blocking": false
+        }
       ],
       "anchors": [
-        {"metric": "RTO per service tier", "unit": "minutes", "critical": true},
-        {"metric": "RPO per service tier", "unit": "minutes", "critical": true},
-        {"metric": "Measured failover time", "unit": "minutes", "critical": true},
-        {"metric": "Replication lag at peak", "unit": "seconds", "critical": true},
-        {"metric": "Regions", "unit": "count", "critical": true},
-        {"metric": "Availability zones per region", "unit": "count", "critical": false},
-        {"metric": "Standby capacity as proportion of production", "unit": "%", "critical": true},
-        {"metric": "Cross-region replication volume", "unit": "GB/day", "critical": true},
-        {"metric": "Failover rehearsal cadence", "unit": "months", "critical": true},
-        {"metric": "Capacity headroom above measured peak", "unit": "%", "critical": true}
+        {
+          "metric": "RTO per service tier",
+          "unit": "minutes",
+          "critical": true
+        },
+        {
+          "metric": "RPO per service tier",
+          "unit": "minutes",
+          "critical": true
+        },
+        {
+          "metric": "Measured failover time",
+          "unit": "minutes",
+          "critical": true
+        },
+        {
+          "metric": "Replication lag at peak",
+          "unit": "seconds",
+          "critical": true
+        },
+        {
+          "metric": "Regions",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Availability zones per region",
+          "unit": "count",
+          "critical": false
+        },
+        {
+          "metric": "Standby capacity as proportion of production",
+          "unit": "%",
+          "critical": true
+        },
+        {
+          "metric": "Cross-region replication volume",
+          "unit": "GB/day",
+          "critical": true
+        },
+        {
+          "metric": "Failover rehearsal cadence",
+          "unit": "months",
+          "critical": true
+        },
+        {
+          "metric": "Capacity headroom above measured peak",
+          "unit": "%",
+          "critical": true
+        }
       ],
       "risks": [
-        {"category": "legal-reg", "severity": "H", "statement": "Cross-region replication and failover are the most common way a declared residency position is breached, because the breach only occurs during an event nobody rehearsed against the residency constraint.", "mitigation": "Confirm both regions sit inside the residency boundary, and trace the replication path explicitly as part of the residency evidence."},
-        {"category": "operational", "severity": "H", "statement": "Standby capacity sized below production means failover succeeds and then the service fails under load, which is worse than not failing over.", "mitigation": "Size standby to full measured peak and reserve the capacity rather than relying on on-demand availability during a regional event."},
-        {"category": "timeline", "severity": "M", "statement": "Failover rehearsal at production scale needs a business-agreed window and frequently slips past go-live, leaving the RTO unevidenced.", "mitigation": "Book the rehearsal window before go-live as a delivery milestone, not as a post-implementation activity."},
-        {"category": "operational", "severity": "H", "statement": "Failback is consistently less rehearsed than failover, so the service can end up stranded in the standby region with degraded capability for far longer than the incident required.", "mitigation": "Rehearse failback in the same exercise as failover and record both measured times."},
-        {"category": "cost", "severity": "M", "statement": "A warm standby doubles infrastructure cost for capacity that is idle almost all of the time.", "mitigation": "Model the cost against the impact tolerance so the trade is taken explicitly rather than defaulted into."}
+        {
+          "category": "legal-reg",
+          "severity": "H",
+          "statement": "Cross-region replication and failover are the most common way a declared residency position is breached, because the breach only occurs during an event nobody rehearsed against the residency constraint.",
+          "mitigation": "Confirm both regions sit inside the residency boundary, and trace the replication path explicitly as part of the residency evidence."
+        },
+        {
+          "category": "operational",
+          "severity": "H",
+          "statement": "Standby capacity sized below production means failover succeeds and then the service fails under load, which is worse than not failing over.",
+          "mitigation": "Size standby to full measured peak and reserve the capacity rather than relying on on-demand availability during a regional event."
+        },
+        {
+          "category": "timeline",
+          "severity": "M",
+          "statement": "Failover rehearsal at production scale needs a business-agreed window and frequently slips past go-live, leaving the RTO unevidenced.",
+          "mitigation": "Book the rehearsal window before go-live as a delivery milestone, not as a post-implementation activity."
+        },
+        {
+          "category": "operational",
+          "severity": "H",
+          "statement": "Failback is consistently less rehearsed than failover, so the service can end up stranded in the standby region with degraded capability for far longer than the incident required.",
+          "mitigation": "Rehearse failback in the same exercise as failover and record both measured times."
+        },
+        {
+          "category": "cost",
+          "severity": "M",
+          "statement": "A warm standby doubles infrastructure cost for capacity that is idle almost all of the time.",
+          "mitigation": "Model the cost against the impact tolerance so the trade is taken explicitly rather than defaulted into."
+        }
       ],
-      "controls": ["ISO 27001 A.5.29", "ISO 27001 A.5.30", "ISO 27001 A.8.14", "NIST 800-53 CP-2", "NIST 800-53 CP-7", "NIST 800-53 CP-10", "DORA Art.11", "DORA Art.12", "SS1/21"],
+      "controls": [
+        "ISO 27001 A.5.29",
+        "ISO 27001 A.5.30",
+        "ISO 27001 A.8.14",
+        "NIST 800-53 CP-2",
+        "NIST 800-53 CP-7",
+        "NIST 800-53 CP-10",
+        "DORA Art.11",
+        "DORA Art.12",
+        "SS1/21"
+      ],
       "lld_notes": [
         "Record the replication topology per datastore with its measured lag and the resulting RPO.",
         "Document the failover runbook with the decision authority, the signal and the measured execution time.",
         "State the standby region's dependency inventory, including third parties."
       ],
-      "hld_notes": ["Both regions appear on the e2e flow with the replication paths drawn, because those paths are where residency and data risk actually live."]
+      "hld_notes": [
+        "Both regions appear on the e2e flow with the replication paths drawn, because those paths are where residency and data risk actually live."
+      ]
     },
     {
       "id": "RES-03",
       "name": "Active-active multi-region with continuous validation and chaos testing",
       "summary": "Traffic is served from more than one region concurrently. Regional loss is absorbed rather than recovered from. Resilience is continuously validated by deliberate failure injection rather than periodic rehearsal.",
       "posture": "strategic",
-      "provides": ["resilience.multi-az", "resilience.multi-region", "resilience.failover.tested", "resilience.backup.tested", "resilience.capacity.headroom"],
-      "requires": ["network.residency.pinned", "data.key.customer-managed", "platform.parity.pipeline", "integration.async.idempotent", "secops.log.type2"],
-      "fit": {"high-availability": 3, "multi-region": 3, "payments": 3, "tier-T4": 3, "customer-facing": 2, "realtime": 2, "large-scale": 2, "cost-constrained": -3, "time-pressured": -3, "tier-T1": -3, "small-scale": -3, "data-residency": -2},
-      "effort_weeks": 34, "effort_band": "XL", "cost_band": "XL",
-      "security_score": 4, "reg_score": 5, "ops_burden": 4,
+      "provides": [
+        "resilience.multi-az",
+        "resilience.multi-region",
+        "resilience.failover.tested",
+        "resilience.backup.tested",
+        "resilience.capacity.headroom"
+      ],
+      "requires": [
+        "network.residency.pinned",
+        "data.key.customer-managed",
+        "platform.parity.pipeline",
+        "integration.async.idempotent",
+        "secops.log.type3"
+      ],
+      "fit": {
+        "high-availability": 3,
+        "multi-region": 3,
+        "payments": 3,
+        "tier-T4": 3,
+        "customer-facing": 2,
+        "realtime": 2,
+        "large-scale": 2,
+        "cost-constrained": -3,
+        "time-pressured": -3,
+        "tier-T1": -3,
+        "small-scale": -3,
+        "data-residency": -2
+      },
+      "effort_weeks": 34,
+      "effort_band": "XL",
+      "cost_band": "XL",
+      "security_score": 4,
+      "reg_score": 5,
+      "ops_burden": 4,
       "checklist": [
         "data consistency model stated explicitly per datastore - active-active is a data problem before it is an infrastructure one",
         "conflict resolution defined for every store that can be written in both regions",
@@ -123,36 +377,126 @@
         "residency position confirmed for both regions and for every replication path"
       ],
       "questions": [
-        {"question": "What is the consistency model per datastore, and what does the business accept when a write is visible in one region and not the other?", "owner_role": "Data Architect", "blocking": true},
-        {"question": "How is a write conflict resolved, and can that resolution lose a customer transaction?", "owner_role": "Service Owner", "blocking": true},
-        {"question": "Is split-brain behaviour defined and tested, or is the design assuming the network partition will not happen?", "owner_role": "Resilience Lead", "blocking": true},
-        {"question": "Does failure injection run against production, and if not, does the validation prove anything about production?", "owner_role": "Resilience Lead", "blocking": true}
+        {
+          "question": "What is the consistency model per datastore, and what does the business accept when a write is visible in one region and not the other?",
+          "owner_role": "Data Architect",
+          "blocking": true
+        },
+        {
+          "question": "How is a write conflict resolved, and can that resolution lose a customer transaction?",
+          "owner_role": "Service Owner",
+          "blocking": true
+        },
+        {
+          "question": "Is split-brain behaviour defined and tested, or is the design assuming the network partition will not happen?",
+          "owner_role": "Resilience Lead",
+          "blocking": true
+        },
+        {
+          "question": "Does failure injection run against production, and if not, does the validation prove anything about production?",
+          "owner_role": "Resilience Lead",
+          "blocking": true
+        }
       ],
       "anchors": [
-        {"metric": "RTO per service tier", "unit": "minutes", "critical": true},
-        {"metric": "RPO per service tier", "unit": "seconds", "critical": true},
-        {"metric": "Regions serving traffic", "unit": "count", "critical": true},
-        {"metric": "Per-region capacity as proportion of total peak", "unit": "%", "critical": true},
-        {"metric": "Cross-region replication volume", "unit": "GB/day", "critical": true},
-        {"metric": "Replication lag at peak", "unit": "seconds", "critical": true},
-        {"metric": "Write conflict rate", "unit": "per day", "critical": true},
-        {"metric": "Failure injection cadence", "unit": "per week", "critical": false},
-        {"metric": "Capacity headroom above measured peak", "unit": "%", "critical": true}
+        {
+          "metric": "RTO per service tier",
+          "unit": "minutes",
+          "critical": true
+        },
+        {
+          "metric": "RPO per service tier",
+          "unit": "seconds",
+          "critical": true
+        },
+        {
+          "metric": "Regions serving traffic",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Per-region capacity as proportion of total peak",
+          "unit": "%",
+          "critical": true
+        },
+        {
+          "metric": "Cross-region replication volume",
+          "unit": "GB/day",
+          "critical": true
+        },
+        {
+          "metric": "Replication lag at peak",
+          "unit": "seconds",
+          "critical": true
+        },
+        {
+          "metric": "Write conflict rate",
+          "unit": "per day",
+          "critical": true
+        },
+        {
+          "metric": "Failure injection cadence",
+          "unit": "per week",
+          "critical": false
+        },
+        {
+          "metric": "Capacity headroom above measured peak",
+          "unit": "%",
+          "critical": true
+        }
       ],
       "risks": [
-        {"category": "operational", "severity": "C", "statement": "Active-active is a data consistency problem before it is an infrastructure one; teams routinely deliver the infrastructure and discover the consistency requirement during integration.", "mitigation": "Fix the consistency and conflict-resolution model per datastore before any infrastructure is built, and treat it as the critical path."},
-        {"category": "legal-reg", "severity": "H", "statement": "Serving from two regions concurrently means data is routinely present in both, which is materially harder to reconcile with a residency position than a standby that is only used in an event.", "mitigation": "Confirm the residency position permits continuous presence in both regions before selecting this option."},
-        {"category": "cost", "severity": "H", "statement": "Each region must carry full peak load, so total provisioned capacity is at least double, plus cross-region data transfer at production volume continuously.", "mitigation": "Model the full run cost including egress between regions and set it against the impact tolerance being bought."},
-        {"category": "security", "severity": "M", "statement": "Continuous failure injection against production is itself an availability risk and can be indistinguishable from an attack in the SOC's telemetry.", "mitigation": "Bound the blast radius of every experiment, and inform detection so injected failures are attributable and do not consume incident response."},
-        {"category": "timeline", "severity": "H", "statement": "Reworking existing applications for active-active writes typically requires application changes across every team, which is a portfolio-level dependency rather than a platform one.", "mitigation": "Assess per-application readiness before committing; deliver active-active only for the components that can support it and state the rest honestly."}
+        {
+          "category": "operational",
+          "severity": "C",
+          "statement": "Active-active is a data consistency problem before it is an infrastructure one; teams routinely deliver the infrastructure and discover the consistency requirement during integration.",
+          "mitigation": "Fix the consistency and conflict-resolution model per datastore before any infrastructure is built, and treat it as the critical path."
+        },
+        {
+          "category": "legal-reg",
+          "severity": "H",
+          "statement": "Serving from two regions concurrently means data is routinely present in both, which is materially harder to reconcile with a residency position than a standby that is only used in an event.",
+          "mitigation": "Confirm the residency position permits continuous presence in both regions before selecting this option."
+        },
+        {
+          "category": "cost",
+          "severity": "H",
+          "statement": "Each region must carry full peak load, so total provisioned capacity is at least double, plus cross-region data transfer at production volume continuously.",
+          "mitigation": "Model the full run cost including egress between regions and set it against the impact tolerance being bought."
+        },
+        {
+          "category": "security",
+          "severity": "M",
+          "statement": "Continuous failure injection against production is itself an availability risk and can be indistinguishable from an attack in the SOC's telemetry.",
+          "mitigation": "Bound the blast radius of every experiment, and inform detection so injected failures are attributable and do not consume incident response."
+        },
+        {
+          "category": "timeline",
+          "severity": "H",
+          "statement": "Reworking existing applications for active-active writes typically requires application changes across every team, which is a portfolio-level dependency rather than a platform one.",
+          "mitigation": "Assess per-application readiness before committing; deliver active-active only for the components that can support it and state the rest honestly."
+        }
       ],
-      "controls": ["ISO 27001 A.5.29", "ISO 27001 A.5.30", "ISO 27001 A.8.6", "ISO 27001 A.8.14", "NIST 800-53 CP-2", "NIST 800-53 CP-7", "NIST 800-53 CP-10", "DORA Art.11", "DORA Art.12", "DORA Art.26"],
+      "controls": [
+        "ISO 27001 A.5.29",
+        "ISO 27001 A.5.30",
+        "ISO 27001 A.8.6",
+        "ISO 27001 A.8.14",
+        "NIST 800-53 CP-2",
+        "NIST 800-53 CP-7",
+        "NIST 800-53 CP-10",
+        "DORA Art.11",
+        "DORA Art.12",
+        "DORA Art.26"
+      ],
       "lld_notes": [
         "State the consistency model and conflict resolution per datastore, with the business-accepted outcome for each conflict class.",
         "Document traffic steering behaviour during partial failure, not just total regional loss.",
         "Record the failure-injection catalogue with each experiment's blast radius."
       ],
-      "hld_notes": ["Both regions are live on the e2e flow; the diagram must show the consistency boundary, which is the real design constraint."]
+      "hld_notes": [
+        "Both regions are live on the e2e flow; the diagram must show the consistency boundary, which is the real design constraint."
+      ]
     }
   ]
 }

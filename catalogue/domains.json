@@ -38,7 +38,7 @@
       "code": "SEC",
       "name": "Security Operations Validation",
       "order": 5,
-      "scope": "Type 1 (security/audit) and Type 2 (operational) logging, SIEM/SOAR, detection, monitoring, incident response.",
+      "scope": "Type 1 security event detection sources, Type 2 security compliance reporting, Type 3 local operational logging, ingestion compatibility, detection, monitoring and incident response.",
       "skill": "validate-secops"
     },
     {

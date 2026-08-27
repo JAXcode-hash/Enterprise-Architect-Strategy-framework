@@ -100,7 +100,7 @@ Controls are mapped to the full applicable regulatory spine. Evidence is produce
 
 **Imposes on / gives others:** `grc.control.mapping`, `grc.evidence.automated`, `grc.exception.register`, `grc.thirdparty.dora`
 
-**Requires from others:** `platform.iac.governed`, `secops.log.type1`, `integration.thirdparty.registered`
+**Requires from others:** `platform.iac.governed`, `integration.thirdparty.registered`, `secops.log.type2`
 
 **Checklist**
 
@@ -149,7 +149,7 @@ As the regulatory spine option, plus model-risk governance where models or LLMs 
 
 **Imposes on / gives others:** `grc.control.mapping`, `grc.evidence.automated`, `grc.exception.register`, `grc.thirdparty.dora`, `grc.modelrisk.tiered`
 
-**Requires from others:** `platform.iac.governed`, `platform.provenance.signed`, `secops.log.type1`, `integration.thirdparty.registered`, `data.classification.per-flow`
+**Requires from others:** `platform.iac.governed`, `platform.provenance.signed`, `integration.thirdparty.registered`, `data.classification.per-flow`, `secops.log.type2`
 
 **Checklist**
 
@@ -210,7 +210,7 @@ These are the shared tags the orchestrator reconciles on. They are not free text
 - `integration.thirdparty.registered` - Third-party integrations are registered with materiality / CTP assessment. *(owned by INT)*
 - `platform.iac.governed` - Infrastructure is declared as code and gated by policy with drift detection. *(owned by PLAT)*
 - `platform.provenance.signed` - Build artefacts are signed and their provenance is verifiable. *(owned by PLAT)*
-- `secops.log.type1` - A security/audit logging pipeline exists with regulatory retention. *(owned by SEC)*
+- `secops.log.type2` - Compliance reporting logs are delivered to the enterprise compliance logging platform with the retention the security governance and compliance function requires. *(owned by SEC)*
 
 ## Where this domain's content lives
 

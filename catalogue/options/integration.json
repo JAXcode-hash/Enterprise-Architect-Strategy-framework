@@ -129,9 +129,9 @@
       ],
       "requires": [
         "identity.pdp.central",
-        "secops.log.type1",
         "data.classification.per-flow",
-        "network.reach.control-plane"
+        "network.reach.control-plane",
+        "secops.ingestion.compatible"
       ],
       "fit": {
         "regulated": 3,
@@ -292,9 +292,9 @@
       ],
       "requires": [
         "identity.workload.federated",
-        "secops.log.type1",
         "data.classification.per-flow",
-        "network.reach.control-plane"
+        "network.reach.control-plane",
+        "secops.ingestion.compatible"
       ],
       "fit": {
         "realtime": 3,
@@ -448,9 +448,9 @@
       "requires": [
         "grc.thirdparty.dora",
         "identity.federation.external",
-        "secops.log.type1",
         "data.classification.per-flow",
-        "network.egress.fqdn-allowlist"
+        "network.egress.fqdn-allowlist",
+        "secops.ingestion.compatible"
       ],
       "fit": {
         "third-party-material": 3,

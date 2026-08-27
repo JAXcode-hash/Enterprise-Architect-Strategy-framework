@@ -1,156 +1,257 @@
 {
   "domain": "secops",
+  "_note": "Options here are postures toward the organisation's three-type logging operating model. Type 1 (security event detection and handling) is owned by the central security monitoring function; Type 2 (security compliance reporting) by security governance and compliance; Type 3 (general and operational) by the technology owner. A technology team has no obligation to implement logging for a source neither central function has identified - so the real architectural choice here is not how much to log, but how ready the estate is when a function does engage.",
   "options": [
     {
       "id": "SEC-01",
-      "name": "Existing SIEM onboarding with combined Type 1 and Type 2 ingestion",
-      "summary": "Log sources are onboarded to the existing SIEM without separating security/audit from operational telemetry. Detection reuses the standard content set. Non-prod is not monitored.",
+      "name": "Engagement-driven only, no ingestion compatibility designed in",
+      "summary": "Nothing is forwarded to either central security function until one of them engages. Local operational logging is implemented as the technology team sees fit. Log pipelines are built to whatever suits the team, with no reference to the approved security ingestion standards. Fully consistent with the operating model, and the cheapest way to satisfy it.",
       "posture": "tactical",
-      "provides": ["secops.log.type1", "secops.log.type2", "secops.ir.runbook"],
-      "requires": ["network.flowlogs"],
-      "fit": {"time-pressured": 3, "cost-constrained": 2, "tier-T1": 3, "small-scale": 2, "brownfield": 1, "regulated": -2, "tier-T4": -3, "pci": -2},
-      "effort_weeks": 6, "effort_band": "S", "cost_band": "S",
-      "security_score": 2, "reg_score": 2, "ops_burden": 3,
+      "provides": ["secops.log.type3"],
+      "requires": [],
+      "fit": {"time-pressured": 3, "cost-constrained": 3, "tier-T1": 3, "small-scale": 2, "regulated": -2, "pci": -3, "tier-T4": -3, "high-availability": -2, "internet-facing": -2},
+      "effort_weeks": 3, "effort_band": "XS", "cost_band": "XS",
+      "security_score": 1, "reg_score": 2, "ops_burden": 3,
       "checklist": [
-        "log source inventory mapped, with each source classified Type 1 or Type 2",
-        "Type 1 field completeness checked against the Identity subject schema",
-        "retention position stated against the regulatory floor for this scope",
-        "detection use-cases mapped to the in-scope threats, not just to the source list",
-        "incident-response runbook confirmed to cover this scope's components"
+        "position recorded explicitly: no Type 1 or Type 2 sources are in scope for this delivery because neither central function has identified any",
+        "confirmation sought from the security monitoring function that this scope raises no current Type 1 requirement, and the answer recorded with a date",
+        "confirmation sought from security governance and compliance that this change triggers no Type 2 requirement, and the answer recorded with a date",
+        "Type 3 logging scope and retention decided and documented by the technology owner",
+        "a named technology contact recorded for each in-scope system, so a future engagement has somewhere to land",
+        "the same position asserted for RTL and Dev-Test, not just Prod"
       ],
       "questions": [
-        {"question": "Does every integration and every egress path emit a log a detection can actually consume, or only a log that exists?", "owner_role": "SecOps Lead", "blocking": true},
-        {"question": "What is monitored in RTL, and is the gap there a real detection blind spot on a path that carries production-like data?", "owner_role": "SecOps Lead", "blocking": true},
-        {"question": "Does combined ingestion mean Type 1 events inherit Type 2 retention, falling below the regulatory floor?", "owner_role": "Compliance Lead", "blocking": true}
+        {"question": "Has either central security function actually been asked about this scope, or is the absence of a requirement being assumed from their silence?", "owner_role": "Security Architect", "blocking": true},
+        {"question": "If the monitoring function identifies a Type 1 source here in six months, what would it cost to deliver it from this design - and who carries that cost?", "owner_role": "Technology Owner", "blocking": true},
+        {"question": "Does the change activity in scope meet the threshold that triggers a security compliance review? If so, has that review been raised?", "owner_role": "Compliance Lead", "blocking": true}
       ],
       "anchors": [
-        {"metric": "Log volume total", "unit": "GB/day", "critical": true},
-        {"metric": "Events per second at peak", "unit": "EPS", "critical": true},
-        {"metric": "Log sources / connectors", "unit": "count", "critical": true},
-        {"metric": "Retention", "unit": "days", "critical": true},
-        {"metric": "Detection use-cases", "unit": "count", "critical": false},
-        {"metric": "Alert rate", "unit": "per day", "critical": false},
-        {"metric": "MTTD / MTTR targets", "unit": "minutes", "critical": true}
+        {"metric": "Type 3 operational log volume", "unit": "GB/day", "critical": false},
+        {"metric": "Type 3 retention", "unit": "days", "critical": false},
+        {"metric": "Candidate security-relevant sources not currently requested", "unit": "count", "critical": true, "note": "The honest measure of what a future engagement would have to reach into. Not a compliance failure under this operating model - but it is the size of the retrofit."},
+        {"metric": "Estimated effort to connect a newly requested source", "unit": "person-days", "critical": true, "note": "This is the rework the operating model's own guidance asks teams to design away."},
+        {"metric": "Named technology contacts for engagement", "unit": "count", "critical": false}
       ],
       "risks": [
-        {"category": "legal-reg", "severity": "H", "statement": "Combining Type 1 and Type 2 at ingestion means audit events inherit whatever retention the operational tier uses, which is typically far below the regulatory floor.", "mitigation": "Separate at least the Type 1 sources into a tier with the regulatory retention, even if the rest stays combined."},
-        {"category": "cost", "severity": "H", "statement": "Operational telemetry dominates volume, so applying security-grade retention to everything makes cost unmanageable and the usual response is to cut retention on everything including audit.", "mitigation": "Separate the tiers so the retention decision can be taken per type rather than for the whole pipeline."},
-        {"category": "security", "severity": "H", "statement": "Unmonitored non-prod is a detection blind spot in an environment that frequently holds production-derived data and has weaker access control.", "mitigation": "Onboard at least identity and egress sources from RTL, even if full coverage is deferred."},
-        {"category": "security", "severity": "M", "statement": "Reusing standard detection content means the threats specific to this initiative's design have no detection at all.", "mitigation": "Derive at least the top five detections from this initiative's own threat model and build them as new content."}
+        {"category": "workaround", "severity": "H", "statement": "Building log pipelines with no reference to the approved ingestion standards is exactly the rework the operating model's guidance warns against. When a Type 1 or Type 2 requirement lands, format, transport, authentication and integration all have to change at once, on the central function's timescale rather than the delivery team's.", "mitigation": "Adopt the ingestion standards at design time even while unconnected. The cost is small before build and large afterwards."},
+        {"category": "security", "severity": "H", "statement": "The absence of a Type 1 requirement today is a statement about the current threat model, not about this system's risk. If the requirement arrives because the threat landscape moved, the delay in delivering it is time the monitoring function is blind to a source it has decided it needs.", "mitigation": "Keep the scope registered and the pipelines compatible so a request becomes a connection, measured in days rather than a change programme."},
+        {"category": "legal-reg", "severity": "M", "statement": "Assuming no Type 2 requirement because none was communicated is not the same as the governance function having assessed this change. An unassessed change can leave a regulatory retention obligation unconfigured with nobody aware of it.", "mitigation": "Raise the security review proactively where the change meets the trigger threshold, and record the outcome either way."},
+        {"category": "operational", "severity": "M", "statement": "Type 3 logging is discretionary and unfunded centrally, so under delivery pressure it is cut first - leaving the team without the telemetry to diagnose its own incidents.", "mitigation": "Decide the Type 3 position deliberately against the service's own operational needs, and record it as a decision rather than letting it be an omission."}
       ],
-      "controls": ["ISO 27001 A.8.15", "ISO 27001 A.8.16", "NIST 800-53 AU-2", "NIST 800-53 AU-6", "PCI-DSS v4 10.2"],
+      "controls": ["ISO 27001 A.8.15", "ISO 27001 A.8.16", "NIST 800-53 AU-2"],
       "lld_notes": [
-        "List each source with its type, its fields, its retention tier and the detections that consume it.",
-        "State the retention floor that applies to this scope and where the current position sits against it."
+        "State plainly which sources are Type 1, which are Type 2 and which are Type 3, and who said so. Under this operating model an unclassified source is an unasked question.",
+        "Record the date and the respondent for each confirmation from the two central functions - silence is not a confirmation.",
+        "Document the Type 3 retention the technology owner has chosen and the operational need it serves."
       ],
-      "hld_notes": ["Logging is a single combined pipeline - the HLD should state this, because it is the source of the retention and cost risks."]
+      "hld_notes": ["No central security logging appears on the e2e flow, because none has been required. The HLD should say so explicitly rather than leaving the reader to infer a gap."]
     },
     {
       "id": "SEC-02",
-      "name": "Separated Type 1 / Type 2 pipelines with initiative-specific detection content",
-      "summary": "Security/audit and operational telemetry are separated at ingestion, each with its own retention, access model and cost profile. Detection content is derived from this initiative's threat model. RTL is monitored for identity and egress at minimum.",
+      "name": "Ingestion-compatible by design, delivery on engagement",
+      "summary": "Nothing is forwarded centrally until a function engages, but every log pipeline is built to the approved security log ingestion standards - format, transport, authentication and integration pattern - so a future Type 1 or Type 2 requirement is a connection rather than a rebuild. The scope is registered with both functions so they know it exists.",
       "posture": "balanced",
-      "provides": ["secops.log.type1", "secops.log.type2", "secops.log.separated", "secops.detection.identity", "secops.detection.egress", "secops.nonprod.monitored", "secops.ir.runbook"],
-      "requires": ["identity.subject-schema", "network.flowlogs", "integration.per-edge-logging", "data.access.audited"],
-      "fit": {"regulated": 3, "tier-T2": 2, "tier-T3": 3, "pci": 3, "pii": 2, "internet-facing": 2, "non-prod-real-data": 3, "cost-constrained": -1, "tier-T1": -2},
-      "effort_weeks": 16, "effort_band": "M", "cost_band": "M",
-      "security_score": 4, "reg_score": 4, "ops_burden": 3,
+      "provides": ["secops.log.type3", "secops.ingestion.compatible", "secops.requirements.registered"],
+      "requires": [],
+      "fit": {"tier-T2": 2, "tier-T3": 2, "brownfield": 1, "cloud-public": 1, "containerised": 1, "regulated": 1, "time-pressured": -1, "tier-T1": 1},
+      "effort_weeks": 8, "effort_band": "S", "cost_band": "S",
+      "security_score": 3, "reg_score": 3, "ops_burden": 2,
       "checklist": [
-        "Type 1 and Type 2 separated at ingestion with distinct retention, access and cost owners",
-        "Type 1 field completeness traceable to the Identity subject schema for every source",
-        "every egress path from the Network inventory has a detection that consumes it",
-        "every trust-boundary edge from the Integration inventory emits a consumable log",
-        "detection use-cases derived from this initiative's threat model, with coverage stated",
-        "MTTD and MTTR targets agreed with the service owner and measurable",
-        "RTL monitored for identity and egress sources at minimum",
-        "evidence handling and chain of custody defined in the IR runbook"
+        "approved security log ingestion standards obtained and understood: expected format, transport mechanism, authentication requirements and integration pattern",
+        "every in-scope log pipeline demonstrably able to adopt those patterns without redesign, tested at least once end to end against a non-production endpoint",
+        "candidate security-relevant sources inventoried, with the field content each would carry, so an engagement can be scoped in hours rather than weeks",
+        "this scope registered with the security monitoring function and with security governance and compliance, with a named technology contact each",
+        "subject identifiers in candidate sources reconciled with the Identity domain's schema, so a source connected later is attributable on arrival",
+        "Type 3 logging scope and retention decided by the technology owner against operational need",
+        "compatibility asserted for RTL and Dev-Test, not only Prod - a source requested for non-prod is requested in the approved format too"
       ],
       "questions": [
-        {"question": "Is there any egress path or trust-boundary edge with no detection consuming its log?", "owner_role": "SecOps Lead", "blocking": true},
-        {"question": "Do the Type 1 fields carry the subject identifier the Identity domain actually issues, or a different one that cannot be joined?", "owner_role": "IAM Service Owner", "blocking": true},
-        {"question": "Has the ingestion volume been sized against the post-change architecture, including micro-segmentation flow logs and gateway per-edge logs?", "owner_role": "SecOps Lead", "blocking": true},
-        {"question": "What is monitored in RTL, and does that cover the paths where production-derived data exists?", "owner_role": "SecOps Lead", "blocking": false}
+        {"question": "Has ingestion compatibility been tested against a real endpoint, or only asserted from the standards document?", "owner_role": "Technology Owner", "blocking": true},
+        {"question": "Do the candidate sources carry the subject identifier the Identity domain actually issues, or one that cannot be joined once the source is connected?", "owner_role": "IAM Service Owner", "blocking": true},
+        {"question": "Who keeps this scope's register entry current when the architecture changes, and what triggers them to do it?", "owner_role": "Technology Owner", "blocking": false},
+        {"question": "What is the agreed time to connect a source once requested, and has that been stated to the monitoring function as a commitment?", "owner_role": "Technology Owner", "blocking": false}
       ],
       "anchors": [
-        {"metric": "Type 1 log volume", "unit": "GB/day", "critical": true},
-        {"metric": "Type 2 log volume", "unit": "GB/day", "critical": true},
-        {"metric": "Events per second at peak", "unit": "EPS", "critical": true},
-        {"metric": "Log sources / connectors", "unit": "count", "critical": true},
-        {"metric": "Type 1 retention", "unit": "days", "critical": true},
-        {"metric": "Type 2 retention", "unit": "days", "critical": false},
-        {"metric": "Hot / warm / cold storage per tier", "unit": "TB", "critical": true},
-        {"metric": "Detection use-cases", "unit": "count", "critical": true},
-        {"metric": "Egress paths with no detection", "unit": "count", "critical": true, "note": "Target is zero; anything else is a named gap for the exec pack."},
-        {"metric": "Alert rate", "unit": "per day", "critical": true},
-        {"metric": "MTTD / MTTR targets", "unit": "minutes", "critical": true},
-        {"metric": "SIEM ingestion cost", "unit": "currency/month", "critical": true}
+        {"metric": "Candidate security-relevant sources inventoried", "unit": "count", "critical": true},
+        {"metric": "Sources conforming to approved ingestion standards", "unit": "% of candidates", "critical": true, "note": "The measure of readiness. Anything below 100% is the retrofit that remains."},
+        {"metric": "Estimated effort to connect a newly requested source", "unit": "person-days", "critical": true},
+        {"metric": "Candidate Type 1 source volume if connected", "unit": "GB/day", "critical": true, "note": "The central function sizes its platform on this. Pin it before it is requested, not after."},
+        {"metric": "Type 3 operational log volume", "unit": "GB/day", "critical": false},
+        {"metric": "Type 3 retention", "unit": "days", "critical": false}
       ],
       "risks": [
-        {"category": "cost", "severity": "H", "statement": "Ingestion volume from micro-segmentation flow logs, gateway per-edge logs and PDP decision logs is frequently several times the pre-change baseline, and the cost lands on SecOps rather than on the initiative that created it.", "mitigation": "Pin the GB/day anchors from every contributing domain before build and put the ingestion cost in this initiative's business case."},
-        {"category": "security", "severity": "H", "statement": "Detection coverage is asserted from the source list rather than from the threat model, so sources are onboarded while the specific attack paths this design creates remain undetected.", "mitigation": "Map detections to threats, publish the coverage gap explicitly, and treat an uncovered egress path as a blocking finding."},
-        {"category": "operational", "severity": "M", "statement": "Alert volume without tuning overwhelms the SOC, and the practical response is to suppress rather than tune, which removes coverage silently.", "mitigation": "Agree an alert-rate budget per use-case before deployment and require tuning evidence before a rule goes live."},
-        {"category": "timeline", "severity": "M", "statement": "Detection content development depends on the source onboarding, which depends on the other domains completing their builds, so SecOps is structurally last and absorbs every upstream slip.", "mitigation": "Sequence source onboarding to follow each domain's build rather than waiting for all of them, and hold a dated SecOps runway after the last dependency."}
+        {"category": "security", "severity": "M", "statement": "Compatibility is not coverage. Nothing is reaching either central function, so this scope contributes nothing to detection or to compliance evidence until somebody asks.", "mitigation": "Treat this as the deliberate operating-model position it is, and make sure the register entry is accurate enough that the monitoring function can make an informed decision about whether to ask."},
+        {"category": "workaround", "severity": "M", "statement": "Compatibility asserted from a standards document rather than tested decays silently as the standards evolve, and the first real test is the day a source is urgently required.", "mitigation": "Exercise the ingestion path against a real endpoint at least once before go-live and re-test when the standards are revised."},
+        {"category": "operational", "severity": "M", "statement": "A register entry written at go-live and never revisited stops describing the system, so a future engagement is scoped against an architecture that no longer exists.", "mitigation": "Tie register review to the change process so an architectural change updates the entry as a matter of course."},
+        {"category": "cost", "severity": "L", "statement": "Building to a standard the system may never use is real effort spent against a possibility.", "mitigation": "Weigh it against the retrofit cost, which the pinned person-day anchor makes explicit rather than rhetorical."}
       ],
-      "controls": ["ISO 27001 A.5.25", "ISO 27001 A.8.15", "ISO 27001 A.8.16", "NIST 800-53 AU-2", "NIST 800-53 AU-6", "NIST 800-53 AU-11", "NIST 800-53 IR-4", "PCI-DSS v4 10.2", "PCI-DSS v4 10.5", "DORA Art.10", "DORA Art.17"],
+      "controls": ["ISO 27001 A.8.15", "ISO 27001 A.8.16", "NIST 800-53 AU-2", "NIST 800-53 AU-6"],
       "lld_notes": [
-        "Publish the source-to-detection map: every source, its type, its fields, its retention tier and the detections consuming it.",
-        "Reconcile against the Network egress inventory and the Integration interface register - unmatched rows are findings.",
-        "State the Type 1 field schema and confirm it matches the Identity subject schema exactly."
+        "Document the ingestion contract this scope conforms to: format, transport, authentication method, integration pattern, and the version of the standard.",
+        "Publish the candidate-source inventory with the fields each carries - this is what an engagement is scoped from.",
+        "Record the register entry reference for this scope with both central functions."
       ],
-      "hld_notes": ["Two distinct pipelines appear on the HLD with different retention and different access; this separation is a design decision, not an implementation detail."]
+      "hld_notes": ["The e2e flow shows log pipelines terminating locally with a marked, standards-conformant connection point to the central platforms that is not yet made."]
     },
     {
       "id": "SEC-03",
-      "name": "Detection-engineering capability with SOAR automation and continuous validation",
-      "summary": "Separated pipelines plus a detection-engineering practice: content as code, coverage mapped to an adversary framework, automated response playbooks, and continuous validation that detections still fire after change.",
+      "name": "Type 2 compliance logging connected at go-live",
+      "summary": "The change triggers a security compliance review; the Type 2 sources it identifies are connected to the enterprise compliance logging platform with retention configured by the governance function. All pipelines are ingestion-compatible, so a later Type 1 request is a connection. Type 1 remains engagement-driven.",
+      "posture": "balanced",
+      "provides": ["secops.log.type2", "secops.log.type3", "secops.ingestion.compatible", "secops.requirements.registered", "secops.ir.runbook"],
+      "requires": ["identity.subject-schema"],
+      "fit": {"regulated": 3, "pci": 3, "pii": 2, "tier-T2": 2, "tier-T3": 3, "payments": 2, "third-party-material": 1, "tier-T1": -1, "cost-constrained": -1},
+      "effort_weeks": 14, "effort_band": "M", "cost_band": "M",
+      "security_score": 3, "reg_score": 5, "ops_burden": 2,
+      "checklist": [
+        "security compliance review raised for this change and its outcome recorded, including sources assessed and excluded",
+        "Type 2 sources connected to the enterprise compliance logging platform using the approved ingestion pattern",
+        "retention for each Type 2 source configured by the governance function to the obligation it satisfies, and the configured value evidenced rather than assumed",
+        "Type 2 field content sufficient for the obligation - a source that arrives without the fields an audit needs satisfies nothing",
+        "subject identifiers reconciled with the Identity domain's schema so compliance records are attributable",
+        "all remaining pipelines ingestion-compatible so a future Type 1 request is a connection",
+        "this scope registered with the security monitoring function with a named contact, even though no Type 1 source is currently requested",
+        "Type 2 position asserted for RTL and Dev-Test where those environments hold data carrying the same obligation",
+        "incident-response runbook covers this scope, including how Type 2 records are retrieved under legal hold"
+      ],
+      "questions": [
+        {"question": "Which regulatory obligation does each connected Type 2 source satisfy, and has the governance function confirmed the configured retention meets it?", "owner_role": "Compliance Lead", "blocking": true},
+        {"question": "Do the Type 2 records carry the fields an audit or a supervisory request would actually need, or only the fields the source happened to emit?", "owner_role": "Compliance Lead", "blocking": true},
+        {"question": "Where non-production holds data carrying the same obligation, is Type 2 logging connected there too - or is the obligation being treated as production-only without that having been decided?", "owner_role": "Data Owner", "blocking": true},
+        {"question": "If the monitoring function requests a Type 1 source tomorrow, what is the measured time to connect it?", "owner_role": "Technology Owner", "blocking": false}
+      ],
+      "anchors": [
+        {"metric": "Type 2 compliance log volume", "unit": "GB/day", "critical": true},
+        {"metric": "Type 2 sources connected", "unit": "count", "critical": true},
+        {"metric": "Type 2 retention per obligation", "unit": "years", "critical": true},
+        {"metric": "Sources conforming to approved ingestion standards", "unit": "% of candidates", "critical": true},
+        {"metric": "Candidate Type 1 source volume if connected", "unit": "GB/day", "critical": true},
+        {"metric": "Estimated effort to connect a newly requested source", "unit": "person-days", "critical": true},
+        {"metric": "Type 3 operational log volume", "unit": "GB/day", "critical": false},
+        {"metric": "Central ingestion cost attributable to this scope", "unit": "currency/month", "critical": true, "note": "The volume is this initiative's decision; the cost lands on the central compliance platform. Pin it so the receiving function can plan."}
+      ],
+      "risks": [
+        {"category": "legal-reg", "severity": "H", "statement": "A Type 2 source connected without the fields the obligation requires produces a record that exists but does not evidence anything, and the deficiency is discovered during a supervisory request rather than during design.", "mitigation": "Agree the required field content with the governance function per obligation before connecting, and validate a real record against it."},
+        {"category": "legal-reg", "severity": "M", "statement": "Retention configured in the compliance platform is only correct at the moment it is set; an obligation change or a platform migration can silently reduce it.", "mitigation": "Evidence the configured retention periodically as a control test rather than assuming the initial configuration persists."},
+        {"category": "security", "severity": "H", "statement": "Compliance logging is not detection. Connecting Type 2 satisfies the governance function and leaves the monitoring function with nothing, so this scope remains outside threat detection until Type 1 is separately requested.", "mitigation": "Make that separation explicit to stakeholders - a system with connected compliance logging can still be entirely undetected."},
+        {"category": "cost", "severity": "M", "statement": "Compliance retention is measured in years, so volume decisions taken here create a cost on the central platform that persists long after this delivery closes.", "mitigation": "Pin the GB/day and retention anchors together and put the resulting multi-year cost in front of the governance function before connecting."},
+        {"category": "timeline", "severity": "M", "statement": "The compliance review is an external queue and its outcome sets the scope of this workstream, so the workstream cannot be sized until the review completes.", "mitigation": "Raise the review at the start of design rather than before go-live, and treat its completion as a dated dependency."}
+      ],
+      "controls": ["ISO 27001 A.5.31", "ISO 27001 A.8.15", "ISO 27001 A.8.16", "NIST 800-53 AU-2", "NIST 800-53 AU-11", "PCI-DSS v4 10.2", "PCI-DSS v4 10.5", "DORA Art.10"],
+      "lld_notes": [
+        "Publish the source-to-obligation map: every connected Type 2 source, the obligation it satisfies, its configured retention and the evidence that retention is set.",
+        "Record the compliance review reference, its date and the sources it assessed and excluded.",
+        "State the ingestion contract version every pipeline conforms to."
+      ],
+      "hld_notes": ["Two destinations appear on the e2e flow: the enterprise compliance platform, connected; and the central detection platform, standards-conformant but not yet connected."]
+    },
+    {
+      "id": "SEC-04",
+      "name": "Type 1 detection sources and Type 2 compliance logging both delivered",
+      "summary": "The security monitoring function is engaged proactively during design. Threat-model-derived Type 1 sources are agreed and delivered using approved ingestion patterns, and Type 2 compliance sources are connected with retention configured. Non-production is in scope where it carries production-derived data.",
       "posture": "strategic",
-      "provides": ["secops.log.type1", "secops.log.type2", "secops.log.separated", "secops.detection.identity", "secops.detection.egress", "secops.nonprod.monitored", "secops.soar", "secops.ir.runbook"],
-      "requires": ["identity.subject-schema", "network.flowlogs", "integration.per-edge-logging", "data.access.audited", "platform.iac.governed", "platform.runtime.protection"],
-      "fit": {"tier-T4": 3, "tier-T3": 2, "regulated": 3, "high-availability": 2, "internet-facing": 2, "large-scale": 2, "payments": 2, "time-pressured": -2, "cost-constrained": -3, "tier-T1": -3, "small-scale": -3},
+      "provides": ["secops.log.type1", "secops.log.type2", "secops.log.type3", "secops.ingestion.compatible", "secops.requirements.registered", "secops.detection.identity", "secops.detection.egress", "secops.nonprod.monitored", "secops.ir.runbook"],
+      "requires": ["identity.subject-schema", "network.flowlogs", "integration.per-edge-logging", "data.access.audited"],
+      "fit": {"regulated": 3, "tier-T3": 2, "tier-T4": 3, "pci": 3, "internet-facing": 2, "high-availability": 2, "non-prod-real-data": 3, "payments": 2, "large-scale": 2, "cost-constrained": -2, "tier-T1": -3},
+      "effort_weeks": 20, "effort_band": "L", "cost_band": "M",
+      "security_score": 5, "reg_score": 5, "ops_burden": 2,
+      "checklist": [
+        "security monitoring function engaged during design, not at go-live, with this scope's threat model shared as the basis for source selection",
+        "Type 1 sources agreed with the monitoring function and recorded in the central log requirements register with an owner on both sides",
+        "Type 1 sources delivered using approved ingestion patterns and confirmed as arriving and parsing correctly at the receiving platform",
+        "Type 1 field completeness confirmed against the Identity subject schema - a source that cannot attribute an action supports no detection",
+        "every egress path from the Network inventory and every trust-boundary edge from the Integration inventory assessed as a candidate source, with exclusions recorded and agreed",
+        "Type 2 sources connected with retention configured and evidenced",
+        "non-production in scope for Type 1 where it holds production-derived data, or the exclusion accepted by a named owner",
+        "the process by which a future change to Type 1 requirements reaches this technology team is understood and has a named recipient",
+        "incident-response runbook covers this scope including evidence handling and chain of custody"
+      ],
+      "questions": [
+        {"question": "Is there an egress path or trust-boundary edge the monitoring function excluded from Type 1 - and was that exclusion a decision they took with the threat model in front of them, or an omission?", "owner_role": "Security Architect", "blocking": true},
+        {"question": "Have the delivered Type 1 sources been confirmed as arriving and parsing at the receiving platform, or only as being sent?", "owner_role": "Technology Owner", "blocking": true},
+        {"question": "Do the Type 1 fields carry the subject identifier the Identity domain issues, or a different one that cannot be joined during an investigation?", "owner_role": "IAM Service Owner", "blocking": true},
+        {"question": "Where non-production holds production-derived data, is it in scope for Type 1 - and if not, who accepted that detection gap?", "owner_role": "Security Architect", "blocking": true},
+        {"question": "When the monitoring function revises its requirements, who in this technology team receives that, and within what time is a new source expected to be delivered?", "owner_role": "Technology Owner", "blocking": false}
+      ],
+      "anchors": [
+        {"metric": "Type 1 detection source volume", "unit": "GB/day", "critical": true},
+        {"metric": "Type 1 sources delivered", "unit": "count", "critical": true},
+        {"metric": "Events per second at peak", "unit": "EPS", "critical": true},
+        {"metric": "Type 2 compliance log volume", "unit": "GB/day", "critical": true},
+        {"metric": "Type 2 retention per obligation", "unit": "years", "critical": true},
+        {"metric": "Candidate sources assessed and excluded by the monitoring function", "unit": "count", "critical": true, "note": "An agreed exclusion is a decision on record. An unassessed source is a blind spot nobody has looked at."},
+        {"metric": "Agreed time to deliver a newly requested source", "unit": "days", "critical": true, "note": "The operating model makes requirements dynamic, so responsiveness is the property that matters, not one-off coverage."},
+        {"metric": "Type 3 operational log volume", "unit": "GB/day", "critical": false},
+        {"metric": "Central ingestion cost attributable to this scope", "unit": "currency/month", "critical": true},
+        {"metric": "Non-prod sources in Type 1 scope", "unit": "count", "critical": true}
+      ],
+      "risks": [
+        {"category": "cost", "severity": "H", "statement": "Volume generated by decisions in other domains - per-pair flow logs, gateway per-edge logs, authorisation decision logs - lands on the central monitoring platform's budget rather than this initiative's, and the receiving function typically sees it only when it arrives.", "mitigation": "Pin the GB/day and EPS anchors from every contributing domain and put them in front of the monitoring function during design, so the platform is sized before delivery rather than after."},
+        {"category": "security", "severity": "H", "statement": "Type 1 requirements are dynamic by design. Coverage agreed once at go-live decays as the threat landscape moves, and a system that was well covered at launch can be poorly covered two years later without anything having changed on either side.", "mitigation": "Treat the register entry and the named recipient as the live control, and agree a review cadence with the monitoring function rather than relying on them to initiate."},
+        {"category": "operational", "severity": "M", "statement": "A source that is sent but does not parse at the receiving platform produces the appearance of coverage with none of the substance, and the failure is silent at the sending end.", "mitigation": "Confirm arrival and parsing at the receiving platform as an acceptance criterion, and alert on a source that stops arriving."},
+        {"category": "timeline", "severity": "M", "statement": "Type 1 source selection depends on the monitoring function's threat modelling, which runs on their cycle rather than the programme's, so engaging late compresses this work into the period before go-live.", "mitigation": "Engage at design, share the threat model, and treat source agreement as a dated dependency with the monitoring function named on it."},
+        {"category": "legal-reg", "severity": "M", "statement": "Type 1 and Type 2 answer to different functions with different retention drivers; assuming a detection source also satisfies a compliance obligation conflates the two and can leave the obligation unmet.", "mitigation": "Map each source to its owning function and its purpose explicitly; a source may legitimately be both, but that has to be stated rather than assumed."}
+      ],
+      "controls": ["ISO 27001 A.5.25", "ISO 27001 A.5.26", "ISO 27001 A.8.15", "ISO 27001 A.8.16", "NIST 800-53 AU-2", "NIST 800-53 AU-6", "NIST 800-53 IR-4", "NIST 800-53 SI-4", "PCI-DSS v4 10.2", "PCI-DSS v4 10.4", "DORA Art.10", "DORA Art.17"],
+      "lld_notes": [
+        "Publish two maps, not one: sources to detection purpose agreed with the monitoring function, and sources to regulatory obligation agreed with governance and compliance.",
+        "Reconcile the Type 1 candidate list against the Network egress inventory and the Integration interface register - an unassessed row on either is a finding.",
+        "Record the register entry, the named contact on each side, and the agreed delivery time for a newly requested source."
+      ],
+      "hld_notes": ["Both central platforms are connected on the e2e flow, with the sources feeding each marked by their owning function rather than merged into one logging arrow."]
+    },
+    {
+      "id": "SEC-05",
+      "name": "Embedded detection partnership with automated response",
+      "summary": "A standing relationship with the security monitoring function: this scope's threat model feeds their source selection continuously, detection coverage is validated rather than assumed, and response is partly automated. Type 2 connected throughout. The posture for services where a detection gap has material consequence.",
+      "posture": "strategic",
+      "provides": ["secops.log.type1", "secops.log.type2", "secops.log.type3", "secops.ingestion.compatible", "secops.requirements.registered", "secops.detection.identity", "secops.detection.egress", "secops.nonprod.monitored", "secops.soar", "secops.ir.runbook"],
+      "requires": ["identity.subject-schema", "network.flowlogs", "integration.per-edge-logging", "data.access.audited", "platform.runtime.protection"],
+      "fit": {"tier-T4": 3, "regulated": 3, "payments": 3, "high-availability": 2, "internet-facing": 2, "large-scale": 2, "customer-facing": 1, "time-pressured": -2, "cost-constrained": -3, "tier-T1": -3, "small-scale": -3},
       "effort_weeks": 30, "effort_band": "L", "cost_band": "L",
       "security_score": 5, "reg_score": 5, "ops_burden": 3,
       "checklist": [
-        "detection content held as code with review, test and promotion through the same gates as application change",
-        "coverage mapped to an adversary technique framework with the gaps published rather than implied",
-        "continuous validation exercising detections on a cadence so silent failures surface",
-        "SOAR playbooks defined with an explicit boundary between automated and human decisions",
-        "automated containment actions risk-assessed - an automated action can cause its own outage",
-        "non-prod monitored to the same content standard where it holds production-derived data",
-        "MTTD and MTTR measured against the targets, and reported"
+        "standing engagement with the monitoring function on an agreed cadence, with this scope's threat model maintained as a live input to their source selection",
+        "detection coverage for this scope's threats confirmed with the monitoring function and the gaps published rather than implied",
+        "source delivery validated continuously - a source that stops arriving or stops parsing raises an alert at the sending end, not only the receiving end",
+        "automated response actions agreed with the monitoring function, with the boundary between automated and human decisions stated",
+        "automated containment risk-assessed - an automated action can cause a larger outage than the incident it responds to",
+        "Type 2 connected with retention configured and evidenced",
+        "non-production monitored to the same standard where it holds production-derived data",
+        "change to this scope's architecture triggers a register update and a review of source coverage"
       ],
       "questions": [
         {"question": "Which containment actions are automated, and what is the worst outcome if one fires on a false positive at peak?", "owner_role": "SecOps Lead", "blocking": true},
-        {"question": "How is a silently broken detection discovered - by validation, or by an incident it failed to catch?", "owner_role": "SecOps Lead", "blocking": true},
-        {"question": "Is the detection-engineering capability resourced as an ongoing practice, or funded only for the build?", "owner_role": "Programme Director", "blocking": true},
-        {"question": "Does detection content promote through the same gates as application change, so a release cannot break a detection unnoticed?", "owner_role": "Route-to-Live Owner", "blocking": false}
+        {"question": "How is a silently broken source discovered - by validation at the sending end, or by an incident it failed to inform?", "owner_role": "Technology Owner", "blocking": true},
+        {"question": "Is the standing engagement resourced on both sides, or funded only for the build?", "owner_role": "Programme Director", "blocking": true},
+        {"question": "Where the monitoring function has confirmed a detection gap for one of this scope's threats, who accepted that residual risk and at which forum?", "owner_role": "Risk Partner", "blocking": true}
       ],
       "anchors": [
-        {"metric": "Type 1 log volume", "unit": "GB/day", "critical": true},
-        {"metric": "Type 2 log volume", "unit": "GB/day", "critical": true},
+        {"metric": "Type 1 detection source volume", "unit": "GB/day", "critical": true},
+        {"metric": "Type 1 sources delivered", "unit": "count", "critical": true},
         {"metric": "Events per second at peak", "unit": "EPS", "critical": true},
-        {"metric": "Detection use-cases", "unit": "count", "critical": true},
-        {"metric": "Adversary technique coverage", "unit": "% of in-scope techniques", "critical": true},
-        {"metric": "Validation cadence", "unit": "days", "critical": false},
-        {"metric": "SOAR playbooks", "unit": "count", "critical": false},
+        {"metric": "Threats with confirmed detection coverage", "unit": "% of this scope's threat model", "critical": true},
+        {"metric": "Source delivery validation cadence", "unit": "days", "critical": false},
         {"metric": "Automated containment actions", "unit": "count", "critical": true},
-        {"metric": "MTTD / MTTR measured", "unit": "minutes", "critical": true},
-        {"metric": "Alert rate", "unit": "per day", "critical": true},
-        {"metric": "SIEM ingestion cost", "unit": "currency/month", "critical": true},
-        {"metric": "Detection engineers required", "unit": "FTE", "critical": true, "note": "Run cost is people, not licences; this anchor is the one most often left unpinned."}
+        {"metric": "Type 2 compliance log volume", "unit": "GB/day", "critical": true},
+        {"metric": "Type 2 retention per obligation", "unit": "years", "critical": true},
+        {"metric": "Agreed time to deliver a newly requested source", "unit": "days", "critical": true},
+        {"metric": "Central ingestion cost attributable to this scope", "unit": "currency/month", "critical": true},
+        {"metric": "Engagement effort, both sides", "unit": "FTE", "critical": true, "note": "A standing partnership is recurring people cost on the technology side and on the monitoring function's. Business cases routinely fund only the build."}
       ],
       "risks": [
-        {"category": "operational", "severity": "H", "statement": "Automated containment can cause an outage larger than the incident it responds to, particularly when it fires on a false positive during peak.", "mitigation": "Grade automation by blast radius: enrich and isolate automatically, but require human authorisation for anything that removes capacity or revokes broad access."},
-        {"category": "cost", "severity": "H", "statement": "Detection engineering is a standing capability, so the true cost is recurring headcount rather than a build line, and business cases frequently fund only the build.", "mitigation": "Pin the FTE anchor and put the recurring cost in the business case explicitly."},
-        {"category": "timeline", "severity": "M", "statement": "Detection depends on every other domain's telemetry, so this workstream is structurally last and absorbs the accumulated slip of all of them.", "mitigation": "Hold an explicit, dated SecOps runway after the final upstream dependency and protect it in the plan."},
-        {"category": "security", "severity": "M", "statement": "Detections break silently when upstream log schemas change, and the failure is only visible when an incident is missed.", "mitigation": "Run continuous validation and treat a validation failure with the same severity as a failing production test."}
+        {"category": "operational", "severity": "H", "statement": "Automated containment can cause an outage larger than the incident it responds to, particularly when it fires on a false positive during a business peak.", "mitigation": "Grade automation by blast radius: enrich and isolate automatically, but require human authorisation for anything that removes capacity or revokes broad access."},
+        {"category": "cost", "severity": "H", "statement": "A standing engagement is recurring headcount on both sides, and the monitoring function's capacity is a shared resource this initiative would be consuming continuously.", "mitigation": "Pin the FTE anchor for both sides and secure the monitoring function's agreement to the commitment before it is designed in."},
+        {"category": "security", "severity": "M", "statement": "Sources break silently when an upstream schema changes, and under an engagement model the receiving function may not notice quickly because they did not build the source.", "mitigation": "Validate at the sending end and treat a validation failure with the same severity as a failing production test."},
+        {"category": "timeline", "severity": "M", "statement": "This posture depends on telemetry from every other domain, so it is structurally last and absorbs their accumulated slip.", "mitigation": "Hold an explicit dated runway after the final upstream dependency and protect it in the plan."}
       ],
       "controls": ["ISO 27001 A.5.25", "ISO 27001 A.5.26", "ISO 27001 A.8.15", "ISO 27001 A.8.16", "NIST 800-53 AU-6", "NIST 800-53 IR-4", "NIST 800-53 SI-4", "PCI-DSS v4 10.4", "DORA Art.10", "DORA Art.17", "DORA Art.24"],
       "lld_notes": [
-        "Hold detection content in a repository with tests; record the technique each detection covers and the source it consumes.",
-        "Document each SOAR playbook's trigger, its automated steps, its human decision points and its rollback.",
-        "State the validation method and cadence per detection."
+        "Record the engagement cadence, the named people on both sides, and how a threat-model change reaches the monitoring function.",
+        "Publish the confirmed detection coverage and, more importantly, the confirmed gaps with their accepting owner.",
+        "Document each automated response action's trigger, its blast radius and its rollback."
       ],
-      "hld_notes": ["Detection and response are drawn as an operating capability with its own lifecycle, not as a log destination."]
+      "hld_notes": ["Detection is drawn as a standing relationship with the central function, not as a log destination - the arrow goes both ways."]
     }
   ]
 }

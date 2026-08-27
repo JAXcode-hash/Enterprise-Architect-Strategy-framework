@@ -69,9 +69,15 @@ def e2e_flow(catalogue, selection, intake) -> str:
         L.append("    PDP[\"Policy decision point\"]")
     if "data.key.customer-managed" in c or "data.key.hyok" in c:
         L.append("    KMS[\"Key management\"]")
-    L.append("    SIEM[\"SIEM - Type 1 security / audit\"]")
-    if "secops.log.separated" in c:
-        L.append("    OBS[\"Observability - Type 2 operational\"]")
+    if "secops.log.type1" in c:
+        L.append("    SIEM[\"Central detection platform<br/>Type 1 - security monitoring fn\"]")
+    elif "secops.ingestion.compatible" in c:
+        L.append("    SIEM[/\"Central detection platform<br/>Type 1 - standards-ready,<br/>not connected\"/]")
+    else:
+        L.append("    SIEM[/\"Central detection platform<br/>Type 1 - NOT CONNECTED,<br/>no ingestion compatibility\"/]")
+    if "secops.log.type2" in c:
+        L.append("    COMP[\"Enterprise compliance platform<br/>Type 2 - governance fn\"]")
+    L.append("    OBS[\"Local operational logging<br/>Type 3 - technology owner\"]")
     L.append("  end")
 
     if public:
@@ -93,11 +99,15 @@ def e2e_flow(catalogue, selection, intake) -> str:
         L.append("  SVC -.->|\"authorise\"| PDP")
     if "data.key.customer-managed" in c or "data.key.hyok" in c:
         L.append("  STORE -.->|\"key operations\"| KMS")
-    L.append("  SVC -.->|\"Type 1 events\"| SIEM")
-    if "secops.log.separated" in c:
-        L.append("  SVC -.->|\"Type 2 telemetry\"| OBS")
-    if gateway:
-        L.append("  GW -.->|\"per-edge log\"| SIEM")
+    if "secops.log.type1" in c:
+        L.append("  SVC -.->|\"Type 1 detection sources\"| SIEM")
+        if gateway:
+            L.append("  GW -.->|\"per-edge log\"| SIEM")
+    else:
+        L.append("  SVC -. \"awaiting engagement\" .-> SIEM")
+    if "secops.log.type2" in c:
+        L.append("  SVC -.->|\"Type 2 compliance records\"| COMP")
+    L.append("  SVC -.->|\"Type 3 telemetry\"| OBS")
 
     egress_label = (
         "L7 inspected, FQDN allow-list, DLP" if inspected and "data.dlp.egress" in c
@@ -112,7 +122,8 @@ def e2e_flow(catalogue, selection, intake) -> str:
               "    T1EXT([\"Material third party\"])", "  end", "  PROXY --> T1EXT"]
     else:
         L.append("  PROXY --> INET([\"External destinations\"])")
-    L.append("  PROXY -.->|\"egress detection\"| SIEM")
+    if "secops.detection.egress" in c:
+        L.append("  PROXY -.->|\"egress detection\"| SIEM")
 
     if multi_region:
         L += ["  subgraph R2[\"Second region\"]",

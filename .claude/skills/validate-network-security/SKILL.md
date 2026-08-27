@@ -204,7 +204,7 @@ A deliberately small public surface fronted by managed WAF, DDoS and bot protect
 
 **Imposes on / gives others:** `network.ingress.waf`, `network.private.only`, `network.reach.control-plane`, `network.flowlogs`, `network.dns.deterministic`
 
-**Requires from others:** `identity.federation.external`, `secops.log.type1`, `integration.gateway.managed`
+**Requires from others:** `identity.federation.external`, `integration.gateway.managed`, `secops.ingestion.compatible`
 
 **Checklist**
 
@@ -270,7 +270,7 @@ These are the shared tags the orchestrator reconciles on. They are not free text
 - `platform.iac.governed` - Infrastructure is declared as code and gated by policy with drift detection. *(owned by PLAT)*
 - `platform.workload.identity` - The platform can mint and attest workload identity. *(owned by PLAT)*
 - `secops.detection.egress` - Detection content exists for egress and exfiltration paths. *(owned by SEC)*
-- `secops.log.type1` - A security/audit logging pipeline exists with regulatory retention. *(owned by SEC)*
+- `secops.ingestion.compatible` - Log pipelines are built to the approved security log ingestion standards - format, transport, authentication and integration pattern - so a future Type 1 or Type 2 requirement is a connection rather than a rebuild, whether or not the system is connected today. *(owned by SEC)*
 
 ## Where this domain's content lives
 

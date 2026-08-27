@@ -103,7 +103,7 @@ Internal and external APIs route through a managed gateway carrying authenticati
 
 **Imposes on / gives others:** `integration.gateway.managed`, `integration.edge.authz`, `integration.contract.governed`, `integration.per-edge-logging`, `integration.thirdparty.registered`, `integration.async.idempotent`
 
-**Requires from others:** `identity.pdp.central`, `secops.log.type1`, `data.classification.per-flow`, `network.reach.control-plane`
+**Requires from others:** `identity.pdp.central`, `data.classification.per-flow`, `network.reach.control-plane`, `secops.ingestion.compatible`
 
 **Checklist**
 
@@ -155,7 +155,7 @@ Services integrate asynchronously over a governed event backbone. Schemas are re
 
 **Imposes on / gives others:** `integration.async.idempotent`, `integration.contract.governed`, `integration.per-edge-logging`, `integration.edge.authz`
 
-**Requires from others:** `identity.workload.federated`, `secops.log.type1`, `data.classification.per-flow`, `network.reach.control-plane`
+**Requires from others:** `identity.workload.federated`, `data.classification.per-flow`, `network.reach.control-plane`, `secops.ingestion.compatible`
 
 **Checklist**
 
@@ -205,7 +205,7 @@ External and third-party integration is handled by a dedicated tier with materia
 
 **Imposes on / gives others:** `integration.thirdparty.registered`, `integration.gateway.managed`, `integration.edge.authz`, `integration.per-edge-logging`, `integration.contract.governed`, `integration.async.idempotent`
 
-**Requires from others:** `grc.thirdparty.dora`, `identity.federation.external`, `secops.log.type1`, `data.classification.per-flow`, `network.egress.fqdn-allowlist`
+**Requires from others:** `grc.thirdparty.dora`, `identity.federation.external`, `data.classification.per-flow`, `network.egress.fqdn-allowlist`, `secops.ingestion.compatible`
 
 **Checklist**
 
@@ -269,7 +269,7 @@ These are the shared tags the orchestrator reconciles on. They are not free text
 - `identity.workload.federated` - Workloads authenticate with short-lived federated credentials; no long-lived static secrets. *(owned by IAM)*
 - `network.egress.fqdn-allowlist` - Outbound is constrained to an explicit FQDN/URL allow-list, not IP ranges. *(owned by NET)*
 - `network.reach.control-plane` - Reachability exists from every workload to IdP / PDP / KMS control planes, in every environment. *(owned by NET)*
-- `secops.log.type1` - A security/audit logging pipeline exists with regulatory retention. *(owned by SEC)*
+- `secops.ingestion.compatible` - Log pipelines are built to the approved security log ingestion standards - format, transport, authentication and integration pattern - so a future Type 1 or Type 2 requirement is a connection rather than a rebuild, whether or not the system is connected today. *(owned by SEC)*
 
 ## Where this domain's content lives
 

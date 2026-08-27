@@ -6,11 +6,29 @@
       "name": "Perimeter-controlled estate with IP allow-listing and shared egress",
       "summary": "Connectivity reuses the existing perimeter: shared NAT/proxy egress with IP-range allow-listing, inherited DNS, and segmentation at the network zone rather than the service. Fastest to stand up on an existing estate.",
       "posture": "tactical",
-      "provides": ["network.reach.control-plane", "network.flowlogs"],
+      "provides": [
+        "network.reach.control-plane",
+        "network.flowlogs"
+      ],
       "requires": [],
-      "fit": {"time-pressured": 3, "cost-constrained": 3, "brownfield": 2, "tier-T1": 3, "small-scale": 2, "hybrid-onprem": 1, "regulated": -2, "internet-facing": -2, "tier-T4": -3, "pci": -2},
-      "effort_weeks": 4, "effort_band": "XS", "cost_band": "S",
-      "security_score": 2, "reg_score": 2, "ops_burden": 3,
+      "fit": {
+        "time-pressured": 3,
+        "cost-constrained": 3,
+        "brownfield": 2,
+        "tier-T1": 3,
+        "small-scale": 2,
+        "hybrid-onprem": 1,
+        "regulated": -2,
+        "internet-facing": -2,
+        "tier-T4": -3,
+        "pci": -2
+      },
+      "effort_weeks": 4,
+      "effort_band": "XS",
+      "cost_band": "S",
+      "security_score": 2,
+      "reg_score": 2,
+      "ops_burden": 3,
       "checklist": [
         "DNS resolution topology recorded, including what is inherited rather than chosen",
         "egress path traced to the actual point it leaves the estate, per environment",
@@ -19,41 +37,128 @@
         "flow logs confirmed to be produced and shipped, not just enabled"
       ],
       "questions": [
-        {"question": "Does any name resolve differently across environments, and is that difference intentional or inherited?", "owner_role": "Network Architect", "blocking": true},
-        {"question": "Where does outbound actually egress in RTL, and is it inspected there or only in Prod?", "owner_role": "Network Architect", "blocking": true},
-        {"question": "An IP-range allow-list to a cloud or CDN destination effectively permits every tenant behind it - is that acceptable for the data on this path?", "owner_role": "Security Architect", "blocking": true}
+        {
+          "question": "Does any name resolve differently across environments, and is that difference intentional or inherited?",
+          "owner_role": "Network Architect",
+          "blocking": true
+        },
+        {
+          "question": "Where does outbound actually egress in RTL, and is it inspected there or only in Prod?",
+          "owner_role": "Network Architect",
+          "blocking": true
+        },
+        {
+          "question": "An IP-range allow-list to a cloud or CDN destination effectively permits every tenant behind it - is that acceptable for the data on this path?",
+          "owner_role": "Security Architect",
+          "blocking": true
+        }
       ],
       "anchors": [
-        {"metric": "CIDR allocated vs consumed", "unit": "addresses", "critical": true},
-        {"metric": "Egress volume per destination class", "unit": "GB/day", "critical": true},
-        {"metric": "Allow-listed destinations", "unit": "count", "critical": false},
-        {"metric": "DNS query rate", "unit": "QPS", "critical": false},
-        {"metric": "Flow log volume", "unit": "GB/day", "critical": true}
+        {
+          "metric": "CIDR allocated vs consumed",
+          "unit": "addresses",
+          "critical": true
+        },
+        {
+          "metric": "Egress volume per destination class",
+          "unit": "GB/day",
+          "critical": true
+        },
+        {
+          "metric": "Allow-listed destinations",
+          "unit": "count",
+          "critical": false
+        },
+        {
+          "metric": "DNS query rate",
+          "unit": "QPS",
+          "critical": false
+        },
+        {
+          "metric": "Flow log volume",
+          "unit": "GB/day",
+          "critical": true
+        }
       ],
       "risks": [
-        {"category": "security", "severity": "H", "statement": "IP-range allow-listing to a shared cloud or CDN endpoint permits every tenant behind that range, so the control does not constrain the destination in any meaningful sense.", "mitigation": "Move the highest-sensitivity egress paths to FQDN or URL granularity even if the rest stays on IP; name which paths those are."},
-        {"category": "security", "severity": "H", "statement": "Shared egress means one workload's outbound reputation and one workload's compromise are attributable to the whole estate, and per-workload attribution is lost.", "mitigation": "Carry a per-workload identifier through the proxy and into the flow log so attribution survives the shared path."},
-        {"category": "workaround", "severity": "M", "statement": "Zone-level segmentation means a compromised workload can reach every peer in its zone; east-west movement is unconstrained inside the zone.", "mitigation": "Identify the highest-value peers and place a policy boundary around those specifically, rather than deferring all of micro-segmentation."},
-        {"category": "legal-reg", "severity": "M", "statement": "Inherited routing can send traffic through a region the initiative never assessed, breaching a residency position stated elsewhere.", "mitigation": "Trace the actual path for every flow carrying restricted data, including the failover path, and evidence it."}
+        {
+          "category": "security",
+          "severity": "H",
+          "statement": "IP-range allow-listing to a shared cloud or CDN endpoint permits every tenant behind that range, so the control does not constrain the destination in any meaningful sense.",
+          "mitigation": "Move the highest-sensitivity egress paths to FQDN or URL granularity even if the rest stays on IP; name which paths those are."
+        },
+        {
+          "category": "security",
+          "severity": "H",
+          "statement": "Shared egress means one workload's outbound reputation and one workload's compromise are attributable to the whole estate, and per-workload attribution is lost.",
+          "mitigation": "Carry a per-workload identifier through the proxy and into the flow log so attribution survives the shared path."
+        },
+        {
+          "category": "workaround",
+          "severity": "M",
+          "statement": "Zone-level segmentation means a compromised workload can reach every peer in its zone; east-west movement is unconstrained inside the zone.",
+          "mitigation": "Identify the highest-value peers and place a policy boundary around those specifically, rather than deferring all of micro-segmentation."
+        },
+        {
+          "category": "legal-reg",
+          "severity": "M",
+          "statement": "Inherited routing can send traffic through a region the initiative never assessed, breaching a residency position stated elsewhere.",
+          "mitigation": "Trace the actual path for every flow carrying restricted data, including the failover path, and evidence it."
+        }
       ],
-      "controls": ["ISO 27001 A.8.20", "ISO 27001 A.8.21", "NIST 800-53 SC-7", "PCI-DSS v4 1.3"],
+      "controls": [
+        "ISO 27001 A.8.20",
+        "ISO 27001 A.8.21",
+        "NIST 800-53 SC-7",
+        "PCI-DSS v4 1.3"
+      ],
       "lld_notes": [
         "Draw the actual egress path per environment, including the hop that performs address translation.",
         "List each allow-list entry with its granularity and the data classification permitted over it.",
         "Record the DNS forwarder chain and which link is outside this initiative's control."
       ],
-      "hld_notes": ["Connectivity is inherited - the HLD must mark which boundaries are this initiative's to change and which are not."]
+      "hld_notes": [
+        "Connectivity is inherited - the HLD must mark which boundaries are this initiative's to change and which are not."
+      ]
     },
     {
       "id": "NET-02",
       "name": "Private connectivity with FQDN-based inspected egress",
       "summary": "Service-to-service traffic uses private connectivity (private endpoints / interconnect) with no public data path. Internet egress is forced through an inspecting proxy with FQDN and URL allow-listing. DNS is designed per environment rather than inherited.",
       "posture": "balanced",
-      "provides": ["network.private.only", "network.egress.inspected", "network.egress.fqdn-allowlist", "network.dns.deterministic", "network.reach.control-plane", "network.flowlogs", "network.residency.pinned"],
-      "requires": ["identity.secrets.managed", "secops.detection.egress", "data.dlp.egress"],
-      "fit": {"regulated": 3, "cloud-public": 3, "pii": 2, "pci": 3, "tier-T2": 2, "tier-T3": 3, "data-residency": 3, "saas-heavy": 2, "time-pressured": -2, "cost-constrained": -1, "tier-T1": -2},
-      "effort_weeks": 18, "effort_band": "M", "cost_band": "M",
-      "security_score": 4, "reg_score": 4, "ops_burden": 3,
+      "provides": [
+        "network.private.only",
+        "network.egress.inspected",
+        "network.egress.fqdn-allowlist",
+        "network.dns.deterministic",
+        "network.reach.control-plane",
+        "network.flowlogs",
+        "network.residency.pinned"
+      ],
+      "requires": [
+        "identity.secrets.managed",
+        "secops.detection.egress",
+        "data.dlp.egress"
+      ],
+      "fit": {
+        "regulated": 3,
+        "cloud-public": 3,
+        "pii": 2,
+        "pci": 3,
+        "tier-T2": 2,
+        "tier-T3": 3,
+        "data-residency": 3,
+        "saas-heavy": 2,
+        "time-pressured": -2,
+        "cost-constrained": -1,
+        "tier-T1": -2
+      },
+      "effort_weeks": 18,
+      "effort_band": "M",
+      "cost_band": "M",
+      "security_score": 4,
+      "reg_score": 4,
+      "ops_burden": 3,
       "checklist": [
         "private connectivity option chosen per flow, with its failure and failover mode stated",
         "DNS topology designed: authoritative zones, conditional forwarding, split-horizon behaviour, and hairpin/trombone risks assessed",
@@ -64,48 +169,176 @@
         "public ingress surface enumerated and justified endpoint by endpoint"
       ],
       "questions": [
-        {"question": "Which destinations must bypass TLS inspection because of certificate pinning or mTLS, and what covers those paths instead?", "owner_role": "Security Architect", "blocking": true},
-        {"question": "Does the private-connectivity failover path leave the residency boundary at any point, including during a partial failure?", "owner_role": "Network Architect", "blocking": true},
-        {"question": "Is the inspection certificate trusted in RTL and Dev-Test by the same mechanism as Prod, or hand-installed?", "owner_role": "Route-to-Live Owner", "blocking": true},
-        {"question": "What is the single controllable variable that makes resolution correct - the forwarder rules, the NRPT set, or something inherited - and who owns it?", "owner_role": "Network Architect", "blocking": false}
+        {
+          "question": "Which destinations must bypass TLS inspection because of certificate pinning or mTLS, and what covers those paths instead?",
+          "owner_role": "Security Architect",
+          "blocking": true
+        },
+        {
+          "question": "Does the private-connectivity failover path leave the residency boundary at any point, including during a partial failure?",
+          "owner_role": "Network Architect",
+          "blocking": true
+        },
+        {
+          "question": "Is the inspection certificate trusted in RTL and Dev-Test by the same mechanism as Prod, or hand-installed?",
+          "owner_role": "Route-to-Live Owner",
+          "blocking": true
+        },
+        {
+          "question": "What is the single controllable variable that makes resolution correct - the forwarder rules, the NRPT set, or something inherited - and who owns it?",
+          "owner_role": "Network Architect",
+          "blocking": false
+        }
       ],
       "anchors": [
-        {"metric": "Private circuits / interconnects", "unit": "count", "critical": true},
-        {"metric": "Private circuit bandwidth", "unit": "Mbps", "critical": true},
-        {"metric": "Private endpoints", "unit": "count", "critical": false},
-        {"metric": "Egress volume per destination class", "unit": "GB/day", "critical": true},
-        {"metric": "Allow-listed FQDNs / URLs", "unit": "count", "critical": true},
-        {"metric": "Destinations bypassing inspection", "unit": "count", "critical": true, "note": "The bypass count is the real measure of inspection coverage."},
-        {"metric": "DNS query rate", "unit": "QPS", "critical": false},
-        {"metric": "DNS zones and conditional-forward rules", "unit": "count", "critical": false},
-        {"metric": "Public endpoints", "unit": "count", "critical": true},
-        {"metric": "Flow log volume", "unit": "GB/day", "critical": true}
+        {
+          "metric": "Private circuits / interconnects",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Private circuit bandwidth",
+          "unit": "Mbps",
+          "critical": true
+        },
+        {
+          "metric": "Private endpoints",
+          "unit": "count",
+          "critical": false
+        },
+        {
+          "metric": "Egress volume per destination class",
+          "unit": "GB/day",
+          "critical": true
+        },
+        {
+          "metric": "Allow-listed FQDNs / URLs",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Destinations bypassing inspection",
+          "unit": "count",
+          "critical": true,
+          "note": "The bypass count is the real measure of inspection coverage."
+        },
+        {
+          "metric": "DNS query rate",
+          "unit": "QPS",
+          "critical": false
+        },
+        {
+          "metric": "DNS zones and conditional-forward rules",
+          "unit": "count",
+          "critical": false
+        },
+        {
+          "metric": "Public endpoints",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Flow log volume",
+          "unit": "GB/day",
+          "critical": true
+        }
       ],
       "risks": [
-        {"category": "security", "severity": "H", "statement": "TLS inspection creates a point where all traffic exists in plaintext, and the inspection tier becomes a target with visibility over every payload including credentials in transit.", "mitigation": "Restrict administrative access to the inspection tier to JIT privileged access, log every access as Type 1, and exclude categories where plaintext handling is not defensible."},
-        {"category": "security", "severity": "H", "statement": "Every inspection bypass is an uninspected egress channel, and bypasses accumulate quietly because each individual request is reasonable.", "mitigation": "Cap the bypass list, require an owner and expiry per entry, and place volumetric anomaly detection on bypassed destinations specifically."},
-        {"category": "timeline", "severity": "H", "statement": "Private connectivity provisioning depends on carrier and cloud-provider lead times that are outside the programme's control and frequently measured in months.", "mitigation": "Raise circuit orders in the first sprint against a provisional design; sequence the design so a slipped circuit does not block unrelated workstreams."},
-        {"category": "workaround", "severity": "M", "statement": "Where certificate trust cannot be distributed to a component, teams disable verification on that component to unblock testing, and the change survives into Prod.", "mitigation": "Make verification-disabled a build-time policy failure rather than a review finding, and scan for it on promotion."},
-        {"category": "cost", "severity": "M", "statement": "Private endpoint and inspection-tier costs scale with the number of services and egress volume, not with business value, and are commonly under-modelled.", "mitigation": "Pin the endpoint count and GB/day anchors and cost them before the design is fixed."}
+        {
+          "category": "security",
+          "severity": "H",
+          "statement": "TLS inspection creates a point where all traffic exists in plaintext, and the inspection tier becomes a target with visibility over every payload including credentials in transit.",
+          "mitigation": "Restrict administrative access to the inspection tier to JIT privileged access, log every access as Type 1, and exclude categories where plaintext handling is not defensible."
+        },
+        {
+          "category": "security",
+          "severity": "H",
+          "statement": "Every inspection bypass is an uninspected egress channel, and bypasses accumulate quietly because each individual request is reasonable.",
+          "mitigation": "Cap the bypass list, require an owner and expiry per entry, and place volumetric anomaly detection on bypassed destinations specifically."
+        },
+        {
+          "category": "timeline",
+          "severity": "H",
+          "statement": "Private connectivity provisioning depends on carrier and cloud-provider lead times that are outside the programme's control and frequently measured in months.",
+          "mitigation": "Raise circuit orders in the first sprint against a provisional design; sequence the design so a slipped circuit does not block unrelated workstreams."
+        },
+        {
+          "category": "workaround",
+          "severity": "M",
+          "statement": "Where certificate trust cannot be distributed to a component, teams disable verification on that component to unblock testing, and the change survives into Prod.",
+          "mitigation": "Make verification-disabled a build-time policy failure rather than a review finding, and scan for it on promotion."
+        },
+        {
+          "category": "cost",
+          "severity": "M",
+          "statement": "Private endpoint and inspection-tier costs scale with the number of services and egress volume, not with business value, and are commonly under-modelled.",
+          "mitigation": "Pin the endpoint count and GB/day anchors and cost them before the design is fixed."
+        }
       ],
-      "controls": ["ISO 27001 A.8.20", "ISO 27001 A.8.21", "ISO 27001 A.8.22", "ISO 27001 A.8.23", "NIST 800-53 SC-7", "NIST 800-53 SC-8", "PCI-DSS v4 1.3", "PCI-DSS v4 1.4", "DORA Art.9"],
+      "controls": [
+        "ISO 27001 A.8.20",
+        "ISO 27001 A.8.21",
+        "ISO 27001 A.8.22",
+        "ISO 27001 A.8.23",
+        "NIST 800-53 SC-7",
+        "NIST 800-53 SC-8",
+        "PCI-DSS v4 1.3",
+        "PCI-DSS v4 1.4",
+        "DORA Art.9"
+      ],
       "lld_notes": [
         "Per flow: source, destination, private connectivity mechanism, resolution path, failover behaviour, and inspected/not-inspected.",
         "Enumerate the DNS forwarder chain and the conditional-forward rule set; state which rules differ per environment and why.",
         "List every inspection bypass with its justification, owner and expiry."
       ],
-      "hld_notes": ["No public data path appears on the e2e flow; the only public surfaces are the enumerated ingress endpoints."]
+      "hld_notes": [
+        "No public data path appears on the e2e flow; the only public surfaces are the enumerated ingress endpoints."
+      ]
     },
     {
       "id": "NET-03",
       "name": "Micro-segmented zero-trust network with identity-aware policy",
       "summary": "East-west policy is enforced per service pair using workload identity rather than address. Private connectivity throughout, identity-aware proxy for egress, and default-deny between every service that has not been explicitly paired.",
       "posture": "strategic",
-      "provides": ["network.segmentation.micro", "network.private.only", "network.egress.inspected", "network.egress.fqdn-allowlist", "network.dns.deterministic", "network.reach.control-plane", "network.flowlogs", "network.residency.pinned"],
-      "requires": ["identity.mtls.identity", "identity.workload.federated", "platform.workload.identity", "secops.detection.egress", "data.dlp.egress", "platform.iac.governed"],
-      "fit": {"tier-T4": 3, "tier-T3": 2, "regulated": 3, "containerised": 3, "cloud-public": 2, "large-scale": 2, "pci": 3, "multi-cloud": 2, "time-pressured": -3, "cost-constrained": -3, "tier-T1": -3, "small-scale": -3, "legacy-integration": -2},
-      "effort_weeks": 36, "effort_band": "XL", "cost_band": "L",
-      "security_score": 5, "reg_score": 5, "ops_burden": 3,
+      "provides": [
+        "network.segmentation.micro",
+        "network.private.only",
+        "network.egress.inspected",
+        "network.egress.fqdn-allowlist",
+        "network.dns.deterministic",
+        "network.reach.control-plane",
+        "network.flowlogs",
+        "network.residency.pinned"
+      ],
+      "requires": [
+        "identity.mtls.identity",
+        "identity.workload.federated",
+        "platform.workload.identity",
+        "secops.detection.egress",
+        "data.dlp.egress",
+        "platform.iac.governed"
+      ],
+      "fit": {
+        "tier-T4": 3,
+        "tier-T3": 2,
+        "regulated": 3,
+        "containerised": 3,
+        "cloud-public": 2,
+        "large-scale": 2,
+        "pci": 3,
+        "multi-cloud": 2,
+        "time-pressured": -3,
+        "cost-constrained": -3,
+        "tier-T1": -3,
+        "small-scale": -3,
+        "legacy-integration": -2
+      },
+      "effort_weeks": 36,
+      "effort_band": "XL",
+      "cost_band": "L",
+      "security_score": 5,
+      "reg_score": 5,
+      "ops_burden": 3,
       "checklist": [
         "east-west service pairs enumerated - the policy set cannot be written without the inventory",
         "default-deny posture proven in RTL under realistic traffic before Prod",
@@ -116,46 +349,152 @@
         "the same policy set applied in RTL, with divergences recorded as decisions"
       ],
       "questions": [
-        {"question": "Is the complete east-west service-pair inventory known, and how was it derived - from design, or from observed traffic?", "owner_role": "Network Architect", "blocking": true},
-        {"question": "What happens to existing connections when the policy engine is unavailable - fail closed, or last-known-good?", "owner_role": "Platform Architect", "blocking": true},
-        {"question": "Which components cannot present a workload identity, and what boundary contains them instead?", "owner_role": "Security Architect", "blocking": true},
-        {"question": "Has default-deny been exercised against realistic traffic in RTL, or will Prod be the first place it is tested?", "owner_role": "Route-to-Live Owner", "blocking": true}
+        {
+          "question": "Is the complete east-west service-pair inventory known, and how was it derived - from design, or from observed traffic?",
+          "owner_role": "Network Architect",
+          "blocking": true
+        },
+        {
+          "question": "What happens to existing connections when the policy engine is unavailable - fail closed, or last-known-good?",
+          "owner_role": "Platform Architect",
+          "blocking": true
+        },
+        {
+          "question": "Which components cannot present a workload identity, and what boundary contains them instead?",
+          "owner_role": "Security Architect",
+          "blocking": true
+        },
+        {
+          "question": "Has default-deny been exercised against realistic traffic in RTL, or will Prod be the first place it is tested?",
+          "owner_role": "Route-to-Live Owner",
+          "blocking": true
+        }
       ],
       "anchors": [
-        {"metric": "East-west service pairs", "unit": "count", "critical": true},
-        {"metric": "Segmentation policies", "unit": "count", "critical": true},
-        {"metric": "Policy decision rate at peak", "unit": "decisions/s", "critical": true},
-        {"metric": "Components without workload identity", "unit": "count", "critical": true},
-        {"metric": "Egress volume per destination class", "unit": "GB/day", "critical": true},
-        {"metric": "Allow-listed FQDNs / URLs", "unit": "count", "critical": true},
-        {"metric": "Flow log volume", "unit": "GB/day", "critical": true, "note": "Micro-segmentation multiplies flow-log volume; size SecOps ingestion against this number, not the pre-segmentation one."},
-        {"metric": "Public endpoints", "unit": "count", "critical": true}
+        {
+          "metric": "East-west service pairs",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Segmentation policies",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Policy decision rate at peak",
+          "unit": "decisions/s",
+          "critical": true
+        },
+        {
+          "metric": "Components without workload identity",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Egress volume per destination class",
+          "unit": "GB/day",
+          "critical": true
+        },
+        {
+          "metric": "Allow-listed FQDNs / URLs",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Flow log volume",
+          "unit": "GB/day",
+          "critical": true,
+          "note": "Micro-segmentation multiplies flow-log volume; size SecOps ingestion against this number, not the pre-segmentation one."
+        },
+        {
+          "metric": "Public endpoints",
+          "unit": "count",
+          "critical": true
+        }
       ],
       "risks": [
-        {"category": "timeline", "severity": "C", "statement": "The policy set cannot be written before the service-pair inventory is complete, and on a brownfield estate that inventory is usually discovered by observing traffic over weeks, not read from documentation.", "mitigation": "Run in observe-only mode first to derive the real inventory, and treat the observation window as a named, dated dependency on the plan."},
-        {"category": "operational", "severity": "H", "statement": "Default-deny turns every missed service pair into an outage, and the misses surface under production load rather than in test.", "mitigation": "Stage from observe, to alert, to enforce, with a defined dwell time at each stage and an agreed rollback."},
-        {"category": "cost", "severity": "H", "statement": "Per-pair flow logging multiplies SIEM ingestion volume, often by an order of magnitude over perimeter logging, and the cost lands on SecOps rather than on this initiative.", "mitigation": "Pin the flow-log GB/day anchor and agree sampling or tiering with SecOps before enforcement, not after the first invoice."},
-        {"category": "security", "severity": "M", "statement": "Components exempted from identity-aware policy become an implicitly trusted island that the segmentation claim does not cover.", "mitigation": "Contain exempted components in a dedicated zone with its own boundary and its own detection, and publish the exemption list."},
-        {"category": "workaround", "severity": "H", "statement": "Under delivery pressure a broad any-to-any policy is added 'temporarily' to unblock a release, which negates the control while leaving the architecture diagram unchanged.", "mitigation": "Make broad policies expire automatically and alert on their creation; review the broadest ten policies at every steering forum."}
+        {
+          "category": "timeline",
+          "severity": "C",
+          "statement": "The policy set cannot be written before the service-pair inventory is complete, and on a brownfield estate that inventory is usually discovered by observing traffic over weeks, not read from documentation.",
+          "mitigation": "Run in observe-only mode first to derive the real inventory, and treat the observation window as a named, dated dependency on the plan."
+        },
+        {
+          "category": "operational",
+          "severity": "H",
+          "statement": "Default-deny turns every missed service pair into an outage, and the misses surface under production load rather than in test.",
+          "mitigation": "Stage from observe, to alert, to enforce, with a defined dwell time at each stage and an agreed rollback."
+        },
+        {
+          "category": "cost",
+          "severity": "H",
+          "statement": "Per-pair flow logging multiplies SIEM ingestion volume, often by an order of magnitude over perimeter logging, and the cost lands on SecOps rather than on this initiative.",
+          "mitigation": "Pin the flow-log GB/day anchor and agree sampling or tiering with SecOps before enforcement, not after the first invoice."
+        },
+        {
+          "category": "security",
+          "severity": "M",
+          "statement": "Components exempted from identity-aware policy become an implicitly trusted island that the segmentation claim does not cover.",
+          "mitigation": "Contain exempted components in a dedicated zone with its own boundary and its own detection, and publish the exemption list."
+        },
+        {
+          "category": "workaround",
+          "severity": "H",
+          "statement": "Under delivery pressure a broad any-to-any policy is added 'temporarily' to unblock a release, which negates the control while leaving the architecture diagram unchanged.",
+          "mitigation": "Make broad policies expire automatically and alert on their creation; review the broadest ten policies at every steering forum."
+        }
       ],
-      "controls": ["ISO 27001 A.8.20", "ISO 27001 A.8.22", "NIST 800-53 SC-7", "NIST 800-53 AC-4", "PCI-DSS v4 1.3", "PCI-DSS v4 1.4", "DORA Art.9"],
+      "controls": [
+        "ISO 27001 A.8.20",
+        "ISO 27001 A.8.22",
+        "NIST 800-53 SC-7",
+        "NIST 800-53 AC-4",
+        "PCI-DSS v4 1.3",
+        "PCI-DSS v4 1.4",
+        "DORA Art.9"
+      ],
       "lld_notes": [
         "Publish the service-pair matrix as the primary artefact; the policy set is generated from it, not written alongside it.",
         "State the enforcement point per pair (sidecar, host agent, fabric) and what happens on its failure.",
         "Record the observe-to-enforce staging plan with dates and the rollback trigger."
       ],
-      "hld_notes": ["The e2e flow shows default-deny between every component; only enumerated pairs connect, and exemptions are drawn as their own zone."]
+      "hld_notes": [
+        "The e2e flow shows default-deny between every component; only enumerated pairs connect, and exemptions are drawn as their own zone."
+      ]
     },
     {
       "id": "NET-04",
       "name": "Managed public ingress with WAF and edge protection, private backend",
       "summary": "A deliberately small public surface fronted by managed WAF, DDoS and bot protection, terminating at the edge into an otherwise private backend. Chosen where internet exposure is a requirement rather than an accident.",
       "posture": "balanced",
-      "provides": ["network.ingress.waf", "network.private.only", "network.reach.control-plane", "network.flowlogs", "network.dns.deterministic"],
-      "requires": ["identity.federation.external", "secops.log.type1", "integration.gateway.managed"],
-      "fit": {"internet-facing": 3, "customer-facing": 3, "open-banking": 3, "payments": 2, "cloud-public": 2, "regulated": 1, "tier-T1": -1},
-      "effort_weeks": 12, "effort_band": "M", "cost_band": "M",
-      "security_score": 4, "reg_score": 3, "ops_burden": 3,
+      "provides": [
+        "network.ingress.waf",
+        "network.private.only",
+        "network.reach.control-plane",
+        "network.flowlogs",
+        "network.dns.deterministic"
+      ],
+      "requires": [
+        "identity.federation.external",
+        "integration.gateway.managed",
+        "secops.ingestion.compatible"
+      ],
+      "fit": {
+        "internet-facing": 3,
+        "customer-facing": 3,
+        "open-banking": 3,
+        "payments": 2,
+        "cloud-public": 2,
+        "regulated": 1,
+        "tier-T1": -1
+      },
+      "effort_weeks": 12,
+      "effort_band": "M",
+      "cost_band": "M",
+      "security_score": 4,
+      "reg_score": 3,
+      "ops_burden": 3,
       "checklist": [
         "public endpoint inventory complete, each with an owner and a justification for being public",
         "WAF rule posture stated: managed rule sets, custom rules, and what is in detect vs block",
@@ -166,32 +505,102 @@
         "the same rule posture present in RTL, or the divergence recorded as a decision"
       ],
       "questions": [
-        {"question": "Which WAF rules are in detect-only rather than block, and who accepted the exposure for each?", "owner_role": "Security Architect", "blocking": true},
-        {"question": "What is the legitimate peak request rate, and does the rate limit sit above it with enough margin to avoid throttling real customers at a business peak?", "owner_role": "Service Owner", "blocking": true},
-        {"question": "Is the WAF rule set exercised in RTL against representative traffic, or tuned directly in Prod?", "owner_role": "Route-to-Live Owner", "blocking": false}
+        {
+          "question": "Which WAF rules are in detect-only rather than block, and who accepted the exposure for each?",
+          "owner_role": "Security Architect",
+          "blocking": true
+        },
+        {
+          "question": "What is the legitimate peak request rate, and does the rate limit sit above it with enough margin to avoid throttling real customers at a business peak?",
+          "owner_role": "Service Owner",
+          "blocking": true
+        },
+        {
+          "question": "Is the WAF rule set exercised in RTL against representative traffic, or tuned directly in Prod?",
+          "owner_role": "Route-to-Live Owner",
+          "blocking": false
+        }
       ],
       "anchors": [
-        {"metric": "Public endpoints", "unit": "count", "critical": true},
-        {"metric": "Ingress request rate at peak", "unit": "RPS", "critical": true},
-        {"metric": "WAF rules in block mode", "unit": "count", "critical": false},
-        {"metric": "WAF rules in detect-only mode", "unit": "count", "critical": true, "note": "Detect-only rules are exposure, not protection; the count belongs in the exec risk view."},
-        {"metric": "Rate limit per endpoint", "unit": "RPS", "critical": true},
-        {"metric": "DDoS protection capacity", "unit": "Gbps", "critical": false},
-        {"metric": "WAF event volume", "unit": "GB/day", "critical": true}
+        {
+          "metric": "Public endpoints",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Ingress request rate at peak",
+          "unit": "RPS",
+          "critical": true
+        },
+        {
+          "metric": "WAF rules in block mode",
+          "unit": "count",
+          "critical": false
+        },
+        {
+          "metric": "WAF rules in detect-only mode",
+          "unit": "count",
+          "critical": true,
+          "note": "Detect-only rules are exposure, not protection; the count belongs in the exec risk view."
+        },
+        {
+          "metric": "Rate limit per endpoint",
+          "unit": "RPS",
+          "critical": true
+        },
+        {
+          "metric": "DDoS protection capacity",
+          "unit": "Gbps",
+          "critical": false
+        },
+        {
+          "metric": "WAF event volume",
+          "unit": "GB/day",
+          "critical": true
+        }
       ],
       "risks": [
-        {"category": "security", "severity": "H", "statement": "WAF rules left in detect-only after tuning are a documented exposure that reads as a control on the architecture diagram.", "mitigation": "Report block-vs-detect counts at each steering forum and give every detect-only rule an owner and a date to move to block."},
-        {"category": "operational", "severity": "M", "statement": "Rate limits set from estimated rather than measured peaks throttle legitimate customers at exactly the business moments that matter most.", "mitigation": "Derive limits from measured peak plus a stated margin, and alert on approach to the limit rather than only on breach."},
-        {"category": "timeline", "severity": "M", "statement": "WAF tuning against real traffic patterns cannot be completed before traffic exists, so a tuning window after go-live is unavoidable and is often omitted from the plan.", "mitigation": "Plan an explicit post-go-live tuning window with the rules starting in detect and a committed date to move them to block."},
-        {"category": "legal-reg", "severity": "M", "statement": "Edge providers may terminate TLS or cache content in locations outside the declared residency boundary.", "mitigation": "Pin edge PoP geography contractually and evidence it, or terminate inside the boundary."}
+        {
+          "category": "security",
+          "severity": "H",
+          "statement": "WAF rules left in detect-only after tuning are a documented exposure that reads as a control on the architecture diagram.",
+          "mitigation": "Report block-vs-detect counts at each steering forum and give every detect-only rule an owner and a date to move to block."
+        },
+        {
+          "category": "operational",
+          "severity": "M",
+          "statement": "Rate limits set from estimated rather than measured peaks throttle legitimate customers at exactly the business moments that matter most.",
+          "mitigation": "Derive limits from measured peak plus a stated margin, and alert on approach to the limit rather than only on breach."
+        },
+        {
+          "category": "timeline",
+          "severity": "M",
+          "statement": "WAF tuning against real traffic patterns cannot be completed before traffic exists, so a tuning window after go-live is unavoidable and is often omitted from the plan.",
+          "mitigation": "Plan an explicit post-go-live tuning window with the rules starting in detect and a committed date to move them to block."
+        },
+        {
+          "category": "legal-reg",
+          "severity": "M",
+          "statement": "Edge providers may terminate TLS or cache content in locations outside the declared residency boundary.",
+          "mitigation": "Pin edge PoP geography contractually and evidence it, or terminate inside the boundary."
+        }
       ],
-      "controls": ["ISO 27001 A.8.20", "ISO 27001 A.8.23", "NIST 800-53 SC-5", "NIST 800-53 SC-7", "PCI-DSS v4 6.4", "PCI-DSS v4 1.4"],
+      "controls": [
+        "ISO 27001 A.8.20",
+        "ISO 27001 A.8.23",
+        "NIST 800-53 SC-5",
+        "NIST 800-53 SC-7",
+        "PCI-DSS v4 6.4",
+        "PCI-DSS v4 1.4"
+      ],
       "lld_notes": [
         "Per public endpoint: hostname, TLS termination point, WAF policy applied, rate limit, and the backend it fronts.",
         "State where the edge provider terminates TLS and what that means for residency and for payload visibility.",
         "Record the block/detect state of every custom rule with its owner."
       ],
-      "hld_notes": ["The public surface is drawn explicitly as a finite list; everything behind the edge is private."]
+      "hld_notes": [
+        "The public surface is drawn explicitly as a finite list; everything behind the edge is private."
+      ]
     }
   ]
 }

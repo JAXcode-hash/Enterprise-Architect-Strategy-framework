@@ -270,7 +270,7 @@ class Rule:
     when_any: list[str] = field(default_factory=list)
     capability: str = ""
     then_option: str = ""
-    anchor_metric: str = ""
+    anchor_metrics: list[str] = field(default_factory=list)
     domains: list[str] = field(default_factory=list)    # matrix cell(s) this lands in
     resolution: str = ""
     risk: Risk | None = None
@@ -315,7 +315,8 @@ class Rule:
             when_any=list(raw.get("when_any", [])),
             capability=raw.get("capability", ""),
             then_option=raw.get("then_option", ""),
-            anchor_metric=raw.get("anchor_metric", ""),
+            anchor_metrics=([raw["anchor_metric"]] if isinstance(raw.get("anchor_metric"), str)
+                            and raw.get("anchor_metric") else list(raw.get("anchor_metric", []))),
             domains=list(raw.get("domains", [])),
             resolution=raw.get("resolution", ""),
             risk=risk,

@@ -136,7 +136,7 @@
       "requires": [
         "identity.secrets.managed",
         "network.reach.control-plane",
-        "secops.log.type1"
+        "secops.log.type2"
       ],
       "fit": {
         "regulated": 3,
@@ -325,9 +325,9 @@
         "identity.workload.federated",
         "identity.secrets.managed",
         "network.private.only",
-        "secops.log.type1",
         "secops.detection.egress",
-        "integration.edge.authz"
+        "integration.edge.authz",
+        "secops.log.type2"
       ],
       "fit": {
         "pci": 3,
@@ -515,8 +515,8 @@
         "network.residency.pinned",
         "network.private.only",
         "identity.privileged.jit",
-        "secops.log.type1",
-        "grc.control.mapping"
+        "grc.control.mapping",
+        "secops.log.type2"
       ],
       "fit": {
         "data-residency": 3,

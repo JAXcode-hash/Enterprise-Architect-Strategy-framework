@@ -6,11 +6,30 @@
       "name": "Inherit enterprise IdP, authorisation decided in-application",
       "summary": "Workforce and service authentication federate to the existing enterprise IdP. Each application keeps its own authorisation logic and its own role model. Service-to-service uses platform-native credentials.",
       "posture": "tactical",
-      "provides": ["identity.federation.external", "identity.secrets.managed"],
-      "requires": ["network.reach.control-plane"],
-      "fit": {"time-pressured": 3, "cost-constrained": 3, "small-scale": 2, "tier-T1": 3, "brownfield": 1, "regulated": -2, "large-scale": -3, "tier-T4": -3, "open-banking": -2},
-      "effort_weeks": 6, "effort_band": "S", "cost_band": "S",
-      "security_score": 2, "reg_score": 2, "ops_burden": 4,
+      "provides": [
+        "identity.federation.external",
+        "identity.secrets.managed"
+      ],
+      "requires": [
+        "network.reach.control-plane"
+      ],
+      "fit": {
+        "time-pressured": 3,
+        "cost-constrained": 3,
+        "small-scale": 2,
+        "tier-T1": 3,
+        "brownfield": 1,
+        "regulated": -2,
+        "large-scale": -3,
+        "tier-T4": -3,
+        "open-banking": -2
+      },
+      "effort_weeks": 6,
+      "effort_band": "S",
+      "cost_band": "S",
+      "security_score": 2,
+      "reg_score": 2,
+      "ops_burden": 4,
       "checklist": [
         "authN model recorded per actor class (workforce / customer / service / machine)",
         "token type, lifetime, audience and claims documented per relying party",
@@ -19,37 +38,108 @@
         "joiner/mover/leaver flow confirmed to reach non-prod, not just Prod"
       ],
       "questions": [
-        {"question": "Where is the authorisation decision made in each application, and can two applications reach different answers for the same subject and resource?", "owner_role": "Application Architect", "blocking": true},
-        {"question": "If the enterprise IdP is unavailable, what is the documented and tested break-glass path in each environment?", "owner_role": "IAM Service Owner", "blocking": false}
+        {
+          "question": "Where is the authorisation decision made in each application, and can two applications reach different answers for the same subject and resource?",
+          "owner_role": "Application Architect",
+          "blocking": true
+        },
+        {
+          "question": "If the enterprise IdP is unavailable, what is the documented and tested break-glass path in each environment?",
+          "owner_role": "IAM Service Owner",
+          "blocking": false
+        }
       ],
       "anchors": [
-        {"metric": "Human identities in scope", "unit": "count", "critical": false},
-        {"metric": "Workload / machine identities", "unit": "count", "critical": true},
-        {"metric": "Token issuance rate at peak", "unit": "auth/s", "critical": true},
-        {"metric": "Distinct in-app authorisation role models", "unit": "count", "critical": false, "note": "The count is the argument against this option: N models means N places to get it wrong."}
+        {
+          "metric": "Human identities in scope",
+          "unit": "count",
+          "critical": false
+        },
+        {
+          "metric": "Workload / machine identities",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Token issuance rate at peak",
+          "unit": "auth/s",
+          "critical": true
+        },
+        {
+          "metric": "Distinct in-app authorisation role models",
+          "unit": "count",
+          "critical": false,
+          "note": "The count is the argument against this option: N models means N places to get it wrong."
+        }
       ],
       "risks": [
-        {"category": "security", "severity": "H", "statement": "Authorisation logic is duplicated per application, so a policy change lands inconsistently and drift is invisible until an incident or audit finds it.", "mitigation": "Publish a single normative role model and diff each application against it on a fixed cadence; treat divergence as a defect."},
-        {"category": "legal-reg", "severity": "M", "statement": "Evidencing 'who could access what, when' for a regulator requires manual reconstruction across each application's own store.", "mitigation": "Export each app's effective-permission set to a common location on a schedule so evidence is assembled ahead of the request, not during it."},
-        {"category": "workaround", "severity": "M", "statement": "Speed here is borrowed against a later migration to a central decision point; the longer this runs, the more expensive that migration becomes.", "mitigation": "Book the migration as a named follow-on with a date, not an aspiration, and cap the number of new applications allowed onto this pattern."}
+        {
+          "category": "security",
+          "severity": "H",
+          "statement": "Authorisation logic is duplicated per application, so a policy change lands inconsistently and drift is invisible until an incident or audit finds it.",
+          "mitigation": "Publish a single normative role model and diff each application against it on a fixed cadence; treat divergence as a defect."
+        },
+        {
+          "category": "legal-reg",
+          "severity": "M",
+          "statement": "Evidencing 'who could access what, when' for a regulator requires manual reconstruction across each application's own store.",
+          "mitigation": "Export each app's effective-permission set to a common location on a schedule so evidence is assembled ahead of the request, not during it."
+        },
+        {
+          "category": "workaround",
+          "severity": "M",
+          "statement": "Speed here is borrowed against a later migration to a central decision point; the longer this runs, the more expensive that migration becomes.",
+          "mitigation": "Book the migration as a named follow-on with a date, not an aspiration, and cap the number of new applications allowed onto this pattern."
+        }
       ],
-      "controls": ["ISO 27001 A.5.15", "ISO 27001 A.5.18", "NIST 800-53 AC-2", "NIST 800-53 AC-3"],
+      "controls": [
+        "ISO 27001 A.5.15",
+        "ISO 27001 A.5.18",
+        "NIST 800-53 AC-2",
+        "NIST 800-53 AC-3"
+      ],
       "lld_notes": [
         "Record per relying party: protocol (OIDC/SAML), token lifetime, audience, and the exact claim carrying the subject identifier.",
         "Name the claim that SecOps will key Type 1 attribution on, and confirm it is present in every token type issued."
       ],
-      "hld_notes": ["Identity is federated but authorisation is distributed - the e2e flow shows a decision point inside each application boundary."]
+      "hld_notes": [
+        "Identity is federated but authorisation is distributed - the e2e flow shows a decision point inside each application boundary."
+      ]
     },
     {
       "id": "IAM-02",
       "name": "Enterprise IdP with a centralised external policy decision point",
       "summary": "Authentication federates to the enterprise IdP; authorisation moves out of applications into a governed external PDP (OPA/Cedar-style) with policy as code. Applications call the PDP and enforce locally at the PEP.",
       "posture": "balanced",
-      "provides": ["identity.pdp.central", "identity.subject-schema", "identity.secrets.managed", "identity.federation.external"],
-      "requires": ["network.reach.control-plane", "secops.log.type1", "platform.iac.governed"],
-      "fit": {"regulated": 3, "tier-T2": 2, "tier-T3": 3, "large-scale": 2, "pii": 2, "customer-facing": 1, "brownfield": 1, "time-pressured": -1, "cost-constrained": -1, "tier-T1": -2},
-      "effort_weeks": 16, "effort_band": "M", "cost_band": "M",
-      "security_score": 4, "reg_score": 4, "ops_burden": 3,
+      "provides": [
+        "identity.pdp.central",
+        "identity.subject-schema",
+        "identity.secrets.managed",
+        "identity.federation.external"
+      ],
+      "requires": [
+        "network.reach.control-plane",
+        "platform.iac.governed",
+        "secops.log.type2"
+      ],
+      "fit": {
+        "regulated": 3,
+        "tier-T2": 2,
+        "tier-T3": 3,
+        "large-scale": 2,
+        "pii": 2,
+        "customer-facing": 1,
+        "brownfield": 1,
+        "time-pressured": -1,
+        "cost-constrained": -1,
+        "tier-T1": -2
+      },
+      "effort_weeks": 16,
+      "effort_band": "M",
+      "cost_band": "M",
+      "security_score": 4,
+      "reg_score": 4,
+      "ops_burden": 3,
       "checklist": [
         "authZ model chosen and stated (RBAC / ABAC / ReBAC) with the reason",
         "policy repository, review process and promotion path defined as code",
@@ -60,42 +150,139 @@
         "PDP deployed and exercised in RTL with the same policy bundle as Prod"
       ],
       "questions": [
-        {"question": "What is the PDP latency budget per call site, and has it been measured against the p99 the calling service can absorb?", "owner_role": "Platform Architect", "blocking": true},
-        {"question": "For each PEP, is the fail-mode closed? Name every place it is open and who accepted that risk.", "owner_role": "Security Architect", "blocking": true},
-        {"question": "Do policy bundles promote through the same gates as application code, or can policy change without a gate?", "owner_role": "Route-to-Live Owner", "blocking": false}
+        {
+          "question": "What is the PDP latency budget per call site, and has it been measured against the p99 the calling service can absorb?",
+          "owner_role": "Platform Architect",
+          "blocking": true
+        },
+        {
+          "question": "For each PEP, is the fail-mode closed? Name every place it is open and who accepted that risk.",
+          "owner_role": "Security Architect",
+          "blocking": true
+        },
+        {
+          "question": "Do policy bundles promote through the same gates as application code, or can policy change without a gate?",
+          "owner_role": "Route-to-Live Owner",
+          "blocking": false
+        }
       ],
       "anchors": [
-        {"metric": "Authorisation decisions at peak", "unit": "decisions/s", "critical": true},
-        {"metric": "PDP p99 latency budget", "unit": "ms", "critical": true},
-        {"metric": "Distinct authZ policies / roles", "unit": "count", "critical": false},
-        {"metric": "Policy decision log volume", "unit": "GB/day", "critical": true, "note": "Decision logs are Type 1 and are routinely under-sized; they can exceed application logs."},
-        {"metric": "Human identities in scope", "unit": "count", "critical": false},
-        {"metric": "Workload / machine identities", "unit": "count", "critical": true}
+        {
+          "metric": "Authorisation decisions at peak",
+          "unit": "decisions/s",
+          "critical": true
+        },
+        {
+          "metric": "PDP p99 latency budget",
+          "unit": "ms",
+          "critical": true
+        },
+        {
+          "metric": "Distinct authZ policies / roles",
+          "unit": "count",
+          "critical": false
+        },
+        {
+          "metric": "Policy decision log volume",
+          "unit": "GB/day",
+          "critical": true,
+          "note": "Decision logs are Type 1 and are routinely under-sized; they can exceed application logs."
+        },
+        {
+          "metric": "Human identities in scope",
+          "unit": "count",
+          "critical": false
+        },
+        {
+          "metric": "Workload / machine identities",
+          "unit": "count",
+          "critical": true
+        }
       ],
       "risks": [
-        {"category": "security", "severity": "H", "statement": "A PEP configured to fail open turns a PDP outage into an authorisation bypass across every call site sharing that configuration.", "mitigation": "Default fail-closed; make fail-open a registered exception with an owner, an expiry and a detection that fires when it is exercised."},
-        {"category": "timeline", "severity": "M", "statement": "Policy extraction from existing applications is consistently underestimated - the implicit rules are discovered, not documented.", "mitigation": "Time-box a discovery spike per application before committing the migration sequence; sequence low-complexity applications first to build the policy idiom."},
-        {"category": "operational", "severity": "M", "statement": "The PDP becomes a tier-0 dependency for every service that calls it, inheriting their combined availability requirement.", "mitigation": "Size the PDP to the strictest caller's SLO, deploy it multi-AZ, and support a locally cached decision bundle for degraded operation."},
-        {"category": "cost", "severity": "M", "statement": "Decision-log volume drives SIEM ingestion cost that is rarely in the original business case.", "mitigation": "Pin the GB/day anchor before build and agree the Type 1 retention tier with SecOps in the same conversation."}
+        {
+          "category": "security",
+          "severity": "H",
+          "statement": "A PEP configured to fail open turns a PDP outage into an authorisation bypass across every call site sharing that configuration.",
+          "mitigation": "Default fail-closed; make fail-open a registered exception with an owner, an expiry and a detection that fires when it is exercised."
+        },
+        {
+          "category": "timeline",
+          "severity": "M",
+          "statement": "Policy extraction from existing applications is consistently underestimated - the implicit rules are discovered, not documented.",
+          "mitigation": "Time-box a discovery spike per application before committing the migration sequence; sequence low-complexity applications first to build the policy idiom."
+        },
+        {
+          "category": "operational",
+          "severity": "M",
+          "statement": "The PDP becomes a tier-0 dependency for every service that calls it, inheriting their combined availability requirement.",
+          "mitigation": "Size the PDP to the strictest caller's SLO, deploy it multi-AZ, and support a locally cached decision bundle for degraded operation."
+        },
+        {
+          "category": "cost",
+          "severity": "M",
+          "statement": "Decision-log volume drives SIEM ingestion cost that is rarely in the original business case.",
+          "mitigation": "Pin the GB/day anchor before build and agree the Type 1 retention tier with SecOps in the same conversation."
+        }
       ],
-      "controls": ["ISO 27001 A.5.15", "ISO 27001 A.8.2", "NIST 800-53 AC-3", "NIST 800-53 AC-6", "PCI-DSS v4 7.2", "DORA Art.9"],
+      "controls": [
+        "ISO 27001 A.5.15",
+        "ISO 27001 A.8.2",
+        "NIST 800-53 AC-3",
+        "NIST 800-53 AC-6",
+        "PCI-DSS v4 7.2",
+        "DORA Art.9"
+      ],
       "lld_notes": [
         "Specify the PDP request/response contract, including how the resource and action are named, and version it.",
         "State the decision cache TTL and what a stale allow costs at the worst call site.",
         "Confirm the decision log carries subject, resource, action, decision, policy version and correlation id."
       ],
-      "hld_notes": ["Authorisation becomes a named component on the e2e flow with its own availability tier and its own trust boundary."]
+      "hld_notes": [
+        "Authorisation becomes a named component on the e2e flow with its own availability tier and its own trust boundary."
+      ]
     },
     {
       "id": "IAM-03",
       "name": "Federated workload identity with brokered privileged access",
       "summary": "Workloads authenticate with short-lived federated credentials issued against platform attestation - no long-lived static secrets. Human privileged access is brokered just-in-time with session recording. Builds on a central PDP.",
       "posture": "strategic",
-      "provides": ["identity.workload.federated", "identity.privileged.jit", "identity.pdp.central", "identity.subject-schema", "identity.secrets.managed", "identity.mtls.identity"],
-      "requires": ["platform.workload.identity", "network.reach.control-plane", "secops.log.type1", "secops.detection.identity", "platform.iac.governed"],
-      "fit": {"regulated": 3, "cloud-public": 3, "containerised": 3, "tier-T3": 2, "tier-T4": 3, "multi-cloud": 2, "pci": 2, "large-scale": 2, "greenfield": 2, "time-pressured": -2, "cost-constrained": -2, "tier-T1": -3, "legacy-integration": -2},
-      "effort_weeks": 26, "effort_band": "L", "cost_band": "M",
-      "security_score": 5, "reg_score": 5, "ops_burden": 2,
+      "provides": [
+        "identity.workload.federated",
+        "identity.privileged.jit",
+        "identity.pdp.central",
+        "identity.subject-schema",
+        "identity.secrets.managed",
+        "identity.mtls.identity"
+      ],
+      "requires": [
+        "platform.workload.identity",
+        "network.reach.control-plane",
+        "secops.detection.identity",
+        "platform.iac.governed",
+        "secops.ingestion.compatible"
+      ],
+      "fit": {
+        "regulated": 3,
+        "cloud-public": 3,
+        "containerised": 3,
+        "tier-T3": 2,
+        "tier-T4": 3,
+        "multi-cloud": 2,
+        "pci": 2,
+        "large-scale": 2,
+        "greenfield": 2,
+        "time-pressured": -2,
+        "cost-constrained": -2,
+        "tier-T1": -3,
+        "legacy-integration": -2
+      },
+      "effort_weeks": 26,
+      "effort_band": "L",
+      "cost_band": "M",
+      "security_score": 5,
+      "reg_score": 5,
+      "ops_burden": 2,
       "checklist": [
         "workload identity issuance path proven per runtime (container, serverless, VM, and anything that cannot attest)",
         "credential lifetime set and justified; no path issues a credential longer-lived than the stated maximum",
@@ -107,46 +294,164 @@
         "the same issuance path proven in RTL, not stubbed"
       ],
       "questions": [
-        {"question": "Which in-scope workloads cannot obtain a federated identity, and what compensating control covers each?", "owner_role": "Platform Architect", "blocking": true},
-        {"question": "What is the maximum credential lifetime anywhere in scope, and what justifies the longest one?", "owner_role": "Security Architect", "blocking": true},
-        {"question": "Does the RTL environment issue workload identity by the same path as Prod, or is it stubbed in a way that hides a promotion failure?", "owner_role": "Route-to-Live Owner", "blocking": true},
-        {"question": "Who can approve a JIT elevation, and is that approver ever the requester under a shared account?", "owner_role": "IAM Service Owner", "blocking": false}
+        {
+          "question": "Which in-scope workloads cannot obtain a federated identity, and what compensating control covers each?",
+          "owner_role": "Platform Architect",
+          "blocking": true
+        },
+        {
+          "question": "What is the maximum credential lifetime anywhere in scope, and what justifies the longest one?",
+          "owner_role": "Security Architect",
+          "blocking": true
+        },
+        {
+          "question": "Does the RTL environment issue workload identity by the same path as Prod, or is it stubbed in a way that hides a promotion failure?",
+          "owner_role": "Route-to-Live Owner",
+          "blocking": true
+        },
+        {
+          "question": "Who can approve a JIT elevation, and is that approver ever the requester under a shared account?",
+          "owner_role": "IAM Service Owner",
+          "blocking": false
+        }
       ],
       "anchors": [
-        {"metric": "Workload / machine identities", "unit": "count", "critical": true},
-        {"metric": "Credential issuance rate at peak", "unit": "issuances/s", "critical": true},
-        {"metric": "Maximum credential lifetime", "unit": "minutes", "critical": true},
-        {"metric": "Privileged accounts under JIT", "unit": "count", "critical": true},
-        {"metric": "Workloads unable to federate (exceptions)", "unit": "count", "critical": true, "note": "This number is the honest measure of the pattern's coverage."},
-        {"metric": "Secrets and certificates under management", "unit": "count", "critical": false},
-        {"metric": "Certificate rotation frequency", "unit": "days", "critical": false},
-        {"metric": "Federation trusts", "unit": "count", "critical": false},
-        {"metric": "Privileged session recording volume", "unit": "GB/day", "critical": false}
+        {
+          "metric": "Workload / machine identities",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Credential issuance rate at peak",
+          "unit": "issuances/s",
+          "critical": true
+        },
+        {
+          "metric": "Maximum credential lifetime",
+          "unit": "minutes",
+          "critical": true
+        },
+        {
+          "metric": "Privileged accounts under JIT",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Workloads unable to federate (exceptions)",
+          "unit": "count",
+          "critical": true,
+          "note": "This number is the honest measure of the pattern's coverage."
+        },
+        {
+          "metric": "Secrets and certificates under management",
+          "unit": "count",
+          "critical": false
+        },
+        {
+          "metric": "Certificate rotation frequency",
+          "unit": "days",
+          "critical": false
+        },
+        {
+          "metric": "Federation trusts",
+          "unit": "count",
+          "critical": false
+        },
+        {
+          "metric": "Privileged session recording volume",
+          "unit": "GB/day",
+          "critical": false
+        }
       ],
       "risks": [
-        {"category": "security", "severity": "H", "statement": "Workloads that cannot attest fall back to long-lived credentials, and the exception set quietly becomes the highest-value target in the estate precisely because everything else was hardened.", "mitigation": "Cap and publish the exception count, require an expiry date on each, and place the strongest detection on the fallback path rather than the hardened one."},
-        {"category": "timeline", "severity": "H", "statement": "Legacy and vendor components frequently cannot consume short-lived credentials, and that is discovered during integration rather than design.", "mitigation": "Run a credential-compatibility survey across every in-scope component in the first four weeks, before the sequencing plan is fixed."},
-        {"category": "operational", "severity": "M", "statement": "Short credential lifetimes convert clock skew, token-refresh bugs and issuance-endpoint outages into production incidents that present as intermittent authorisation failures.", "mitigation": "Instrument refresh failure explicitly as its own signal, and rehearse an issuance-endpoint outage in RTL."},
-        {"category": "workaround", "severity": "M", "statement": "Under date pressure, teams request a blanket long-lived-credential exception 'temporarily', which then persists.", "mitigation": "Make every exception expire automatically and require re-approval at a named forum to renew."}
+        {
+          "category": "security",
+          "severity": "H",
+          "statement": "Workloads that cannot attest fall back to long-lived credentials, and the exception set quietly becomes the highest-value target in the estate precisely because everything else was hardened.",
+          "mitigation": "Cap and publish the exception count, require an expiry date on each, and place the strongest detection on the fallback path rather than the hardened one."
+        },
+        {
+          "category": "timeline",
+          "severity": "H",
+          "statement": "Legacy and vendor components frequently cannot consume short-lived credentials, and that is discovered during integration rather than design.",
+          "mitigation": "Run a credential-compatibility survey across every in-scope component in the first four weeks, before the sequencing plan is fixed."
+        },
+        {
+          "category": "operational",
+          "severity": "M",
+          "statement": "Short credential lifetimes convert clock skew, token-refresh bugs and issuance-endpoint outages into production incidents that present as intermittent authorisation failures.",
+          "mitigation": "Instrument refresh failure explicitly as its own signal, and rehearse an issuance-endpoint outage in RTL."
+        },
+        {
+          "category": "workaround",
+          "severity": "M",
+          "statement": "Under date pressure, teams request a blanket long-lived-credential exception 'temporarily', which then persists.",
+          "mitigation": "Make every exception expire automatically and require re-approval at a named forum to renew."
+        }
       ],
-      "controls": ["ISO 27001 A.5.15", "ISO 27001 A.5.17", "ISO 27001 A.8.5", "NIST 800-53 AC-2", "NIST 800-53 IA-5", "PCI-DSS v4 8.6", "DORA Art.9"],
+      "controls": [
+        "ISO 27001 A.5.15",
+        "ISO 27001 A.5.17",
+        "ISO 27001 A.8.5",
+        "NIST 800-53 AC-2",
+        "NIST 800-53 IA-5",
+        "PCI-DSS v4 8.6",
+        "DORA Art.9"
+      ],
       "lld_notes": [
         "Document the trust chain end to end: what attests the workload, what validates the attestation, what issues the credential.",
         "State the revocation path and how quickly a compromised workload identity stops being honoured.",
         "Record clock-skew tolerance - short lifetimes make it a functional dependency, not a housekeeping detail."
       ],
-      "hld_notes": ["No static credential crosses a trust boundary; the e2e flow shows attestation and issuance as first-class steps."]
+      "hld_notes": [
+        "No static credential crosses a trust boundary; the e2e flow shows attestation and issuance as first-class steps."
+      ]
     },
     {
       "id": "IAM-04",
       "name": "Zero-trust identity fabric with mTLS peer authentication and entitlement analytics",
       "summary": "Every workload carries a cryptographic identity (SPIFFE-style) used for mTLS peer authentication on every hop. Central PDP, JIT privilege, and continuous entitlement analytics (CIEM) over both human and workload permissions.",
       "posture": "strategic",
-      "provides": ["identity.workload.federated", "identity.mtls.identity", "identity.pdp.central", "identity.privileged.jit", "identity.subject-schema", "identity.secrets.managed", "identity.federation.external"],
-      "requires": ["platform.workload.identity", "network.segmentation.micro", "network.reach.control-plane", "secops.log.type1", "secops.detection.identity", "platform.iac.governed", "platform.parity.pipeline"],
-      "fit": {"tier-T4": 3, "regulated": 3, "containerised": 3, "multi-cloud": 3, "large-scale": 3, "greenfield": 2, "pci": 2, "internet-facing": 2, "time-pressured": -3, "cost-constrained": -3, "tier-T1": -3, "tier-T2": -2, "small-scale": -3, "legacy-integration": -3},
-      "effort_weeks": 44, "effort_band": "XL", "cost_band": "L",
-      "security_score": 5, "reg_score": 5, "ops_burden": 3,
+      "provides": [
+        "identity.workload.federated",
+        "identity.mtls.identity",
+        "identity.pdp.central",
+        "identity.privileged.jit",
+        "identity.subject-schema",
+        "identity.secrets.managed",
+        "identity.federation.external"
+      ],
+      "requires": [
+        "platform.workload.identity",
+        "network.segmentation.micro",
+        "network.reach.control-plane",
+        "secops.detection.identity",
+        "platform.iac.governed",
+        "platform.parity.pipeline",
+        "secops.ingestion.compatible"
+      ],
+      "fit": {
+        "tier-T4": 3,
+        "regulated": 3,
+        "containerised": 3,
+        "multi-cloud": 3,
+        "large-scale": 3,
+        "greenfield": 2,
+        "pci": 2,
+        "internet-facing": 2,
+        "time-pressured": -3,
+        "cost-constrained": -3,
+        "tier-T1": -3,
+        "tier-T2": -2,
+        "small-scale": -3,
+        "legacy-integration": -3
+      },
+      "effort_weeks": 44,
+      "effort_band": "XL",
+      "cost_band": "L",
+      "security_score": 5,
+      "reg_score": 5,
+      "ops_burden": 3,
       "checklist": [
         "identity document format, trust domain and issuance authority defined",
         "mTLS coverage stated per hop, with every non-mTLS hop named and justified",
@@ -157,46 +462,152 @@
         "the fabric is present in RTL and Dev-Test, not Prod-only"
       ],
       "questions": [
-        {"question": "Which hops cannot do mTLS, and does the e2e claim survive being honest about them?", "owner_role": "Security Architect", "blocking": true},
-        {"question": "Who owns the entitlement-analytics findings queue, and what is the agreed time-to-remediate for an over-permissioned identity?", "owner_role": "IAM Service Owner", "blocking": true},
-        {"question": "What is the blast radius if the fabric's trust anchor is compromised, and how is that anchor protected differently from everything else?", "owner_role": "Security Architect", "blocking": true},
-        {"question": "Does certificate rotation at the chosen lifetime cause reconnection storms at measured peak concurrency?", "owner_role": "Platform Architect", "blocking": false}
+        {
+          "question": "Which hops cannot do mTLS, and does the e2e claim survive being honest about them?",
+          "owner_role": "Security Architect",
+          "blocking": true
+        },
+        {
+          "question": "Who owns the entitlement-analytics findings queue, and what is the agreed time-to-remediate for an over-permissioned identity?",
+          "owner_role": "IAM Service Owner",
+          "blocking": true
+        },
+        {
+          "question": "What is the blast radius if the fabric's trust anchor is compromised, and how is that anchor protected differently from everything else?",
+          "owner_role": "Security Architect",
+          "blocking": true
+        },
+        {
+          "question": "Does certificate rotation at the chosen lifetime cause reconnection storms at measured peak concurrency?",
+          "owner_role": "Platform Architect",
+          "blocking": false
+        }
       ],
       "anchors": [
-        {"metric": "Workload identities under the fabric", "unit": "count", "critical": true},
-        {"metric": "Service-to-service hops covered by mTLS", "unit": "% of hops", "critical": true},
-        {"metric": "Certificate issuance rate at peak", "unit": "certs/s", "critical": true},
-        {"metric": "Certificate lifetime", "unit": "hours", "critical": true},
-        {"metric": "Peak concurrent mTLS connections", "unit": "count", "critical": true},
-        {"metric": "Over-permissioned identities at baseline", "unit": "count", "critical": false},
-        {"metric": "Trust domains", "unit": "count", "critical": false},
-        {"metric": "Privileged accounts under JIT", "unit": "count", "critical": true}
+        {
+          "metric": "Workload identities under the fabric",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Service-to-service hops covered by mTLS",
+          "unit": "% of hops",
+          "critical": true
+        },
+        {
+          "metric": "Certificate issuance rate at peak",
+          "unit": "certs/s",
+          "critical": true
+        },
+        {
+          "metric": "Certificate lifetime",
+          "unit": "hours",
+          "critical": true
+        },
+        {
+          "metric": "Peak concurrent mTLS connections",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Over-permissioned identities at baseline",
+          "unit": "count",
+          "critical": false
+        },
+        {
+          "metric": "Trust domains",
+          "unit": "count",
+          "critical": false
+        },
+        {
+          "metric": "Privileged accounts under JIT",
+          "unit": "count",
+          "critical": true
+        }
       ],
       "risks": [
-        {"category": "timeline", "severity": "C", "statement": "An identity fabric touches every workload, so its critical path runs through every delivery team at once; a single-team slip does not delay it but a platform slip delays everyone.", "mitigation": "Deliver the fabric as a platform capability with its own runway ahead of consumer onboarding, and onboard in waves with a defined non-fabric interim posture."},
-        {"category": "security", "severity": "H", "statement": "The trust anchor becomes the single highest-value asset in the estate: compromise of it forges any workload identity.", "mitigation": "Hold the root in an HSM with split control, keep it offline, issue only intermediates, and detect issuance outside the automated path."},
-        {"category": "operational", "severity": "H", "statement": "Short-lived certificates at scale make the issuance control plane a hard runtime dependency - an outage stops new connections estate-wide within one certificate lifetime.", "mitigation": "Set lifetime long enough to survive a stated control-plane outage window, and rehearse that outage before go-live."},
-        {"category": "cost", "severity": "M", "statement": "Licensing, control-plane compute and the CIEM findings-remediation effort are all recurring and typically exceed the build estimate within two years.", "mitigation": "Model three-year run cost including the remediation headcount, not just the build."},
-        {"category": "workaround", "severity": "H", "statement": "Components that cannot do mTLS get a sidecar or a terminating proxy, which silently reintroduces a plaintext hop inside the trust boundary.", "mitigation": "Register every termination point, confine it to the same host boundary, and prove the plaintext segment cannot be observed."}
+        {
+          "category": "timeline",
+          "severity": "C",
+          "statement": "An identity fabric touches every workload, so its critical path runs through every delivery team at once; a single-team slip does not delay it but a platform slip delays everyone.",
+          "mitigation": "Deliver the fabric as a platform capability with its own runway ahead of consumer onboarding, and onboard in waves with a defined non-fabric interim posture."
+        },
+        {
+          "category": "security",
+          "severity": "H",
+          "statement": "The trust anchor becomes the single highest-value asset in the estate: compromise of it forges any workload identity.",
+          "mitigation": "Hold the root in an HSM with split control, keep it offline, issue only intermediates, and detect issuance outside the automated path."
+        },
+        {
+          "category": "operational",
+          "severity": "H",
+          "statement": "Short-lived certificates at scale make the issuance control plane a hard runtime dependency - an outage stops new connections estate-wide within one certificate lifetime.",
+          "mitigation": "Set lifetime long enough to survive a stated control-plane outage window, and rehearse that outage before go-live."
+        },
+        {
+          "category": "cost",
+          "severity": "M",
+          "statement": "Licensing, control-plane compute and the CIEM findings-remediation effort are all recurring and typically exceed the build estimate within two years.",
+          "mitigation": "Model three-year run cost including the remediation headcount, not just the build."
+        },
+        {
+          "category": "workaround",
+          "severity": "H",
+          "statement": "Components that cannot do mTLS get a sidecar or a terminating proxy, which silently reintroduces a plaintext hop inside the trust boundary.",
+          "mitigation": "Register every termination point, confine it to the same host boundary, and prove the plaintext segment cannot be observed."
+        }
       ],
-      "controls": ["ISO 27001 A.5.15", "ISO 27001 A.8.5", "ISO 27001 A.8.24", "NIST 800-53 AC-3", "NIST 800-53 IA-3", "NIST 800-53 SC-8", "PCI-DSS v4 4.2", "DORA Art.9"],
+      "controls": [
+        "ISO 27001 A.5.15",
+        "ISO 27001 A.8.5",
+        "ISO 27001 A.8.24",
+        "NIST 800-53 AC-3",
+        "NIST 800-53 IA-3",
+        "NIST 800-53 SC-8",
+        "PCI-DSS v4 4.2",
+        "DORA Art.9"
+      ],
       "lld_notes": [
         "Name the trust domain, the SAN/URI format for workload identity, and the mapping from identity to authorisation subject.",
         "Record the certificate lifetime and the reconnection behaviour at rotation under peak concurrency.",
         "List every TLS termination point and what is in plaintext on the far side of it."
       ],
-      "hld_notes": ["Every hop on the e2e flow is mutually authenticated; the diagram should mark the hops that are not, because those are the design."]
+      "hld_notes": [
+        "Every hop on the e2e flow is mutually authenticated; the diagram should mark the hops that are not, because those are the design."
+      ]
     },
     {
       "id": "IAM-05",
       "name": "External CIAM broker for customer and third-party federation",
       "summary": "Customer and third-party identity is handled by a dedicated CIAM/broker tier separated from workforce identity, carrying consent, strong customer authentication and partner trust management. Sits alongside one of the workforce options.",
       "posture": "balanced",
-      "provides": ["identity.federation.external", "identity.subject-schema", "identity.secrets.managed"],
-      "requires": ["network.ingress.waf", "secops.detection.identity", "secops.log.type1", "data.classification.per-flow"],
-      "fit": {"customer-facing": 3, "open-banking": 3, "internet-facing": 3, "pii": 2, "payments": 2, "regulated": 2, "third-party-material": 2, "tier-T1": -1},
-      "effort_weeks": 20, "effort_band": "L", "cost_band": "M",
-      "security_score": 4, "reg_score": 4, "ops_burden": 3,
+      "provides": [
+        "identity.federation.external",
+        "identity.subject-schema",
+        "identity.secrets.managed"
+      ],
+      "requires": [
+        "network.ingress.waf",
+        "secops.detection.identity",
+        "data.classification.per-flow",
+        "secops.ingestion.compatible"
+      ],
+      "fit": {
+        "customer-facing": 3,
+        "open-banking": 3,
+        "internet-facing": 3,
+        "pii": 2,
+        "payments": 2,
+        "regulated": 2,
+        "third-party-material": 2,
+        "tier-T1": -1
+      },
+      "effort_weeks": 20,
+      "effort_band": "L",
+      "cost_band": "M",
+      "security_score": 4,
+      "reg_score": 4,
+      "ops_burden": 3,
       "checklist": [
         "customer identity store separated from workforce identity, with separate administrative paths",
         "strong customer authentication position stated against the applicable regime",
@@ -207,33 +618,106 @@
         "no production customer identity data present in Dev-Test"
       ],
       "questions": [
-        {"question": "Is the account-recovery path weaker than the primary authentication path, and has it been threat-modelled as the likely route in?", "owner_role": "Security Architect", "blocking": true},
-        {"question": "Where is consent stored, and can a withdrawal be proven to have propagated to every downstream consumer?", "owner_role": "Data Protection Officer", "blocking": true},
-        {"question": "Does any production customer identity data reach RTL or Dev-Test, and under what masking guarantee?", "owner_role": "Data Owner", "blocking": true},
-        {"question": "How is a compromised partner trust revoked, and how fast?", "owner_role": "IAM Service Owner", "blocking": false}
+        {
+          "question": "Is the account-recovery path weaker than the primary authentication path, and has it been threat-modelled as the likely route in?",
+          "owner_role": "Security Architect",
+          "blocking": true
+        },
+        {
+          "question": "Where is consent stored, and can a withdrawal be proven to have propagated to every downstream consumer?",
+          "owner_role": "Data Protection Officer",
+          "blocking": true
+        },
+        {
+          "question": "Does any production customer identity data reach RTL or Dev-Test, and under what masking guarantee?",
+          "owner_role": "Data Owner",
+          "blocking": true
+        },
+        {
+          "question": "How is a compromised partner trust revoked, and how fast?",
+          "owner_role": "IAM Service Owner",
+          "blocking": false
+        }
       ],
       "anchors": [
-        {"metric": "Customer identities", "unit": "count", "critical": true},
-        {"metric": "Peak authentication rate", "unit": "auth/s", "critical": true},
-        {"metric": "Peak session concurrency", "unit": "count", "critical": true},
-        {"metric": "Registered partners / TPPs", "unit": "count", "critical": false},
-        {"metric": "Consent records", "unit": "count", "critical": false},
-        {"metric": "Account-recovery events", "unit": "per day", "critical": false},
-        {"metric": "Customer identity data in non-prod", "unit": "% real", "critical": true}
+        {
+          "metric": "Customer identities",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Peak authentication rate",
+          "unit": "auth/s",
+          "critical": true
+        },
+        {
+          "metric": "Peak session concurrency",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Registered partners / TPPs",
+          "unit": "count",
+          "critical": false
+        },
+        {
+          "metric": "Consent records",
+          "unit": "count",
+          "critical": false
+        },
+        {
+          "metric": "Account-recovery events",
+          "unit": "per day",
+          "critical": false
+        },
+        {
+          "metric": "Customer identity data in non-prod",
+          "unit": "% real",
+          "critical": true
+        }
       ],
       "risks": [
-        {"category": "security", "severity": "H", "statement": "Account recovery is routinely the weakest link and is targeted precisely because primary authentication was strengthened.", "mitigation": "Threat-model recovery separately, rate-limit and step-up it explicitly, and build a detection for recovery-then-payment sequences."},
-        {"category": "legal-reg", "severity": "H", "statement": "Consent withdrawal that does not propagate to every downstream consumer is a reportable data protection failure, and the failure is usually only discovered on a subject request.", "mitigation": "Make withdrawal an event every consumer must acknowledge, and reconcile acknowledgements on a schedule."},
-        {"category": "legal-reg", "severity": "M", "statement": "Customer identity data copied into non-prod for testing carries the full regulatory weight of production data with none of the production controls.", "mitigation": "Synthetic identities in non-prod by default; any exception registered with an expiry and a named accepting owner."},
-        {"category": "timeline", "severity": "M", "statement": "Partner onboarding depends on external parties' own timelines, which are outside the programme's control and rarely modelled.", "mitigation": "Model partner onboarding as an external dependency with its own float, and pilot with one partner before committing the wider date."}
+        {
+          "category": "security",
+          "severity": "H",
+          "statement": "Account recovery is routinely the weakest link and is targeted precisely because primary authentication was strengthened.",
+          "mitigation": "Threat-model recovery separately, rate-limit and step-up it explicitly, and build a detection for recovery-then-payment sequences."
+        },
+        {
+          "category": "legal-reg",
+          "severity": "H",
+          "statement": "Consent withdrawal that does not propagate to every downstream consumer is a reportable data protection failure, and the failure is usually only discovered on a subject request.",
+          "mitigation": "Make withdrawal an event every consumer must acknowledge, and reconcile acknowledgements on a schedule."
+        },
+        {
+          "category": "legal-reg",
+          "severity": "M",
+          "statement": "Customer identity data copied into non-prod for testing carries the full regulatory weight of production data with none of the production controls.",
+          "mitigation": "Synthetic identities in non-prod by default; any exception registered with an expiry and a named accepting owner."
+        },
+        {
+          "category": "timeline",
+          "severity": "M",
+          "statement": "Partner onboarding depends on external parties' own timelines, which are outside the programme's control and rarely modelled.",
+          "mitigation": "Model partner onboarding as an external dependency with its own float, and pilot with one partner before committing the wider date."
+        }
       ],
-      "controls": ["ISO 27001 A.5.16", "NIST 800-53 IA-2", "NIST 800-53 IA-8", "PCI-DSS v4 8.4", "GDPR Art.7", "GDPR Art.32"],
+      "controls": [
+        "ISO 27001 A.5.16",
+        "NIST 800-53 IA-2",
+        "NIST 800-53 IA-8",
+        "PCI-DSS v4 8.4",
+        "GDPR Art.7",
+        "GDPR Art.32"
+      ],
       "lld_notes": [
         "Document the customer token contract, including consent claims and how downstream services validate them.",
         "Record the enumeration and rate-limiting posture per endpoint, and where those events land for detection.",
         "State the partner trust registration record and its revocation latency."
       ],
-      "hld_notes": ["Customer identity is a distinct trust boundary from workforce identity; the e2e flow should never show one authorising the other."]
+      "hld_notes": [
+        "Customer identity is a distinct trust boundary from workforce identity; the e2e flow should never show one authorising the other."
+      ]
     }
   ]
 }

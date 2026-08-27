@@ -364,7 +364,7 @@ def collect_anchors(catalogue, selection: dict[str, Option],
     elevate: set[str] = set()
     for rule in catalogue.rules:
         if rule.kind == "anchor-required" and _rule_fires(rule, selected_ids):
-            elevate.add(rule.anchor_metric)
+            elevate.update(rule.anchor_metrics)
 
     out: dict[str, list[Anchor]] = {}
     for dom_key, opt in selection.items():

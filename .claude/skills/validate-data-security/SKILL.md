@@ -102,7 +102,7 @@ Encryption at rest uses customer-managed keys with a stated blast radius per key
 
 **Imposes on / gives others:** `data.key.customer-managed`, `data.classification.per-flow`, `data.dlp.egress`, `data.retention.policy`, `data.access.audited`, `data.nonprod.masked`
 
-**Requires from others:** `identity.secrets.managed`, `network.reach.control-plane`, `secops.log.type1`
+**Requires from others:** `identity.secrets.managed`, `network.reach.control-plane`, `secops.log.type2`
 
 **Checklist**
 
@@ -157,7 +157,7 @@ The maximum-sensitivity elements are tokenised before entering general-purpose s
 
 **Imposes on / gives others:** `data.tokenised`, `data.key.hyok`, `data.key.customer-managed`, `data.classification.per-flow`, `data.dlp.egress`, `data.nonprod.synthetic`, `data.retention.policy`, `data.access.audited`
 
-**Requires from others:** `identity.workload.federated`, `identity.secrets.managed`, `network.private.only`, `secops.log.type1`, `secops.detection.egress`, `integration.edge.authz`
+**Requires from others:** `identity.workload.federated`, `identity.secrets.managed`, `network.private.only`, `secops.detection.egress`, `integration.edge.authz`, `secops.log.type2`
 
 **Checklist**
 
@@ -210,7 +210,7 @@ Data, keys, backups and every processing path are constrained to a single declar
 
 **Imposes on / gives others:** `data.residency.in-region`, `data.key.customer-managed`, `data.key.hyok`, `data.classification.per-flow`, `data.dlp.egress`, `data.retention.policy`, `data.access.audited`, `data.nonprod.masked`
 
-**Requires from others:** `network.residency.pinned`, `network.private.only`, `identity.privileged.jit`, `secops.log.type1`, `grc.control.mapping`
+**Requires from others:** `network.residency.pinned`, `network.private.only`, `identity.privileged.jit`, `grc.control.mapping`, `secops.log.type2`
 
 **Checklist**
 
@@ -279,7 +279,7 @@ These are the shared tags the orchestrator reconciles on. They are not free text
 - `network.reach.control-plane` - Reachability exists from every workload to IdP / PDP / KMS control planes, in every environment. *(owned by NET)*
 - `network.residency.pinned` - Routing and every failover path stay inside the declared residency boundary. *(owned by NET)*
 - `secops.detection.egress` - Detection content exists for egress and exfiltration paths. *(owned by SEC)*
-- `secops.log.type1` - A security/audit logging pipeline exists with regulatory retention. *(owned by SEC)*
+- `secops.log.type2` - Compliance reporting logs are delivered to the enterprise compliance logging platform with the retention the security governance and compliance function requires. *(owned by SEC)*
 
 ## Where this domain's content lives
 

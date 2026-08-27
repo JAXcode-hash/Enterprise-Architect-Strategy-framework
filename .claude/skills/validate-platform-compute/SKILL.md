@@ -102,7 +102,7 @@ All infrastructure is declared as code and gated by policy with drift detection.
 
 **Imposes on / gives others:** `platform.provenance.signed`, `platform.admission.control`, `platform.iac.governed`, `platform.parity.pipeline`, `platform.workload.identity`
 
-**Requires from others:** `identity.workload.federated`, `secops.log.type1`, `grc.control.mapping`
+**Requires from others:** `identity.workload.federated`, `grc.control.mapping`, `secops.log.type2`
 
 **Checklist**
 
@@ -152,7 +152,7 @@ Builds run on attested infrastructure producing verifiable provenance to a state
 
 **Imposes on / gives others:** `platform.provenance.signed`, `platform.admission.control`, `platform.iac.governed`, `platform.parity.pipeline`, `platform.workload.identity`, `platform.runtime.protection`
 
-**Requires from others:** `identity.workload.federated`, `secops.log.type1`, `secops.detection.identity`, `grc.control.mapping`, `grc.evidence.automated`
+**Requires from others:** `identity.workload.federated`, `secops.detection.identity`, `grc.control.mapping`, `grc.evidence.automated`, `secops.log.type2`
 
 **Checklist**
 
@@ -213,7 +213,7 @@ These are the shared tags the orchestrator reconciles on. They are not free text
 - `grc.evidence.automated` - Evidence is produced by the pipeline, not assembled by hand at audit time. *(owned by GRC)*
 - `identity.workload.federated` - Workloads authenticate with short-lived federated credentials; no long-lived static secrets. *(owned by IAM)*
 - `secops.detection.identity` - Detection content exists for identity abuse and privilege escalation. *(owned by SEC)*
-- `secops.log.type1` - A security/audit logging pipeline exists with regulatory retention. *(owned by SEC)*
+- `secops.log.type2` - Compliance reporting logs are delivered to the enterprise compliance logging platform with the retention the security governance and compliance function requires. *(owned by SEC)*
 
 ## Where this domain's content lives
 

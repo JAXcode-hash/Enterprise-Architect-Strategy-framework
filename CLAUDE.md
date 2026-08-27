@@ -22,15 +22,74 @@ Every checklist item and every volumetric anchor is asserted three times:
   forces is what real or quasi-real data touches non-prod, and under what control.
 - **Dev-Test** — development and functional test.
 
-## Type 1 / Type 2 logging
+## Log types — the organisation's operating model
 
-- **Type 1** — security-relevant and audit logging: identity, access, control-plane and
-  detection events, for SIEM/SOC, forensics and regulatory retention.
-- **Type 2** — operational and observability logging: application and infrastructure telemetry,
-  health, performance.
+Three types, each owned by a different function. The ownership is the point: it decides who is
+obliged to do what, and the framework encodes that rather than a taxonomy of log content.
 
-If your organisation uses a different taxonomy, rebind these two definitions in
-`catalogue/options/secops.json` and the rest of the framework follows unchanged.
+### Type 1 — Security Event Detection and Handling
+
+Owned by the **central security monitoring function**. That function determines which logs are
+required for threat detection and threat hunting, based on ongoing threat modelling and risk
+assessment. **Requirements are dynamic** and evolve with the threat landscape.
+
+Technology and application owners are **not required to proactively implement** logging and
+forwarding for Type 1. They are engaged when a specific source is required, and must then
+deliver it using approved security logging ingestion patterns. The monitoring function
+maintains a documented, current log requirements register and the operational processes to
+communicate changes to technology owners in a timely manner.
+
+### Type 2 — Security Compliance Reporting
+
+Owned by the **security governance and compliance function**. That function determines which
+logs satisfy regulatory, audit and security compliance obligations, and ensures appropriate
+retention is configured within the enterprise compliance logging platform. Technology owners
+may be engaged when a source is required, or a change activity may trigger a security review
+that assesses compliance logging requirements. Either way, technology teams comply with the
+defined ingestion standards and logging patterns.
+
+### Type 3 — General and Operational Logging
+
+The **technology owner's** responsibility. Anything outside Type 1 and Type 2 is outside the
+central security functions' remit. Technology owners implement logging and retention
+appropriate to their operational, observability and local monitoring needs. There is no
+centrally mandated requirement and no centrally provided infrastructure for Type 3.
+
+### What this means for the framework
+
+The key consequence: **a technology team has no obligation to implement logging and retention
+for a source neither central function has identified as in scope.** This resolves the conflict
+between legacy logging requirements and the target operating model.
+
+Two things follow, and both are encoded:
+
+1. **No brief can mandate Type 1.** `catalogue/signals.json` mandates `secops.log.type2` and
+   `secops.ingestion.compatible` where the context demands them, and never `secops.log.type1` —
+   only the monitoring function decides that. A domain option may not `require`
+   `secops.log.type1` either. What a domain can legitimately require is a compliance obligation
+   (`secops.log.type2`) or readiness for a future engagement
+   (`secops.ingestion.compatible`). There is a test asserting this.
+2. **Ingestion compatibility is the load-bearing design property.** Because requirements are
+   dynamic, the architectural question is not "what do we log" but "what does it cost when the
+   monitoring function asks". Teams should design pipelines that can adopt the approved
+   ingestion standards — format, transport, authentication, integration pattern — even when the
+   system is not currently connected. `secops.ingestion.compatible` is that property, and the
+   anchor `Estimated effort to connect a newly requested source` is what makes the rework cost
+   arguable rather than rhetorical.
+
+The SecOps options are postures toward this model, not volumes of logging:
+
+| Option | Posture |
+|---|---|
+| `SEC-01` | Engagement-driven, no ingestion compatibility. Consistent with the model, maximum retrofit. |
+| `SEC-02` | Ingestion-compatible by design, delivery on engagement. The sensible default. |
+| `SEC-03` | Type 2 connected at go-live; Type 1 still engagement-driven. |
+| `SEC-04` | Type 1 and Type 2 both delivered; monitoring function engaged during design. |
+| `SEC-05` | Embedded detection partnership with automated response. |
+
+If your organisation revises these definitions, rebind them in
+`catalogue/capabilities.json` (the `secops.*` entries) and
+`catalogue/options/secops.json`, then re-run `python3 tools/gen_skills.py`.
 
 ## Rules that keep the framework honest
 

@@ -20,7 +20,8 @@
       ],
       "mandates": [
         "grc.control.mapping",
-        "secops.log.type1"
+        "secops.log.type2",
+        "secops.ingestion.compatible"
       ]
     },
     "pci": {
@@ -37,7 +38,7 @@
       "mandates": [
         "data.classification.per-flow",
         "network.egress.fqdn-allowlist",
-        "secops.log.type1"
+        "secops.log.type2"
       ]
     },
     "pii": {
@@ -365,7 +366,7 @@
       ],
       "mandates": [
         "data.nonprod.masked",
-        "secops.nonprod.monitored",
+        "secops.ingestion.compatible",
         "env.data.policy"
       ]
     },
@@ -448,5 +449,5 @@
       "bonus": 3
     }
   ],
-  "_mandates_note": "A signal's `mandates` are capabilities the brief makes non-negotiable. The selector rewards options that supply one; the orchestrator raises a gap against the owning domain when nothing in the selection does, which drives the repair loop. This is what stops a hard constraint being outvoted by a pile of soft ones."
+  "_mandates_note": "A signal's `mandates` are capabilities the brief makes non-negotiable. The selector rewards options that supply one; the orchestrator raises a gap against the owning domain when nothing in the selection does, which drives the repair loop. Note what is absent: no signal mandates Type 1 logging, because under this organisation's operating model only the central security monitoring function decides what Type 1 requires. What a brief can make non-negotiable is a compliance obligation (Type 2) and readiness to answer a future Type 1 engagement without rework."
 }
