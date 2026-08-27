@@ -213,7 +213,10 @@
         "material (outsourc|third)",
         "\\boutsourc",
         "\\bsupplier\\b",
-        "\\bfourth part"
+        "\\bfourth part",
+        "(assessed|deemed|classified) as (a )?material",
+        "material (provider|supplier|vendor|partner|model provider|service provider)",
+        "\\bmateriality\\b"
       ],
       "mandates": [
         "integration.thirdparty.registered",
@@ -381,7 +384,11 @@
         "hard date",
         "\\bmandate",
         "end of (year|quarter)",
-        "\\bimmovable\\b"
+        "\\bimmovable\\b",
+        "end of (the )?(next |this |current )?(financial|fiscal) year",
+        "\\bFY ?\\d{2,4}\\b",
+        "(hard|firm|public) commitment",
+        "committed to (deliver|demonstrate|complete)"
       ]
     },
     "cost-constrained": {
@@ -406,7 +413,10 @@
         "\\bDR region\\b",
         "cross[- ]region",
         "\\bfailover region\\b",
-        "geo[- ]redundan"
+        "geo[- ]redundan",
+        "\\b\\d+ regions\\b",
+        "multiple regions",
+        "(several|various|varied) regions"
       ],
       "mandates": [
         "resilience.multi-region"
