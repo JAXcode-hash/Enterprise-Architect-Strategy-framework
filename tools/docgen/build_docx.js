@@ -1,5 +1,24 @@
 const fs = require('fs');
+const {execSync} = require('child_process');
 const d = require('docx');
+
+// Read the live catalogue rather than restating counts from memory - a figure
+// typed into this document is a figure that silently goes stale.
+const ROOT = (() => {
+  let p = process.cwd();
+  while (p !== '/' && !fs.existsSync(p + '/eas/catalogue.py')) p = require('path').dirname(p);
+  if (p === '/') {
+    console.error('Run this from the repository root: node tools/docgen/part3.js <out.docx>');
+    process.exit(1);
+  }
+  return p;
+})();
+const STATS = JSON.parse(execSync(
+  'python3 -c "import sys,json;sys.path.insert(0,\'.\');' +
+  'from eas.catalogue import Catalogue;print(json.dumps(Catalogue().summary()))"',
+  {cwd: ROOT, encoding: 'utf8'}));
+const AGENTS = execSync('ls .claude/agents/*.md | wc -l',
+  {cwd: ROOT, encoding: 'utf8'}).trim();
 const {Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell,
        WidthType, ShadingType, AlignmentType, BorderStyle, PageBreak, LevelFormat,
        TableOfContents, Footer, PageNumber} = d;
@@ -88,8 +107,8 @@ A(new Paragraph({spacing:{before:1800, after:0},
     ["Repository", "Enterprise-Architect-Strategy-framework"],
     ["Branch", "claude/enterprise-architect-strategy-app-8vp6mr"],
     ["Runtime", "Python 3.9+ standard library only — no dependencies"],
-    ["Engine", "9 validator domains, 32 options, 60 capabilities, 33 cross-domain rules"],
-    ["Team", "1 Master Architect, 12 Domain Architects, 67 capability SMEs"],
+    ["Engine", `${STATS.domains} validator domains, ${STATS.options} options, ${STATS.capabilities} capabilities, ${STATS.rules} cross-domain rules, ${STATS.signals} intake signals`],
+    ["Team", `1 Master Architect, 12 Domain Architects, 67 capability SMEs (${AGENTS} agent definitions)`],
     ["Worked examples", "SASE migration to Prisma Access; AI agents in the CI/CD pipeline"],
   ], [2400, 6626]),
   new Paragraph({children:[new PageBreak()]}));

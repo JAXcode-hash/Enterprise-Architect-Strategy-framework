@@ -1,0 +1,15 @@
+# The Enterprise Architect Strategy framework has NO runtime dependencies.
+# `python3 -m eas ...` uses the standard library only, by design - it has to run
+# behind a corporate proxy on a locked-down laptop.
+#
+# Everything below is optional and used only to rebuild and validate
+# docs/eas-setup-and-flow.docx. Install with:
+#
+#     ./setup.sh --docs
+#
+# or directly:
+#
+#     python3 -m pip install -r requirements-dev.txt
+
+lxml>=4.9          # docx schema validation (tools in the docx skill)
+defusedxml>=0.7    # safe XML parsing for the same validator

@@ -8,11 +8,16 @@ position with three levels of output.
 Every request gets its **own isolated project**. No other project informs it.
 
 ```bash
+./setup.sh                                               # verify - installs nothing
 python3 -m eas new --brief briefs/example-regulated.md   # assess a direction
 python3 -m eas serve                                     # the same thing in a browser
 ```
 
-Python 3.9+ standard library only. Nothing to install, no network access required.
+Python 3.9+ standard library only. **There is nothing to install** — `setup.sh`
+(or `setup.ps1` on Windows) checks your Python, confirms the 23 stdlib modules the
+engine uses are present, lints the catalogue and runs the test suite. It installs
+packages only with `--docs`, and those are needed solely to rebuild the setup
+document. No network access is required to run an assessment.
 
 ---
 

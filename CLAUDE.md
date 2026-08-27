@@ -162,6 +162,20 @@ asserts it keeps saying so.
 8. **Stdlib only.** The framework has to run behind a corporate proxy on a locked-down laptop.
    No dependencies, and the generated dashboard makes no network requests.
 
+## Setup
+
+`./setup.sh` (or `setup.ps1` on Windows). The default run **installs nothing** — it
+verifies the Python version, confirms every stdlib module the engine imports is present,
+lints the catalogue and runs the tests. That is deliberate: rule 8 below means a successful
+setup should require no network access at all.
+
+`--docs` installs the only optional packages in the repository — npm `docx` and pip
+`lxml`/`defusedxml` — used solely to rebuild `docs/eas-setup-and-flow.docx`. Nothing in
+`eas/` imports them, and a test would fail if anything did.
+
+If you add a stdlib import to the engine, add it to the module list in both setup scripts
+so a broken or minimal Python install is caught at setup rather than at first run.
+
 ## Changing the catalogue
 
 ```bash

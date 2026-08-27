@@ -1,0 +1,12 @@
+{
+  "name": "eas-docgen",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Optional document generator for the Enterprise Architect Strategy framework. The framework itself has no dependencies - this rebuilds docs/eas-setup-and-flow.docx only.",
+  "scripts": {
+    "build:doc": "node tools/docgen/part3.js docs/eas-setup-and-flow.docx"
+  },
+  "dependencies": {
+    "docx": "^9.0.0"
+  }
+}
