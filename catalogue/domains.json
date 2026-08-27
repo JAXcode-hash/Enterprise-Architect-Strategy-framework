@@ -1,0 +1,77 @@
+{
+  "schema_version": "1.0",
+  "domains": [
+    {
+      "key": "identity-access",
+      "code": "IAM",
+      "name": "Identity & Access Validation",
+      "order": 1,
+      "scope": "Human and workload identity, authentication, authorisation, privilege, secrets, federation.",
+      "skill": "validate-identity-access"
+    },
+    {
+      "key": "network-security",
+      "code": "NET",
+      "name": "Network Security Validation",
+      "order": 2,
+      "scope": "DNS and name resolution, private connectivity, internet outbound, ingress, segmentation, east-west.",
+      "skill": "validate-network-security"
+    },
+    {
+      "key": "data-security",
+      "code": "DATA",
+      "name": "Data Security Validation",
+      "order": 3,
+      "scope": "Classification, encryption, key management, residency/sovereignty, tokenisation/masking, retention, DLP.",
+      "skill": "validate-data-security"
+    },
+    {
+      "key": "integration",
+      "code": "INT",
+      "name": "Integration & Interface Validation",
+      "order": 4,
+      "scope": "Every object-to-object integration - APIs, events/messages, batch/file, third-party.",
+      "skill": "validate-integration"
+    },
+    {
+      "key": "secops",
+      "code": "SEC",
+      "name": "Security Operations Validation",
+      "order": 5,
+      "scope": "Type 1 (security/audit) and Type 2 (operational) logging, SIEM/SOAR, detection, monitoring, incident response.",
+      "skill": "validate-secops"
+    },
+    {
+      "key": "platform-compute",
+      "code": "PLAT",
+      "name": "Platform & Compute Validation",
+      "order": 6,
+      "scope": "Runtime and workload placement, supply chain, IaC, admission control, provenance.",
+      "skill": "validate-platform-compute"
+    },
+    {
+      "key": "resilience",
+      "code": "RES",
+      "name": "Resilience & Continuity Validation",
+      "order": 7,
+      "scope": "Availability, DR, capacity, backup/restore, failover.",
+      "skill": "validate-resilience"
+    },
+    {
+      "key": "grc",
+      "code": "GRC",
+      "name": "Governance, Risk & Compliance Validation",
+      "order": 8,
+      "scope": "Regulatory spine, control mapping, model risk, evidence, exceptions.",
+      "skill": "validate-grc"
+    },
+    {
+      "key": "env-parity",
+      "code": "ENV",
+      "name": "Environment Parity & Route-to-Live Validation",
+      "order": 9,
+      "scope": "The Prod/RTL/Dev-Test relationship itself - parity, promotion, drift, and env-specific data/exception handling.",
+      "skill": "validate-env-parity-rtl"
+    }
+  ]
+}

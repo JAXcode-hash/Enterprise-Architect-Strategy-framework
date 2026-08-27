@@ -1,0 +1,274 @@
+{
+  "schema_version": "1.0",
+  "_note": "The shared cross-domain vocabulary. An option `provides` these and `requires` these. Every `requires` must be `provides`-able by at least one option somewhere in the catalogue, or `eas lint` fails - an unsatisfiable requirement is a catalogue bug, not a run finding.",
+  "capabilities": {
+    "identity.subject-schema": {
+      "owner": "IAM",
+      "desc": "A canonical who/what subject schema exists and is emitted on every security-relevant action."
+    },
+    "identity.pdp.central": {
+      "owner": "IAM",
+      "desc": "Authorisation decisions are made by an external, centrally governed policy decision point."
+    },
+    "identity.workload.federated": {
+      "owner": "IAM",
+      "desc": "Workloads authenticate with short-lived federated credentials; no long-lived static secrets."
+    },
+    "identity.privileged.jit": {
+      "owner": "IAM",
+      "desc": "Privileged access is just-in-time / just-enough, brokered and recorded."
+    },
+    "identity.secrets.managed": {
+      "owner": "IAM",
+      "desc": "Secrets and certificates live in a managed store with an enforced rotation lifecycle."
+    },
+    "identity.mtls.identity": {
+      "owner": "IAM",
+      "desc": "Workload identity is strong enough to underpin mTLS / SPIFFE-style peer authentication."
+    },
+    "identity.federation.external": {
+      "owner": "IAM",
+      "desc": "External (partner/customer) IdP federation trust is inventoried and governed."
+    },
+    "network.reach.control-plane": {
+      "owner": "NET",
+      "desc": "Reachability exists from every workload to IdP / PDP / KMS control planes, in every environment."
+    },
+    "network.private.only": {
+      "owner": "NET",
+      "desc": "No public data path; all service-to-service connectivity is private."
+    },
+    "network.egress.inspected": {
+      "owner": "NET",
+      "desc": "Internet-bound traffic is decrypted and inspected at L7 before leaving."
+    },
+    "network.egress.fqdn-allowlist": {
+      "owner": "NET",
+      "desc": "Outbound is constrained to an explicit FQDN/URL allow-list, not IP ranges."
+    },
+    "network.segmentation.micro": {
+      "owner": "NET",
+      "desc": "East-west traffic is policed per service pair, not just at the perimeter."
+    },
+    "network.dns.deterministic": {
+      "owner": "NET",
+      "desc": "Name resolution is deterministic and intentional per environment; split-horizon behaviour is designed, not inherited."
+    },
+    "network.ingress.waf": {
+      "owner": "NET",
+      "desc": "Public ingress is fronted by a WAF with a managed rule posture."
+    },
+    "network.flowlogs": {
+      "owner": "NET",
+      "desc": "Flow logs are produced and shipped as a SecOps source."
+    },
+    "network.residency.pinned": {
+      "owner": "NET",
+      "desc": "Routing and every failover path stay inside the declared residency boundary."
+    },
+    "data.classification.per-flow": {
+      "owner": "DATA",
+      "desc": "Every store and every flow carries a classification, not just every system."
+    },
+    "data.key.customer-managed": {
+      "owner": "DATA",
+      "desc": "Encryption keys are customer-managed (CMK/BYOK) with a known blast radius per key."
+    },
+    "data.key.hyok": {
+      "owner": "DATA",
+      "desc": "Keys are held outside the processing platform (HYOK / external key store)."
+    },
+    "data.residency.in-region": {
+      "owner": "DATA",
+      "desc": "Data at rest and in transit stays within the declared jurisdiction."
+    },
+    "data.tokenised": {
+      "owner": "DATA",
+      "desc": "The maximum-sensitivity elements are tokenised or masked before they reach general-purpose stores."
+    },
+    "data.dlp.egress": {
+      "owner": "DATA",
+      "desc": "Every egress path is covered by a data-loss control."
+    },
+    "data.nonprod.synthetic": {
+      "owner": "DATA",
+      "desc": "Non-prod uses generated synthetic data; no production-derived records."
+    },
+    "data.nonprod.masked": {
+      "owner": "DATA",
+      "desc": "Non-prod uses irreversibly masked production-derived data under a stated guarantee."
+    },
+    "data.retention.policy": {
+      "owner": "DATA",
+      "desc": "Retention and disposal are defined per classification and enforced."
+    },
+    "data.access.audited": {
+      "owner": "DATA",
+      "desc": "Data-plane access produces Type 1 audit events attributable to a subject."
+    },
+    "integration.edge.authz": {
+      "owner": "INT",
+      "desc": "Authorisation is verified at every trust-boundary edge, never inferred from network location."
+    },
+    "integration.contract.governed": {
+      "owner": "INT",
+      "desc": "Interface contracts and schemas are versioned and governed."
+    },
+    "integration.async.idempotent": {
+      "owner": "INT",
+      "desc": "Asynchronous paths are idempotent and handle replay and poison messages."
+    },
+    "integration.gateway.managed": {
+      "owner": "INT",
+      "desc": "External API exposure is via a managed gateway with a policy layer."
+    },
+    "integration.thirdparty.registered": {
+      "owner": "INT",
+      "desc": "Third-party integrations are registered with materiality / CTP assessment."
+    },
+    "integration.per-edge-logging": {
+      "owner": "INT",
+      "desc": "Every interface emits a log a detection can consume."
+    },
+    "secops.log.type1": {
+      "owner": "SEC",
+      "desc": "A security/audit logging pipeline exists with regulatory retention."
+    },
+    "secops.log.type2": {
+      "owner": "SEC",
+      "desc": "An operational/observability pipeline exists for health and performance."
+    },
+    "secops.log.separated": {
+      "owner": "SEC",
+      "desc": "Type 1 and Type 2 are separated at ingestion - different retention, access and cost."
+    },
+    "secops.detection.egress": {
+      "owner": "SEC",
+      "desc": "Detection content exists for egress and exfiltration paths."
+    },
+    "secops.detection.identity": {
+      "owner": "SEC",
+      "desc": "Detection content exists for identity abuse and privilege escalation."
+    },
+    "secops.nonprod.monitored": {
+      "owner": "SEC",
+      "desc": "Non-prod environments are monitored, not detection blind spots."
+    },
+    "secops.soar": {
+      "owner": "SEC",
+      "desc": "Response is at least partly automated via playbooks."
+    },
+    "secops.ir.runbook": {
+      "owner": "SEC",
+      "desc": "An incident-response runbook with evidence handling covers this scope."
+    },
+    "platform.provenance.signed": {
+      "owner": "PLAT",
+      "desc": "Build artefacts are signed and their provenance is verifiable."
+    },
+    "platform.admission.control": {
+      "owner": "PLAT",
+      "desc": "Only verified artefacts can be admitted to a runtime."
+    },
+    "platform.iac.governed": {
+      "owner": "PLAT",
+      "desc": "Infrastructure is declared as code and gated by policy with drift detection."
+    },
+    "platform.runtime.protection": {
+      "owner": "PLAT",
+      "desc": "Runtime behaviour is monitored and constrained on the workload itself."
+    },
+    "platform.parity.pipeline": {
+      "owner": "PLAT",
+      "desc": "The same pipeline builds every environment; RTL is not hand-crafted."
+    },
+    "platform.workload.identity": {
+      "owner": "PLAT",
+      "desc": "The platform can mint and attest workload identity."
+    },
+    "resilience.multi-az": {
+      "owner": "RES",
+      "desc": "The service survives the loss of one availability zone."
+    },
+    "resilience.multi-region": {
+      "owner": "RES",
+      "desc": "The service survives the loss of a region."
+    },
+    "resilience.backup.tested": {
+      "owner": "RES",
+      "desc": "Backups exist and restores are tested on a stated cadence."
+    },
+    "resilience.capacity.headroom": {
+      "owner": "RES",
+      "desc": "Provisioned capacity carries stated headroom above measured peak."
+    },
+    "resilience.failover.tested": {
+      "owner": "RES",
+      "desc": "Failover is exercised, not asserted."
+    },
+    "grc.control.mapping": {
+      "owner": "GRC",
+      "desc": "Applicable controls are mapped to requirements with a named evidence source."
+    },
+    "grc.evidence.automated": {
+      "owner": "GRC",
+      "desc": "Evidence is produced by the pipeline, not assembled by hand at audit time."
+    },
+    "grc.exception.register": {
+      "owner": "GRC",
+      "desc": "Exceptions and waivers are registered with an owner and an expiry."
+    },
+    "grc.modelrisk.tiered": {
+      "owner": "GRC",
+      "desc": "Models/LLMs in scope are tiered and their scoring is decomposable and defensible."
+    },
+    "grc.thirdparty.dora": {
+      "owner": "GRC",
+      "desc": "Third parties are assessed against DORA / CTP thresholds with exit plans."
+    },
+    "env.parity.asserted": {
+      "owner": "ENV",
+      "desc": "What differs between environments is a recorded decision, not drift."
+    },
+    "env.promotion.gated": {
+      "owner": "ENV",
+      "desc": "Promotion passes explicit gates that verify stated properties."
+    },
+    "env.data.policy": {
+      "owner": "ENV",
+      "desc": "A per-environment data policy exists and is enforced."
+    },
+    "env.rtl.representative": {
+      "owner": "ENV",
+      "desc": "RTL is representative enough to catch what Prod will hit."
+    }
+  },
+  "implies": {
+    "data.nonprod.synthetic": [
+      "data.nonprod.masked"
+    ],
+    "data.key.hyok": [
+      "data.key.customer-managed"
+    ],
+    "resilience.multi-region": [
+      "resilience.multi-az"
+    ],
+    "secops.log.separated": [
+      "secops.log.type1",
+      "secops.log.type2"
+    ],
+    "network.egress.inspected": [
+      "network.flowlogs"
+    ],
+    "identity.mtls.identity": [
+      "identity.secrets.managed"
+    ],
+    "platform.parity.pipeline": [
+      "platform.iac.governed"
+    ],
+    "grc.evidence.automated": [
+      "grc.control.mapping"
+    ]
+  },
+  "_implies_note": "A stronger position satisfies a weaker requirement. Fully synthetic non-prod satisfies a requirement for masked non-prod; multi-region satisfies multi-AZ. Without this the orchestrator raises false contradictions between two positions that agree."
+}

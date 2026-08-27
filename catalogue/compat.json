@@ -1,0 +1,340 @@
+{
+  "schema_version": "1.0",
+  "_note": "Cross-domain compatibility rules. The orchestrator derives most dependencies automatically from each option's `requires` list; these rules capture what `requires` cannot express - incompatible pairs, risks that only exist in combination, anchors that another domain's choice makes sizing-critical, and questions that only arise once two positions are read together.",
+  "rules": [
+    {
+      "id": "R-C01",
+      "kind": "mutex",
+      "when_all": ["DATA-04", "RES-03"],
+      "domains": ["DATA", "RES"],
+      "severity": "C",
+      "message": "A sovereign data enclave constrains all processing to one jurisdiction, while active-active serves traffic continuously from more than one region. These positions cannot both hold unless every serving region sits inside the declared jurisdiction.",
+      "resolution": "Either confirm and evidence that both serving regions are inside the jurisdiction (and record it as a Data decision), or step the resilience position down to in-jurisdiction active-passive."
+    },
+    {
+      "id": "R-C02",
+      "kind": "mutex",
+      "when_all": ["IAM-04", "NET-01"],
+      "domains": ["IAM", "NET"],
+      "severity": "H",
+      "message": "A zero-trust identity fabric asserts that trust derives from workload identity, while a perimeter-controlled estate grants trust by network location. The estate would carry the cost of the fabric while its network still authorises by address.",
+      "resolution": "Either take the network position to identity-aware policy so the fabric is actually load-bearing, or step the identity position down to something the network can consume."
+    },
+    {
+      "id": "R-C03",
+      "kind": "mutex",
+      "when_all": ["DATA-03", "RES-01"],
+      "domains": ["DATA", "RES"],
+      "severity": "H",
+      "message": "Tokenisation puts a token vault on the synchronous transaction path, so the vault's availability bounds the service's. A single-region backup-recovery position gives that vault an RTO measured in hours, which becomes the service's RTO.",
+      "resolution": "Either raise the resilience position so the vault meets the service's RTO, or hold the vault outside this resilience scope with its own stated availability tier."
+    },
+
+    {
+      "id": "R-E01",
+      "kind": "emergent-risk",
+      "when_all": ["NET-03", "SEC-01"],
+      "domains": ["NET", "SEC"],
+      "message": "Micro-segmentation produces per-service-pair flow logs feeding a pipeline that does not separate security from operational telemetry.",
+      "risk": {
+        "category": "cost",
+        "severity": "H",
+        "statement": "Per-pair flow logging typically multiplies ingestion volume by an order of magnitude over perimeter logging. In a combined pipeline that volume forces a retention decision across every log type at once, and the usual outcome is that audit retention is cut to control cost.",
+        "mitigation": "Separate Type 1 from Type 2 before micro-segmentation is enforced, and pin the post-segmentation flow-log GB/day anchor into the SecOps sizing."
+      }
+    },
+    {
+      "id": "R-E02",
+      "kind": "emergent-risk",
+      "when_any": ["IAM-02", "IAM-03", "IAM-04"],
+      "when_all": ["SEC-01"],
+      "domains": ["IAM", "SEC"],
+      "message": "A central policy decision point emits authorisation decision logs into a pipeline with no Type 1 separation.",
+      "risk": {
+        "category": "legal-reg",
+        "severity": "H",
+        "statement": "Authorisation decision logs are the primary evidence of who could do what and when. In a combined pipeline they inherit operational retention, which is routinely far below the regulatory floor, so the evidence expires before it is asked for.",
+        "mitigation": "Route decision logs to a Type 1 tier with regulatory retention before the PDP carries production traffic."
+      }
+    },
+    {
+      "id": "R-E03",
+      "kind": "emergent-risk",
+      "when_any": ["DATA-02", "DATA-03", "DATA-04"],
+      "when_all": ["NET-01"],
+      "domains": ["DATA", "NET"],
+      "message": "An egress data-loss control is claimed while the network position performs no TLS inspection.",
+      "risk": {
+        "category": "security",
+        "severity": "H",
+        "statement": "Data-loss controls cannot read encrypted egress without a decryption point. With shared, uninspected egress the control inspects only plaintext and metadata, so it appears on the control map while providing no coverage of the paths that matter.",
+        "mitigation": "Either introduce an inspection point on the egress paths that carry restricted data, or state the DLP coverage honestly as metadata-only and place volumetric detection on those paths instead."
+      }
+    },
+    {
+      "id": "R-E04",
+      "kind": "emergent-risk",
+      "when_all": ["GRC-02", "RES-01"],
+      "domains": ["GRC", "RES"],
+      "message": "An impact tolerance is stated for an important business service while resilience recovers a regional failure from backup.",
+      "risk": {
+        "category": "legal-reg",
+        "severity": "C",
+        "statement": "An impact tolerance submitted to a supervisor that the architecture cannot meet is a documented gap between a regulatory commitment and delivered capability, and it is discovered under exactly the conditions where it matters.",
+        "mitigation": "Reconcile the measured restore time against the stated tolerance before submission. Where the gap is real, escalate it as a funding decision rather than restating the tolerance."
+      }
+    },
+    {
+      "id": "R-E05",
+      "kind": "emergent-risk",
+      "when_any": ["RES-02", "RES-03"],
+      "when_all": ["DATA-04"],
+      "domains": ["RES", "DATA"],
+      "message": "A multi-region resilience position sits alongside a declared sovereignty boundary.",
+      "risk": {
+        "category": "legal-reg",
+        "severity": "H",
+        "statement": "Cross-region replication and failover are the most common route by which a declared residency position is breached, because the breach occurs during an event that was never rehearsed against the residency constraint.",
+        "mitigation": "Confirm every region and every replication path sits inside the boundary, evidence it, and include the residency check in the failover rehearsal itself."
+      }
+    },
+    {
+      "id": "R-E06",
+      "kind": "emergent-risk",
+      "when_all": ["PLAT-03"],
+      "when_any": ["SEC-02", "SEC-03"],
+      "domains": ["PLAT", "SEC"],
+      "message": "Runtime protection telemetry lands on the SecOps ingestion budget rather than the platform budget.",
+      "risk": {
+        "category": "cost",
+        "severity": "M",
+        "statement": "Runtime protection produces high-volume per-workload telemetry that the platform business case rarely carries, so the cost surfaces on the SecOps ingestion line after the platform decision is already taken.",
+        "mitigation": "Pin the runtime telemetry GB/day anchor and place it in the SecOps sizing before runtime protection is enabled in enforce mode."
+      }
+    },
+    {
+      "id": "R-E07",
+      "kind": "emergent-risk",
+      "when_all": ["INT-03", "DATA-01"],
+      "domains": ["INT", "DATA"],
+      "message": "An event backbone with retention sits alongside classification recorded only at system level.",
+      "risk": {
+        "category": "security",
+        "severity": "H",
+        "statement": "Topic retention makes the backbone a datastore holding whatever the highest-classification topic carries, and system-level classification does not see it, so the estate's largest unclassified store is the one nobody catalogued.",
+        "mitigation": "Register every topic in the datastore inventory with its own classification, and apply the same encryption, retention and access rules as any other store."
+      }
+    },
+    {
+      "id": "R-E08",
+      "kind": "emergent-risk",
+      "when_all": ["ENV-01"],
+      "when_any": ["DATA-01", "DATA-02"],
+      "domains": ["ENV", "DATA"],
+      "message": "Production-derived data may exist in non-prod while environment divergence is recorded only when noticed.",
+      "risk": {
+        "category": "legal-reg",
+        "severity": "H",
+        "statement": "Production-derived data sits in an environment whose actual control configuration is unknown, because drift is not measured. The exposure cannot be quantified, which means it also cannot be accepted by a named owner on any informed basis.",
+        "mitigation": "Measure the Prod-versus-RTL configuration delta once against a defined baseline, and pin the percentage of real data in non-prod, before either can be risk-accepted."
+      }
+    },
+    {
+      "id": "R-E09",
+      "kind": "emergent-risk",
+      "when_any": ["PLAT-02", "PLAT-03"],
+      "when_all": ["ENV-01"],
+      "domains": ["PLAT", "ENV"],
+      "message": "The platform claims pipeline parity across environments while environment drift is not continuously detected.",
+      "risk": {
+        "category": "workaround",
+        "severity": "M",
+        "statement": "Pipeline parity guarantees that environments were built the same way, not that they still are. Without drift detection, the parity claim decays silently and an RTL pass stops predicting Prod behaviour.",
+        "mitigation": "Enable drift detection alongside the pipeline, and treat a divergence that is not declared as a defect rather than as information."
+      }
+    },
+    {
+      "id": "R-E10",
+      "kind": "emergent-risk",
+      "when_all": ["SEC-03", "RES-03"],
+      "domains": ["SEC", "RES"],
+      "message": "Continuous failure injection runs against an estate with automated security containment.",
+      "risk": {
+        "category": "operational",
+        "severity": "M",
+        "statement": "Injected failures can be indistinguishable from attack behaviour in detection telemetry, and an automated containment action firing on an experiment can turn a bounded test into a real outage.",
+        "mitigation": "Register every experiment with detection so injected failures are attributable, and exclude experiment windows from automated containment scope."
+      }
+    },
+    {
+      "id": "R-E11",
+      "kind": "emergent-risk",
+      "when_all": ["IAM-05", "DATA-01"],
+      "domains": ["IAM", "DATA"],
+      "message": "Customer identity and consent data is held under provider-managed key custody.",
+      "risk": {
+        "category": "legal-reg",
+        "severity": "H",
+        "statement": "Customer identity stores hold authentication material and consent records at the highest sensitivity in scope, and provider-managed key custody is frequently not defensible for that data under the applicable regime or under customer contract.",
+        "mitigation": "Move the customer identity and consent stores to customer-managed keys even if the wider estate remains on provider-managed custody."
+      }
+    },
+    {
+      "id": "R-E12",
+      "kind": "emergent-risk",
+      "when_all": ["NET-04", "SEC-01"],
+      "domains": ["NET", "SEC"],
+      "message": "Public ingress with WAF feeds a pipeline that does not separate security telemetry.",
+      "risk": {
+        "category": "security",
+        "severity": "M",
+        "statement": "WAF events are the first indication of attack against the public surface. In a combined pipeline they compete with operational telemetry for retention and are commonly sampled or aged out before an investigation reaches them.",
+        "mitigation": "Route WAF events to the Type 1 tier and retain them at the security floor rather than the operational one."
+      }
+    },
+    {
+      "id": "R-E13",
+      "kind": "emergent-risk",
+      "when_all": ["INT-01"],
+      "when_any": ["IAM-03", "IAM-04"],
+      "domains": ["INT", "IAM"],
+      "message": "Strong workload identity is delivered but internal integration edges still trust by network location.",
+      "risk": {
+        "category": "cost",
+        "severity": "M",
+        "statement": "The estate pays the full cost and delivery risk of a workload identity programme while its internal edges continue to authorise by address, so the security benefit the investment was justified on is not realised.",
+        "mitigation": "Sequence at least the highest-value internal edges onto identity-verified authorisation in the same delivery, so the identity investment is load-bearing somewhere."
+      }
+    },
+
+    {
+      "id": "R-A01",
+      "kind": "anchor-required",
+      "when_all": ["NET-03"],
+      "anchor_metric": "Type 1 log volume",
+      "domains": ["NET", "SEC"],
+      "severity": "H",
+      "message": "Micro-segmentation changes the SecOps volumetric materially. The Type 1 and flow-log volumes must be pinned against the post-segmentation architecture, not the current one, before SecOps can be sized."
+    },
+    {
+      "id": "R-A02",
+      "kind": "anchor-required",
+      "when_any": ["IAM-02", "IAM-03", "IAM-04"],
+      "anchor_metric": "Policy decision log volume",
+      "domains": ["IAM", "SEC"],
+      "severity": "M",
+      "message": "A central decision point generates a log per authorisation decision. That volume must be pinned before SecOps ingestion is sized, and it routinely exceeds application logging."
+    },
+    {
+      "id": "R-A03",
+      "kind": "anchor-required",
+      "when_any": ["INT-02", "INT-04"],
+      "anchor_metric": "Per-edge log volume",
+      "domains": ["INT", "SEC"],
+      "severity": "M",
+      "message": "Per-edge logging at gateway granularity is a primary driver of ingestion cost and must be pinned alongside the interface count."
+    },
+    {
+      "id": "R-A04",
+      "kind": "anchor-required",
+      "when_any": ["RES-02", "RES-03"],
+      "anchor_metric": "Measured failover time",
+      "domains": ["RES", "GRC"],
+      "severity": "H",
+      "message": "A multi-region position is only evidence of resilience once failover has been executed and measured. The designed RTO does not satisfy an impact tolerance; the measured one does."
+    },
+    {
+      "id": "R-A05",
+      "kind": "anchor-required",
+      "when_any": ["DATA-02", "DATA-03", "DATA-04"],
+      "anchor_metric": "Real production data in non-prod",
+      "domains": ["DATA", "ENV"],
+      "severity": "H",
+      "message": "Every non-prod data position depends on this number. Until it is pinned per environment, the non-prod exposure cannot be sized and therefore cannot be accepted."
+    },
+    {
+      "id": "R-A06",
+      "kind": "anchor-required",
+      "when_any": ["SEC-02", "SEC-03"],
+      "anchor_metric": "SIEM ingestion cost",
+      "domains": ["SEC", "GRC"],
+      "severity": "M",
+      "message": "Ingestion cost is the constraint that most often forces a retention decision after go-live. Pin it during design, while the volume-generating choices in other domains can still be revisited."
+    },
+
+    {
+      "id": "R-Q01",
+      "kind": "question-raised",
+      "when_all": ["DATA-04", "INT-04"],
+      "domains": ["DATA", "INT"],
+      "message": "A sovereignty boundary sits alongside material third-party integration.",
+      "question": {
+        "question": "For each material third party, where does it actually process and store the data shared with it, and does any of that fall outside the declared jurisdiction - including its own sub-processors?",
+        "owner_role": "Third-Party Risk",
+        "blocking": true
+      }
+    },
+    {
+      "id": "R-Q02",
+      "kind": "question-raised",
+      "when_any": ["ENV-02", "ENV-03"],
+      "when_all": ["DATA-01"],
+      "domains": ["ENV", "DATA"],
+      "message": "An enforced per-environment data policy is claimed while classification is held only at system level.",
+      "question": {
+        "question": "If classification is recorded per system rather than per store and flow, what exactly is the non-prod data policy enforcing against - and how is a violation detected?",
+        "owner_role": "Data Owner",
+        "blocking": true
+      }
+    },
+    {
+      "id": "R-Q03",
+      "kind": "question-raised",
+      "when_all": ["RES-03", "GRC-02"],
+      "domains": ["RES", "GRC"],
+      "message": "Active-active consistency behaviour has customer-outcome consequences that the regulatory position must cover.",
+      "question": {
+        "question": "When a write is visible in one region and not the other, what does the customer see - and has conduct risk accepted that outcome explicitly?",
+        "owner_role": "Conduct Risk",
+        "blocking": true
+      }
+    },
+    {
+      "id": "R-Q04",
+      "kind": "question-raised",
+      "when_all": ["NET-02", "INT-04"],
+      "domains": ["NET", "INT"],
+      "message": "The egress allow-list and the third-party register describe the same external dependencies from two directions.",
+      "question": {
+        "question": "Does every egress allow-list entry correspond to a registered third party, and does every registered third party appear on the allow-list? Either mismatch is a finding.",
+        "owner_role": "Security Architect",
+        "blocking": false
+      }
+    },
+    {
+      "id": "R-Q05",
+      "kind": "question-raised",
+      "when_any": ["IAM-03", "IAM-04"],
+      "when_all": ["PLAT-01"],
+      "domains": ["IAM", "PLAT"],
+      "message": "Federated workload identity depends on the platform attesting the workload.",
+      "question": {
+        "question": "Without admission control or attested builds, what does the platform assert about a workload when it requests an identity - and what stops an unverified artefact obtaining a legitimate one?",
+        "owner_role": "Platform Architect",
+        "blocking": true
+      }
+    },
+    {
+      "id": "R-Q06",
+      "kind": "question-raised",
+      "when_all": ["SEC-01", "ENV-01"],
+      "domains": ["SEC", "ENV"],
+      "message": "Non-prod is unmonitored and its configuration divergence is unmeasured.",
+      "question": {
+        "question": "If RTL is neither monitored nor measured for drift, on what basis is an RTL pass treated as evidence that Prod will behave the same way?",
+        "owner_role": "Route-to-Live Owner",
+        "blocking": true
+      }
+    }
+  ]
+}

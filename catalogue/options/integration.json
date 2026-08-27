@@ -1,0 +1,593 @@
+{
+  "domain": "integration",
+  "options": [
+    {
+      "id": "INT-01",
+      "name": "Point-to-point integration with network-trusted internal edges",
+      "summary": "Services integrate directly. External edges are authenticated; internal edges are trusted because they sit inside the network boundary. Contracts are documented per interface without central governance.",
+      "posture": "tactical",
+      "provides": [
+        "integration.contract.governed"
+      ],
+      "requires": [
+        "network.reach.control-plane"
+      ],
+      "fit": {
+        "time-pressured": 3,
+        "cost-constrained": 2,
+        "tier-T1": 3,
+        "small-scale": 2,
+        "legacy-integration": 1,
+        "regulated": -2,
+        "tier-T4": -3,
+        "open-banking": -3,
+        "internet-facing": -2
+      },
+      "effort_weeks": 5,
+      "effort_band": "S",
+      "cost_band": "S",
+      "security_score": 2,
+      "reg_score": 2,
+      "ops_burden": 4,
+      "checklist": [
+        "interface inventory complete for internal and external edges",
+        "trust boundary marked on each edge - the marking is what reveals the assumption",
+        "transport and payload protection stated per interface",
+        "error, retry and poison-message handling defined per async path",
+        "which interfaces differ between Prod and RTL (stubs, mocks, sandboxes) recorded"
+      ],
+      "questions": [
+        {
+          "question": "For each edge crossing a trust boundary, is authorisation verified at the edge, or inferred from the caller's network location?",
+          "owner_role": "Solution Architect",
+          "blocking": true
+        },
+        {
+          "question": "Which integrations are stubbed in RTL, and does the stub hide a failure mode that Prod will exhibit?",
+          "owner_role": "Test Manager",
+          "blocking": true
+        },
+        {
+          "question": "How many point-to-point edges will exist at the end state, and is that number maintainable?",
+          "owner_role": "Integration Architect",
+          "blocking": false
+        }
+      ],
+      "anchors": [
+        {
+          "metric": "Interfaces in scope",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Trust boundaries crossed",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Request rate per interface at peak",
+          "unit": "req/s",
+          "critical": true
+        },
+        {
+          "metric": "Interfaces stubbed or mocked in RTL",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "External third-party integrations",
+          "unit": "count",
+          "critical": false
+        }
+      ],
+      "risks": [
+        {
+          "category": "security",
+          "severity": "H",
+          "statement": "Internal edges trusted by network location mean any workload that reaches the network can call them, so a single compromised component inherits the authority of every service it can route to.",
+          "mitigation": "Identify the edges that reach the highest-value data and add edge authorisation to those specifically, rather than deferring the whole pattern."
+        },
+        {
+          "category": "timeline",
+          "severity": "M",
+          "statement": "Point-to-point edge count grows combinatorially, and the integration test matrix grows with it - the schedule impact lands late, in test rather than build.",
+          "mitigation": "Cap the number of new point-to-point edges and route new consumers through a shared edge where one already exists."
+        },
+        {
+          "category": "workaround",
+          "severity": "M",
+          "statement": "Stubbed RTL interfaces mask real failure modes - timeouts, partial responses, throttling - so the first genuine test of those behaviours is in Prod.",
+          "mitigation": "Prioritise real sandbox connectivity for the interfaces on the critical path, and record the remainder as an accepted test gap."
+        }
+      ],
+      "controls": [
+        "ISO 27001 A.8.21",
+        "ISO 27001 A.8.26",
+        "NIST 800-53 AC-4",
+        "NIST 800-53 SC-8"
+      ],
+      "lld_notes": [
+        "Per interface: protocol, authN, authZ decision point, transport protection, payload protection, log emitted, and the trust boundary it crosses.",
+        "Mark every interface that is stubbed in RTL and state what behaviour the stub does not reproduce."
+      ],
+      "hld_notes": [
+        "Trust boundaries must be drawn on the e2e flow; an edge with no marked boundary is an unexamined assumption."
+      ]
+    },
+    {
+      "id": "INT-02",
+      "name": "Managed API gateway with verified authorisation at every trust-boundary edge",
+      "summary": "Internal and external APIs route through a managed gateway carrying authentication, authorisation, rate limiting and per-edge logging. Authorisation is verified at the edge on every boundary crossing, never inferred from location.",
+      "posture": "balanced",
+      "provides": [
+        "integration.gateway.managed",
+        "integration.edge.authz",
+        "integration.contract.governed",
+        "integration.per-edge-logging",
+        "integration.thirdparty.registered",
+        "integration.async.idempotent"
+      ],
+      "requires": [
+        "identity.pdp.central",
+        "secops.log.type1",
+        "data.classification.per-flow",
+        "network.reach.control-plane"
+      ],
+      "fit": {
+        "regulated": 3,
+        "tier-T2": 2,
+        "tier-T3": 3,
+        "internet-facing": 2,
+        "open-banking": 3,
+        "customer-facing": 2,
+        "saas-heavy": 2,
+        "cost-constrained": -1,
+        "tier-T1": -2
+      },
+      "effort_weeks": 16,
+      "effort_band": "M",
+      "cost_band": "M",
+      "security_score": 4,
+      "reg_score": 4,
+      "ops_burden": 3,
+      "checklist": [
+        "every trust-boundary edge routed through a policy enforcement point",
+        "per-edge authN, authZ, transport and payload protection recorded",
+        "contract and schema governance with versioning and a deprecation policy",
+        "sync vs async decided per interface with idempotency and replay handling on async paths",
+        "third-party integrations registered with materiality assessment",
+        "per-interface logging sufficient for a detection to consume, not just for debugging",
+        "gateway present in RTL with the same policy set as Prod",
+        "gateway failure mode stated per edge"
+      ],
+      "questions": [
+        {
+          "question": "Are there edges that bypass the gateway for performance or legacy reasons, and what authorises those?",
+          "owner_role": "Integration Architect",
+          "blocking": true
+        },
+        {
+          "question": "Does every interface emit a log with enough context for a detection - subject, resource, outcome, correlation id?",
+          "owner_role": "SecOps Lead",
+          "blocking": true
+        },
+        {
+          "question": "Which third parties are material or critical under the applicable regime, and does each have an exit plan?",
+          "owner_role": "Third-Party Risk",
+          "blocking": true
+        },
+        {
+          "question": "What is the gateway's own availability tier, given it is now on the critical path for every edge?",
+          "owner_role": "Resilience Lead",
+          "blocking": false
+        }
+      ],
+      "anchors": [
+        {
+          "metric": "Interfaces in scope",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Trust boundaries crossed",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Gateway request rate at peak",
+          "unit": "req/s",
+          "critical": true
+        },
+        {
+          "metric": "Gateway p99 latency budget",
+          "unit": "ms",
+          "critical": true
+        },
+        {
+          "metric": "Edges bypassing the gateway",
+          "unit": "count",
+          "critical": true,
+          "note": "The bypass count is the honest measure of edge-authorisation coverage."
+        },
+        {
+          "metric": "Event topics and throughput",
+          "unit": "msg/s",
+          "critical": false
+        },
+        {
+          "metric": "Payload size distribution p50/p99",
+          "unit": "KB",
+          "critical": false
+        },
+        {
+          "metric": "External third-party integrations",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Data-sharing agreements",
+          "unit": "count",
+          "critical": false
+        },
+        {
+          "metric": "Per-edge log volume",
+          "unit": "GB/day",
+          "critical": true
+        }
+      ],
+      "risks": [
+        {
+          "category": "operational",
+          "severity": "H",
+          "statement": "The gateway becomes a single point of failure for every integration, inheriting the strictest availability requirement of any edge it carries.",
+          "mitigation": "Size and tier the gateway to the strictest caller, deploy it multi-AZ, and define per-edge behaviour on gateway failure explicitly."
+        },
+        {
+          "category": "security",
+          "severity": "M",
+          "statement": "Edges permitted to bypass the gateway for latency or legacy reasons are exactly the edges with no enforced authorisation, and they accumulate.",
+          "mitigation": "Register every bypass with an owner and expiry, and place compensating detection on those paths specifically."
+        },
+        {
+          "category": "timeline",
+          "severity": "M",
+          "statement": "Onboarding existing interfaces to a gateway requires coordination with every consuming team, and the schedule depends on their availability rather than the programme's.",
+          "mitigation": "Sequence onboarding in waves negotiated with consumer teams up front, and run gateway and direct paths in parallel during cutover."
+        },
+        {
+          "category": "cost",
+          "severity": "M",
+          "statement": "Per-edge logging at gateway granularity is a large and frequently unbudgeted SIEM ingestion cost.",
+          "mitigation": "Pin the per-edge log volume anchor and agree the Type 1/Type 2 split with SecOps before build."
+        }
+      ],
+      "controls": [
+        "ISO 27001 A.5.19",
+        "ISO 27001 A.8.21",
+        "ISO 27001 A.8.26",
+        "NIST 800-53 AC-4",
+        "NIST 800-53 SC-8",
+        "PCI-DSS v4 6.2",
+        "DORA Art.28"
+      ],
+      "lld_notes": [
+        "Publish the interface register as the primary artefact: one row per edge with trust boundary, authN, authZ, transport, payload protection, classification and log.",
+        "State the gateway policy applied per edge and the failure mode if the gateway is unavailable.",
+        "Record every bypass with its justification, owner and expiry."
+      ],
+      "hld_notes": [
+        "The gateway is the enforcement plane on the e2e flow; every boundary crossing passes through it, and the exceptions are drawn explicitly."
+      ]
+    },
+    {
+      "id": "INT-03",
+      "name": "Event-driven backbone with schema governance and idempotent consumers",
+      "summary": "Services integrate asynchronously over a governed event backbone. Schemas are registered and versioned, consumers are idempotent, and replay and poison-message handling are designed rather than discovered. Sits alongside a gateway for synchronous edges.",
+      "posture": "balanced",
+      "provides": [
+        "integration.async.idempotent",
+        "integration.contract.governed",
+        "integration.per-edge-logging",
+        "integration.edge.authz"
+      ],
+      "requires": [
+        "identity.workload.federated",
+        "secops.log.type1",
+        "data.classification.per-flow",
+        "network.reach.control-plane"
+      ],
+      "fit": {
+        "realtime": 3,
+        "data-platform": 2,
+        "tier-T3": 2,
+        "tier-T4": 2,
+        "cloud-public": 2,
+        "containerised": 1,
+        "large-scale": 2,
+        "batch": -1,
+        "tier-T1": -2,
+        "time-pressured": -1
+      },
+      "effort_weeks": 20,
+      "effort_band": "L",
+      "cost_band": "M",
+      "security_score": 4,
+      "reg_score": 3,
+      "ops_burden": 3,
+      "checklist": [
+        "topic inventory with an owner, a classification and a retention position per topic",
+        "schema registry with compatibility policy and a stated deprecation path",
+        "consumer idempotency proven, not assumed - replay must be safe",
+        "poison-message and dead-letter handling defined per consumer group, with an owner for the queue",
+        "topic-level authorisation using workload identity rather than shared credentials",
+        "message-level classification recorded - a topic can carry a higher classification than its consumers hold",
+        "replay of retained events assessed as a data-exposure path in its own right",
+        "ordering and exactly-once expectations stated honestly per consumer"
+      ],
+      "questions": [
+        {
+          "question": "Is every consumer genuinely idempotent, and has replay been tested rather than asserted?",
+          "owner_role": "Solution Architect",
+          "blocking": true
+        },
+        {
+          "question": "Topic retention means the backbone is a data store - what classification does it hold, and is it protected to that level?",
+          "owner_role": "Data Architect",
+          "blocking": true
+        },
+        {
+          "question": "Who owns the dead-letter queue, and what is the agreed time before an un-actioned poison message becomes an incident?",
+          "owner_role": "Service Owner",
+          "blocking": true
+        },
+        {
+          "question": "Can a consumer with replay rights reconstruct a data set it is not authorised to query directly?",
+          "owner_role": "Security Architect",
+          "blocking": true
+        }
+      ],
+      "anchors": [
+        {
+          "metric": "Event topics",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Message throughput at peak",
+          "unit": "msg/s",
+          "critical": true
+        },
+        {
+          "metric": "Payload size distribution p50/p99",
+          "unit": "KB",
+          "critical": true
+        },
+        {
+          "metric": "Topic retention",
+          "unit": "days",
+          "critical": true
+        },
+        {
+          "metric": "Data retained on the backbone",
+          "unit": "GB",
+          "critical": true,
+          "note": "Retention makes the backbone a datastore; it belongs in the Data domain's store inventory."
+        },
+        {
+          "metric": "Consumer groups",
+          "unit": "count",
+          "critical": false
+        },
+        {
+          "metric": "Dead-letter rate",
+          "unit": "msg/day",
+          "critical": false
+        },
+        {
+          "metric": "Per-edge log volume",
+          "unit": "GB/day",
+          "critical": true
+        }
+      ],
+      "risks": [
+        {
+          "category": "security",
+          "severity": "H",
+          "statement": "Event retention turns the backbone into an unclassified datastore holding whatever the highest-classification topic carries, usually outside the Data domain's store inventory.",
+          "mitigation": "Register every topic in the datastore inventory with its classification and apply the same encryption, retention and access rules as any other store."
+        },
+        {
+          "category": "security",
+          "severity": "M",
+          "statement": "Replay rights let a consumer reconstruct history it could not query directly, which is an authorisation bypass expressed as a feature.",
+          "mitigation": "Authorise replay separately from consumption and log every replay as a Type 1 event."
+        },
+        {
+          "category": "operational",
+          "severity": "H",
+          "statement": "Non-idempotent consumers turn any redelivery into duplicated business effect - duplicated payments, duplicated notifications - and redelivery is normal, not exceptional.",
+          "mitigation": "Test idempotency with deliberate redelivery in RTL as an acceptance gate, not as a non-functional aspiration."
+        },
+        {
+          "category": "timeline",
+          "severity": "M",
+          "statement": "Schema evolution across independently released consumers is a coordination cost that recurs every release, and it is rarely in the plan after go-live.",
+          "mitigation": "Fix the compatibility policy before the first topic is published and enforce it in the pipeline rather than in review."
+        }
+      ],
+      "controls": [
+        "ISO 27001 A.5.12",
+        "ISO 27001 A.8.21",
+        "ISO 27001 A.8.26",
+        "NIST 800-53 AC-4",
+        "NIST 800-53 SC-8",
+        "DORA Art.9"
+      ],
+      "lld_notes": [
+        "Per topic: owner, schema, compatibility policy, classification, retention, consumers, and the authorisation model.",
+        "State the idempotency mechanism per consumer and the test that proves it.",
+        "Record dead-letter ownership and the escalation path."
+      ],
+      "hld_notes": [
+        "The backbone is drawn as both an integration path and a datastore, because retention makes it both."
+      ]
+    },
+    {
+      "id": "INT-04",
+      "name": "Governed third-party integration tier with exit and concentration management",
+      "summary": "External and third-party integration is handled by a dedicated tier with materiality assessment, contractual control mapping, exit planning and concentration analysis. Selected where third parties carry material or critical dependency.",
+      "posture": "strategic",
+      "provides": [
+        "integration.thirdparty.registered",
+        "integration.gateway.managed",
+        "integration.edge.authz",
+        "integration.per-edge-logging",
+        "integration.contract.governed",
+        "integration.async.idempotent"
+      ],
+      "requires": [
+        "grc.thirdparty.dora",
+        "identity.federation.external",
+        "secops.log.type1",
+        "data.classification.per-flow",
+        "network.egress.fqdn-allowlist"
+      ],
+      "fit": {
+        "third-party-material": 3,
+        "saas-heavy": 3,
+        "regulated": 3,
+        "open-banking": 2,
+        "tier-T3": 2,
+        "tier-T4": 2,
+        "m-and-a": 2,
+        "tier-T1": -2,
+        "greenfield": -1
+      },
+      "effort_weeks": 18,
+      "effort_band": "M",
+      "cost_band": "M",
+      "security_score": 4,
+      "reg_score": 5,
+      "ops_burden": 3,
+      "checklist": [
+        "third-party register complete with materiality and CTP assessment per party",
+        "contractual right-to-audit, sub-outsourcing and incident-notification terms confirmed per material party",
+        "exit plan documented and costed per material party, with a stated exit execution time",
+        "concentration risk assessed across parties, including shared fourth parties",
+        "asynchronous paths to and from each party - callbacks, webhooks, file transfers - made idempotent, with replay and duplicate handling defined per party",
+        "data shared with each party classified, with the sharing agreement referenced",
+        "each party's own incident notification path tested, not just contracted",
+        "egress allow-list entries reconciled one to one against the third-party register"
+      ],
+      "questions": [
+        {
+          "question": "Which third parties meet the critical-third-party threshold, and has that assessment been reviewed by compliance rather than assumed by architecture?",
+          "owner_role": "Third-Party Risk",
+          "blocking": true
+        },
+        {
+          "question": "Do several material parties depend on the same fourth party, creating concentration the individual assessments do not show?",
+          "owner_role": "Third-Party Risk",
+          "blocking": true
+        },
+        {
+          "question": "How long would exit actually take for the most material party, and does that fit the impact tolerance stated for the service?",
+          "owner_role": "Resilience Lead",
+          "blocking": true
+        },
+        {
+          "question": "Is there an egress allow-list entry with no corresponding entry in the third-party register?",
+          "owner_role": "Security Architect",
+          "blocking": false
+        },
+        {
+          "question": "For each party sending us asynchronous traffic, is a redelivery safe - and has that been tested rather than assumed?",
+          "owner_role": "Integration Architect",
+          "blocking": false
+        }
+      ],
+      "anchors": [
+        {
+          "metric": "External third-party integrations",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Material third parties",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Critical third parties (CTP threshold)",
+          "unit": "count",
+          "critical": true
+        },
+        {
+          "metric": "Data-sharing agreements",
+          "unit": "count",
+          "critical": false
+        },
+        {
+          "metric": "Data shared per party",
+          "unit": "GB/day",
+          "critical": true
+        },
+        {
+          "metric": "Documented exit execution time",
+          "unit": "weeks",
+          "critical": true
+        },
+        {
+          "metric": "Shared fourth-party dependencies",
+          "unit": "count",
+          "critical": true
+        }
+      ],
+      "risks": [
+        {
+          "category": "legal-reg",
+          "severity": "H",
+          "statement": "An exit plan that exists on paper but has never been costed or rehearsed will not satisfy supervisory challenge, and the gap surfaces during a review rather than during design.",
+          "mitigation": "Cost each exit and rehearse the highest-materiality one at least in tabletop, recording the result as evidence."
+        },
+        {
+          "category": "legal-reg",
+          "severity": "H",
+          "statement": "Concentration through a shared fourth party is invisible in per-party assessments, so the aggregate dependency is larger than any individual record shows.",
+          "mitigation": "Map fourth-party dependencies explicitly and assess concentration at the portfolio level rather than per contract."
+        },
+        {
+          "category": "timeline",
+          "severity": "M",
+          "statement": "Contractual remediation with existing suppliers depends on their commercial cycle and can take longer than the technical delivery it gates.",
+          "mitigation": "Start contract remediation in parallel with design, not after it, and treat each renegotiation as a dated external dependency."
+        },
+        {
+          "category": "security",
+          "severity": "M",
+          "statement": "Third-party incident notification is often contractual rather than technical, so the first indication of a supplier breach may be an email days later.",
+          "mitigation": "Establish a technical notification path where possible and build detection for anomalous behaviour on the party's own integration."
+        }
+      ],
+      "controls": [
+        "ISO 27001 A.5.19",
+        "ISO 27001 A.5.20",
+        "ISO 27001 A.5.21",
+        "ISO 27001 A.5.22",
+        "NIST 800-53 SA-9",
+        "DORA Art.28",
+        "DORA Art.29",
+        "DORA Art.30",
+        "SS2/21"
+      ],
+      "lld_notes": [
+        "Publish the third-party register with materiality, data shared, contractual position and exit time per party.",
+        "Reconcile the register against the Network egress allow-list; an unmatched entry on either side is a finding.",
+        "Record the fourth-party map alongside the party register."
+      ],
+      "hld_notes": [
+        "Third parties appear on the e2e flow as named external boundaries with their materiality marked, not as anonymous clouds."
+      ]
+    }
+  ]
+}

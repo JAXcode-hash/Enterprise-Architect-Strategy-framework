@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.DS_Store
+
+# Generated run output. Each project is one user's isolated assessment;
+# nothing in here belongs in the framework's history.
+projects/*
+!projects/.gitkeep

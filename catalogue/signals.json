@@ -1,0 +1,452 @@
+{
+  "schema_version": "1.0",
+  "_note": "Signals are what the intake reads out of a brief. Each carries regex patterns; a hit records the matching phrase as evidence so every downstream score is traceable back to a sentence in the brief. `weight_complexity` feeds the T1-T4 tier calculation.",
+  "signals": {
+    "regulated": {
+      "label": "Regulated financial services scope",
+      "weight_complexity": 2,
+      "patterns": [
+        "\\bPRA\\b",
+        "\\bFCA\\b",
+        "\\bDORA\\b",
+        "\\bregulat",
+        "\\bcompliance\\b",
+        "\\bSS\\d+/\\d+",
+        "\\bbasel\\b",
+        "\\bMiFID",
+        "\\bfinancial (services|conduct)",
+        "\\bbank(ing)?\\b",
+        "\\bconsumer duty\\b"
+      ],
+      "mandates": [
+        "grc.control.mapping",
+        "secops.log.type1"
+      ]
+    },
+    "pci": {
+      "label": "Cardholder data in scope",
+      "weight_complexity": 2,
+      "patterns": [
+        "\\bPCI\\b",
+        "\\bPCI-?DSS\\b",
+        "cardholder",
+        "\\bPAN\\b",
+        "card (data|number|payment)",
+        "\\bacquir(er|ing)\\b"
+      ],
+      "mandates": [
+        "data.classification.per-flow",
+        "network.egress.fqdn-allowlist",
+        "secops.log.type1"
+      ]
+    },
+    "pii": {
+      "label": "Personal / customer data in scope",
+      "weight_complexity": 1,
+      "patterns": [
+        "\\bPII\\b",
+        "\\bGDPR\\b",
+        "personal data",
+        "customer data",
+        "\\bSPI\\b",
+        "special category",
+        "\\bDPIA\\b",
+        "data subject",
+        "customer record",
+        "client (data|record)",
+        "personally identifiable"
+      ],
+      "mandates": [
+        "data.classification.per-flow",
+        "data.retention.policy"
+      ]
+    },
+    "payments": {
+      "label": "Payment execution in scope",
+      "weight_complexity": 2,
+      "patterns": [
+        "\\bpayment",
+        "\\bFaster Payments\\b",
+        "\\bSEPA\\b",
+        "\\bSWIFT\\b",
+        "\\bBACS\\b",
+        "\\bCHAPS\\b",
+        "settle(ment)?",
+        "\\bISO ?20022\\b"
+      ],
+      "mandates": [
+        "integration.async.idempotent",
+        "data.access.audited"
+      ]
+    },
+    "open-banking": {
+      "label": "Open Banking / regulated API exposure",
+      "weight_complexity": 2,
+      "patterns": [
+        "open banking",
+        "\\bPSD2\\b",
+        "\\bTPP\\b",
+        "\\bAISP\\b",
+        "\\bPISP\\b",
+        "\\bFAPI\\b"
+      ],
+      "mandates": [
+        "integration.gateway.managed",
+        "integration.edge.authz"
+      ]
+    },
+    "customer-facing": {
+      "label": "Customer-facing service",
+      "weight_complexity": 1,
+      "patterns": [
+        "customer[- ]facing",
+        "\\bcustomers? (can|will|log|access)",
+        "mobile app",
+        "\\bdigital channel",
+        "\\bfront ?end\\b",
+        "\\bself[- ]service\\b"
+      ],
+      "mandates": [
+        "identity.federation.external"
+      ]
+    },
+    "internet-facing": {
+      "label": "Public internet exposure",
+      "weight_complexity": 2,
+      "patterns": [
+        "internet[- ]facing",
+        "public(ly)? (exposed|accessible|available)",
+        "\\bpublic endpoint",
+        "\\bDMZ\\b",
+        "\\bpublic API",
+        "external(ly)? exposed"
+      ],
+      "mandates": [
+        "network.ingress.waf"
+      ]
+    },
+    "greenfield": {
+      "label": "Greenfield build",
+      "weight_complexity": 0,
+      "patterns": [
+        "greenfield",
+        "new build",
+        "from scratch",
+        "net[- ]new",
+        "stand(ing)? up a new"
+      ]
+    },
+    "brownfield": {
+      "label": "Existing estate / brownfield",
+      "weight_complexity": 1,
+      "patterns": [
+        "brownfield",
+        "existing (estate|platform|system)",
+        "legacy",
+        "in[- ]flight",
+        "current state",
+        "migrat(e|ion|ing)",
+        "uplift",
+        "remediat"
+      ]
+    },
+    "cloud-public": {
+      "label": "Public cloud target",
+      "weight_complexity": 1,
+      "patterns": [
+        "\\bAWS\\b",
+        "\\bAzure\\b",
+        "\\bGCP\\b",
+        "google cloud",
+        "public cloud",
+        "\\bcloud[- ]native\\b",
+        "\\bhyperscaler"
+      ]
+    },
+    "multi-cloud": {
+      "label": "More than one cloud provider",
+      "weight_complexity": 2,
+      "patterns": [
+        "multi[- ]cloud",
+        "cross[- ]cloud",
+        "(AWS|Azure|GCP)[^.]{0,40}(and|\\+|&)[^.]{0,20}(AWS|Azure|GCP)",
+        "both clouds",
+        "two (hyperscalers?|clouds?|cloud providers?)",
+        "more than one (cloud|hyperscaler)",
+        "(dual|second)[- ]cloud"
+      ]
+    },
+    "hybrid-onprem": {
+      "label": "Hybrid with on-premise estate",
+      "weight_complexity": 2,
+      "patterns": [
+        "on[- ]prem",
+        "hybrid",
+        "data ?cent(re|er)",
+        "\\bmainframe\\b",
+        "\\bcore banking\\b",
+        "\\bESB\\b",
+        "private cloud"
+      ]
+    },
+    "saas-heavy": {
+      "label": "Material SaaS dependency",
+      "weight_complexity": 1,
+      "patterns": [
+        "\\bSaaS\\b",
+        "\\bvendor[- ]hosted",
+        "third[- ]party (platform|service|product)",
+        "\\bCOTS\\b",
+        "software as a service"
+      ],
+      "mandates": [
+        "integration.thirdparty.registered"
+      ]
+    },
+    "third-party-material": {
+      "label": "Material or critical third party",
+      "weight_complexity": 2,
+      "patterns": [
+        "\\bCTP\\b",
+        "critical third part",
+        "material (outsourc|third)",
+        "\\boutsourc",
+        "\\bsupplier\\b",
+        "\\bfourth part"
+      ],
+      "mandates": [
+        "integration.thirdparty.registered",
+        "grc.thirdparty.dora"
+      ]
+    },
+    "ai-ml": {
+      "label": "Models, ML or LLMs in scope",
+      "weight_complexity": 2,
+      "patterns": [
+        "\\bAI\\b",
+        "\\bLLM\\b",
+        "machine learning",
+        "\\bML\\b",
+        "\\bmodel(s)? (risk|inference|training)",
+        "generative",
+        "\\bRAG\\b",
+        "\\bagent(ic)?\\b",
+        "\\bSS1/23\\b"
+      ],
+      "mandates": [
+        "grc.modelrisk.tiered"
+      ]
+    },
+    "high-availability": {
+      "label": "Important business service / high availability",
+      "weight_complexity": 2,
+      "patterns": [
+        "\\bIBS\\b",
+        "important business service",
+        "\\bhigh(ly)? available\\b",
+        "\\bHA\\b",
+        "\\b24[x/]7\\b",
+        "always[- ]on",
+        "\\btier ?[01]\\b",
+        "impact tolerance",
+        "operational resilience"
+      ],
+      "mandates": [
+        "resilience.multi-az",
+        "resilience.backup.tested"
+      ]
+    },
+    "realtime": {
+      "label": "Real-time / low-latency path",
+      "weight_complexity": 1,
+      "patterns": [
+        "real[- ]time",
+        "low[- ]latency",
+        "\\bsub[- ]second",
+        "\\bstreaming\\b",
+        "\\bevent[- ]driven\\b",
+        "\\bmillisecond"
+      ]
+    },
+    "batch": {
+      "label": "Batch or file-based processing",
+      "weight_complexity": 0,
+      "patterns": [
+        "\\bbatch\\b",
+        "\\bfile transfer\\b",
+        "\\bSFTP\\b",
+        "\\bETL\\b",
+        "overnight",
+        "\\bMFT\\b"
+      ]
+    },
+    "data-platform": {
+      "label": "Analytics / data platform in scope",
+      "weight_complexity": 1,
+      "patterns": [
+        "data (platform|lake|warehouse|mesh)",
+        "\\blakehouse\\b",
+        "\\banalytics\\b",
+        "\\bBI\\b",
+        "\\bDatabricks\\b",
+        "\\bSnowflake\\b",
+        "\\bBigQuery\\b"
+      ]
+    },
+    "legacy-integration": {
+      "label": "Integration with legacy systems",
+      "weight_complexity": 2,
+      "patterns": [
+        "\\bmainframe\\b",
+        "\\bCOBOL\\b",
+        "\\bAS/?400\\b",
+        "legacy (system|integration|interface)",
+        "\\bMQ\\b",
+        "\\bSOAP\\b",
+        "\\bfixed[- ]width\\b"
+      ]
+    },
+    "containerised": {
+      "label": "Containers / Kubernetes runtime",
+      "weight_complexity": 1,
+      "patterns": [
+        "\\bkubernetes\\b",
+        "\\bk8s\\b",
+        "\\bcontainer",
+        "\\bOpenShift\\b",
+        "\\bEKS\\b",
+        "\\bAKS\\b",
+        "\\bGKE\\b",
+        "\\bdocker\\b"
+      ]
+    },
+    "serverless": {
+      "label": "Serverless / managed runtime",
+      "weight_complexity": 0,
+      "patterns": [
+        "\\bserverless\\b",
+        "\\blambda\\b",
+        "\\bfunctions? as a service\\b",
+        "\\bFaaS\\b",
+        "\\bCloud Run\\b",
+        "\\bFargate\\b"
+      ]
+    },
+    "data-residency": {
+      "label": "Residency or sovereignty constraint",
+      "weight_complexity": 2,
+      "patterns": [
+        "residenc",
+        "sovereign",
+        "data localisation",
+        "\\bin[- ]region\\b",
+        "must (remain|stay) in",
+        "\\bUK[- ]only\\b",
+        "\\bEU[- ]only\\b",
+        "cross[- ]border"
+      ],
+      "mandates": [
+        "data.residency.in-region",
+        "network.residency.pinned"
+      ]
+    },
+    "non-prod-real-data": {
+      "label": "Production-derived data in non-prod",
+      "weight_complexity": 2,
+      "patterns": [
+        "real data in (test|non[- ]prod|dev)",
+        "production data in",
+        "copy of production",
+        "prod (copy|clone|refresh)",
+        "masked (copy|data|extract)",
+        "obfuscat",
+        "(real|live|production|prod) (data|records?)[^.]{0,30}\\b(in|for|into)\\b[^.]{0,20}(test|non[- ]?prod|dev|uat|staging)",
+        "(test|non[- ]?prod|dev|uat|staging)[^.]{0,30}(real|live|production|prod) (data|records?)"
+      ],
+      "mandates": [
+        "data.nonprod.masked",
+        "secops.nonprod.monitored",
+        "env.data.policy"
+      ]
+    },
+    "time-pressured": {
+      "label": "Hard external date",
+      "weight_complexity": 2,
+      "patterns": [
+        "\\bdeadline\\b",
+        "regulatory date",
+        "must (be )?(deliver|go[- ]live|complete)[^.]{0,30}by",
+        "\\bQ[1-4] \\d{4}\\b",
+        "hard date",
+        "\\bmandate",
+        "end of (year|quarter)",
+        "\\bimmovable\\b"
+      ]
+    },
+    "cost-constrained": {
+      "label": "Explicit cost constraint",
+      "weight_complexity": 1,
+      "patterns": [
+        "\\bbudget\\b",
+        "cost[- ](constrain|pressure|cap)",
+        "\\bno (additional|new) (spend|licen[cs]e)",
+        "reuse existing",
+        "\\bcapex\\b",
+        "\\bopex\\b",
+        "cost[- ]effective"
+      ]
+    },
+    "multi-region": {
+      "label": "Multi-region footprint",
+      "weight_complexity": 2,
+      "patterns": [
+        "multi[- ]region",
+        "two regions",
+        "\\bDR region\\b",
+        "cross[- ]region",
+        "\\bfailover region\\b",
+        "geo[- ]redundan"
+      ],
+      "mandates": [
+        "resilience.multi-region"
+      ]
+    },
+    "m-and-a": {
+      "label": "Merger, acquisition or divestment context",
+      "weight_complexity": 2,
+      "patterns": [
+        "\\bM&A\\b",
+        "acquisition",
+        "divest",
+        "\\bTSA\\b",
+        "carve[- ]out",
+        "separation"
+      ]
+    }
+  },
+  "tier_thresholds": {
+    "T1": 0,
+    "T2": 6,
+    "T3": 12,
+    "T4": 20
+  },
+  "tier_length_bonus": [
+    {
+      "min_chars": 0,
+      "bonus": 0
+    },
+    {
+      "min_chars": 1500,
+      "bonus": 1
+    },
+    {
+      "min_chars": 4000,
+      "bonus": 2
+    },
+    {
+      "min_chars": 9000,
+      "bonus": 3
+    }
+  ],
+  "_mandates_note": "A signal's `mandates` are capabilities the brief makes non-negotiable. The selector rewards options that supply one; the orchestrator raises a gap against the owning domain when nothing in the selection does, which drives the repair loop. This is what stops a hard constraint being outvoted by a pile of soft ones."
+}
