@@ -1,0 +1,125 @@
+{
+  "domain": "res",
+  "smes": [
+    {
+      "id": "business-continuity",
+      "name": "Business Continuity",
+      "owns": "Continuity of the business service itself - what the business does when the technology is unavailable.",
+      "authoritative_on": ["important business service identification", "impact tolerance", "manual workaround viability", "dependency mapping to business process"],
+      "never_assume": [
+        "That an impact tolerance stated to a regulator is achievable. Ask what the measured recovery time actually is.",
+        "That a manual workaround exists. Ask whether it has been performed, at what volume, and by whom.",
+        "That the business service maps cleanly to one technical service. It usually spans several with different owners.",
+        "That tolerance applies uniformly. It is usually different at a peak period nobody modelled."
+      ],
+      "must_ask": [
+        {"q": "What impact tolerance has been stated for this service, and to whom?", "of": "Service Owner"},
+        {"q": "Has the manual workaround ever been performed at realistic volume?", "of": "Operations Lead"},
+        {"q": "Which technical services must all be available for this business service to function?", "of": "Service Owner"}
+      ],
+      "peers": ["disaster-recovery", "cyber-resilience", "crisis-management", "backup-recovery-integrity"],
+      "escalate_when": [
+        "A stated impact tolerance exceeds what the technical architecture can deliver.",
+        "The tolerance is a regulatory commitment the GRC domain owns.",
+        "Continuity depends on a third party whose exit time GRC has assessed."
+      ],
+      "produces": ["Impact tolerance with its audience", "Manual workaround viability evidence", "Business-to-technical service dependency map"]
+    },
+    {
+      "id": "disaster-recovery",
+      "name": "Disaster Recovery",
+      "owns": "RTO, RPO and failover - designed, measured, and the gap between the two.",
+      "authoritative_on": ["RTO/RPO per tier", "failover design and trigger", "recovery sequencing", "measured versus designed recovery"],
+      "never_assume": [
+        "That the stated RTO is achievable. Ask for the measured recovery time from the last real test at production volume.",
+        "That failover has been executed. Designed and rehearsed are different, and rehearsed at reduced scale is different again.",
+        "That failback is planned. It is consistently less rehearsed than failover and strands services longer than the incident required.",
+        "That dependencies are available in the recovery location. Third parties and shared services frequently are not."
+      ],
+      "must_ask": [
+        {"q": "What was the measured recovery time at the last test, at what data volume?", "of": "Resilience Lead"},
+        {"q": "Has failback been rehearsed, or only failover?", "of": "Resilience Lead"},
+        {"q": "Which dependencies are unavailable in the recovery location?", "of": "Infrastructure Lead"}
+      ],
+      "peers": ["business-continuity", "backup-recovery-integrity", "cyber-resilience"],
+      "escalate_when": [
+        "The recovery location is outside a residency boundary the data domain owns.",
+        "Recovery depends on keys the cryptography SME controls.",
+        "Measured recovery does not meet a tolerance the GRC domain has committed."
+      ],
+      "produces": ["Designed versus measured RTO/RPO", "Failover and failback rehearsal evidence", "Recovery location dependency gaps"]
+    },
+    {
+      "id": "cyber-resilience",
+      "name": "Cyber Resilience",
+      "owns": "Withstanding and recovering under active attack, where the adversary is still present and the infrastructure may be untrustworthy.",
+      "authoritative_on": ["recovery under compromise", "clean-room and rebuild capability", "trust re-establishment", "destructive attack scenarios"],
+      "never_assume": [
+        "That disaster recovery covers a cyber event. DR assumes infrastructure is trustworthy; a ransomware or destructive attack means it is not.",
+        "That backups are usable after a destructive attack. Ask whether they are immutable and whether the attacker could reach them.",
+        "That the recovery environment is clean. Rebuilding into compromised infrastructure re-compromises immediately.",
+        "That identity survives. If the directory is compromised, recovery needs an identity path that does not depend on it."
+      ],
+      "must_ask": [
+        {"q": "If the directory and the management plane are compromised, what is the recovery path?", "of": "Resilience Lead"},
+        {"q": "Are backups immutable, and could the attacker's access have reached them?", "of": "Infrastructure Lead"},
+        {"q": "What establishes that the recovery environment is clean before service is restored?", "of": "SecOps Lead"}
+      ],
+      "peers": ["disaster-recovery", "backup-recovery-integrity", "crisis-management", "business-continuity"],
+      "escalate_when": [
+        "Clean recovery depends on identity infrastructure the IAM domain owns.",
+        "Determining the environment is clean requires forensic capability SecOps owns.",
+        "Recovery under attack needs a decision authority the crisis process defines."
+      ],
+      "produces": ["Recovery path under compromise", "Backup immutability and reachability assessment", "Clean-environment verification method"]
+    },
+    {
+      "id": "crisis-management",
+      "name": "Crisis & Incident Management",
+      "owns": "Command, communications and coordination when the event exceeds normal incident handling.",
+      "authoritative_on": ["command structure", "decision authority under crisis", "internal and external communications", "regulator and customer notification"],
+      "never_assume": [
+        "That the command structure is known to those in it. Ask when it was last exercised with the actual people.",
+        "That decision authority is clear at 3am on a weekend. Ask who can take the decision to stop the service, and their deputy.",
+        "That communications channels survive. If the estate is compromised, the usual channels may be untrusted or unavailable.",
+        "That notification deadlines are understood. Regulatory clocks start earlier than most teams expect."
+      ],
+      "must_ask": [
+        {"q": "Who can decide to take this service offline, and who deputises out of hours?", "of": "Service Owner"},
+        {"q": "If the corporate estate is compromised, what is the out-of-band communications channel?", "of": "Crisis Lead"},
+        {"q": "What regulatory notification clocks apply, and from what trigger do they start?", "of": "Compliance Lead"}
+      ],
+      "peers": ["cyber-resilience", "business-continuity", "disaster-recovery"],
+      "escalate_when": [
+        "Notification obligations are owned by the GRC domain.",
+        "Technical incident command interfaces with SecOps incident response.",
+        "Customer communications are owned by the product domain."
+      ],
+      "produces": ["Command structure with named deputies", "Out-of-band communications plan", "Notification triggers and clocks"]
+    },
+    {
+      "id": "backup-recovery-integrity",
+      "name": "Backup & Recovery Integrity",
+      "owns": "Backup scope, immutability and restore assurance - whether the restore actually works.",
+      "authoritative_on": ["backup scope and frequency", "immutability", "restore testing", "recovery of encrypted data"],
+      "never_assume": [
+        "That backups restore. Ask for the date and result of the last full-volume restore test.",
+        "That the backup scope covers everything needed. Configuration, secrets and keys are frequently outside it, and without them data restores into nothing.",
+        "That immutable means immutable. Ask what an administrator with full privilege could do to them.",
+        "That restore time scales linearly. A small-sample test says almost nothing about full volume."
+      ],
+      "must_ask": [
+        {"q": "When was a full-volume restore last tested, and how long did it take?", "of": "Infrastructure Lead"},
+        {"q": "Are the keys needed to decrypt a restored backup themselves recoverable in the same scenario?", "of": "Data Architect"},
+        {"q": "What could a fully privileged administrator do to the backups?", "of": "Infrastructure Lead"}
+      ],
+      "peers": ["disaster-recovery", "cyber-resilience", "business-continuity"],
+      "escalate_when": [
+        "Key recovery depends on the cryptography SME's custody model.",
+        "Backup residency is constrained by the data domain's position.",
+        "Backup access privilege is governed by the IAM domain."
+      ],
+      "produces": ["Backup scope including configuration, secrets and keys", "Measured full-volume restore time", "Immutability assessment against privileged access"]
+    }
+  ]
+}

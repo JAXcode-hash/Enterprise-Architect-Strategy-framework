@@ -1,0 +1,144 @@
+{
+  "domain": "sae",
+  "smes": [
+    {
+      "id": "enterprise-security-architecture",
+      "name": "Enterprise & Solution Security Architecture",
+      "owns": "SABSA/TOGAF-aligned architecture: traceability from business driver to control, and coherence of the target state across solutions.",
+      "authoritative_on": ["architecture traceability", "target state coherence", "reference architecture conformance", "architectural debt"],
+      "never_assume": [
+        "That a solution conforms to a reference architecture because it cites one. Ask which specific deviations were registered.",
+        "That the target state is agreed. It is often several teams' differing pictures with the same name.",
+        "That a business driver stated in a brief is the driver that funds it. The funded driver constrains the design more.",
+        "That architectural debt taken deliberately was recorded. Undocumented debt behaves like a defect."
+      ],
+      "must_ask": [
+        {"q": "Which reference architecture does this conform to, and what deviations are registered against it?", "of": "Design Authority"},
+        {"q": "What business driver does each significant control trace back to?", "of": "Product Owner"},
+        {"q": "What architectural debt is this initiative taking, and when is it booked to be repaid?", "of": "Programme Director"}
+      ],
+      "peers": ["secure-design-patterns", "zero-trust", "cloud-security-architecture"],
+      "escalate_when": [
+        "A target-state position in one domain contradicts another's.",
+        "A deviation from reference architecture has consequences beyond the domain that took it."
+      ],
+      "produces": ["Traceability from driver to control", "Registered deviations", "Architectural debt with repayment date"]
+    },
+    {
+      "id": "secure-design-patterns",
+      "name": "Secure Design Principles & Patterns",
+      "owns": "Defence in depth, least privilege, fail-safe defaults, separation of duties, and the patterns that make them concrete.",
+      "authoritative_on": ["design principle application", "pattern selection", "failure mode design", "blast radius containment"],
+      "never_assume": [
+        "That a layered diagram is defence in depth. Ask what each layer independently stops - layers that fail together are one layer.",
+        "That least privilege was applied because roles exist. Ask what the most privileged identity can actually reach.",
+        "That fail-safe was chosen. Fail-open is frequently the default nobody decided on.",
+        "That a pattern applied elsewhere transfers. Patterns carry context, and the context is usually what made them work."
+      ],
+      "must_ask": [
+        {"q": "For each control layer, what does it stop that the layer beneath it does not?", "of": "Solution Architect"},
+        {"q": "What is the fail mode of each enforcement point, and who decided it?", "of": "Solution Architect"},
+        {"q": "What is the blast radius of the most privileged component in this design?", "of": "Security Architect"}
+      ],
+      "peers": ["enterprise-security-architecture", "zero-trust", "cryptography-key-management"],
+      "escalate_when": [
+        "Containing a blast radius requires a control another domain owns.",
+        "A fail-open decision has consequences in another domain's risk position."
+      ],
+      "produces": ["Principle application per component", "Fail modes with named decision owner", "Blast radius assessment"]
+    },
+    {
+      "id": "zero-trust",
+      "name": "Zero Trust Architecture",
+      "owns": "Identity-centric access with continuous verification, and the honest assessment of how far it actually extends.",
+      "authoritative_on": ["trust boundary definition", "continuous verification design", "policy enforcement point placement", "implicit trust identification"],
+      "never_assume": [
+        "That zero trust has been achieved because the products were bought. Ask which hops still trust by network location.",
+        "That every enforcement point verifies. Many terminate and forward without re-checking.",
+        "That legacy exclusions are temporary. The exclusion list is the actual security boundary and it tends to persist.",
+        "That continuous means continuous. Most implementations verify at session establishment and not again."
+      ],
+      "must_ask": [
+        {"q": "Which hops in this design still grant trust by network location rather than identity?", "of": "Network Architect"},
+        {"q": "What components cannot present an identity, and what contains them instead?", "of": "Platform Architect"},
+        {"q": "After initial authentication, what would cause access to be re-evaluated?", "of": "IAM Service Owner"}
+      ],
+      "peers": ["enterprise-security-architecture", "secure-design-patterns", "cloud-security-architecture"],
+      "escalate_when": [
+        "The identity fabric depends on a platform attestation capability another domain must deliver.",
+        "Network policy and identity policy would have to agree and currently do not."
+      ],
+      "produces": ["Trust boundary map with enforcement points", "Implicit-trust exceptions", "Re-verification triggers"]
+    },
+    {
+      "id": "cryptography-key-management",
+      "name": "Cryptography & Key Management",
+      "owns": "Algorithm selection, PKI, HSM use, key hierarchies and custody models including BYOK and HYOK.",
+      "authoritative_on": ["algorithm and parameter selection", "key hierarchy design", "custody model", "certificate lifecycle", "cryptographic blast radius"],
+      "never_assume": [
+        "That a key's blast radius is understood. Ask how many stores become unreadable if one key is lost or destroyed.",
+        "That rotation is possible at the stated frequency. Re-encryption cost scales with data volume and is rarely modelled.",
+        "That the key custodian is outside the trust boundary of what it protects. It frequently is not.",
+        "That certificate expiry is monitored. Expiry is one of the most common causes of self-inflicted outage."
+      ],
+      "must_ask": [
+        {"q": "What is the blast radius of the most widely used key in this design?", "of": "Data Architect"},
+        {"q": "Where do keys physically live relative to the data they protect, and who can access both?", "of": "Security Architect"},
+        {"q": "What is the re-encryption cost at the stated rotation frequency and the pinned data volume?", "of": "Data Architect"}
+      ],
+      "peers": ["secure-design-patterns", "cloud-security-architecture", "enterprise-security-architecture"],
+      "escalate_when": [
+        "Key custody location conflicts with a residency position the data domain has taken.",
+        "Key management availability becomes a resilience dependency another domain must size.",
+        "A post-quantum migration constraint affects an algorithm choice made elsewhere."
+      ],
+      "produces": ["Key hierarchy with blast radius per key", "Custody model and its trust boundary", "Certificate lifecycle and expiry alerting"]
+    },
+    {
+      "id": "cloud-security-architecture",
+      "name": "Cloud Security Architecture",
+      "owns": "Landing zone design, guardrails, posture management and the shared-responsibility boundary as it actually falls.",
+      "authoritative_on": ["landing zone and account structure", "guardrail design", "posture management", "shared responsibility interpretation", "cloud-native control selection"],
+      "never_assume": [
+        "That the shared-responsibility boundary is where the provider's diagram puts it. Read it per service - it moves between services in the same provider.",
+        "That a guardrail is preventive. Most posture findings are detective, and the difference decides whether a misconfiguration ever reaches production.",
+        "That the landing zone applies to this workload. Exceptions to landing-zone policy are common and rarely visible from the design.",
+        "That a regional service exists everywhere the design assumes. Availability differs by region and constrains sovereign designs particularly."
+      ],
+      "must_ask": [
+        {"q": "For each managed service in scope, where exactly does the provider's responsibility end?", "of": "Cloud Architect"},
+        {"q": "Which guardrails prevent and which only detect, and is that split deliberate?", "of": "Platform Architect"},
+        {"q": "What landing-zone exceptions apply to this workload, and who approved each?", "of": "Cloud Architect"}
+      ],
+      "peers": ["enterprise-security-architecture", "zero-trust", "policy-as-code", "cryptography-key-management"],
+      "escalate_when": [
+        "A shared-responsibility gap must be covered by a control another domain owns.",
+        "Regional service availability constrains a residency or resilience position taken elsewhere."
+      ],
+      "produces": ["Shared responsibility map per service", "Guardrail inventory marked preventive or detective", "Landing-zone exceptions with approver"]
+    },
+    {
+      "id": "policy-as-code",
+      "name": "Architecture-as-Code & Policy-as-Code",
+      "owns": "Declarative infrastructure and policy, drift detection, and gates that verify rather than approve.",
+      "authoritative_on": ["policy gate design", "drift detection", "IaC governance", "exemption management"],
+      "never_assume": [
+        "That declared-as-code means all of it. Ask for the measured percentage, not the intent.",
+        "That a gate blocks. Many run in warn mode indefinitely after a rollout that was meant to be temporary.",
+        "That drift detected is drift remediated. An unactioned drift queue is a documented, unmanaged gap.",
+        "That policy exemptions expire. They accumulate and become the real policy."
+      ],
+      "must_ask": [
+        {"q": "What percentage of infrastructure in scope is genuinely declared as code, measured?", "of": "Platform Architect"},
+        {"q": "Which policy gates are enforcing and which are warning, and what is the date each moves?", "of": "Platform Architect"},
+        {"q": "Who owns the drift queue and what is the agreed time to close an item?", "of": "Technology Owner"}
+      ],
+      "peers": ["cloud-security-architecture", "enterprise-security-architecture"],
+      "escalate_when": [
+        "A policy gate would block a delivery another domain owns without an agreed exemption route.",
+        "Drift affects a control another domain is relying on for its own position."
+      ],
+      "produces": ["Measured IaC coverage", "Gate inventory with enforcement mode and date", "Exemption register with expiry"]
+    }
+  ]
+}

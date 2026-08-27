@@ -433,5 +433,101 @@ class TestRegisters(unittest.TestCase):
         self.assertIn("emergent", rows[0])
 
 
+class TestSecurityArchitectureTeam(unittest.TestCase):
+    """The org chart is data and the agents are generated from it."""
+
+    ORG = ROOT / "catalogue" / "org"
+    AGENTS = ROOT / ".claude" / "agents"
+
+    @classmethod
+    def setUpClass(cls):
+        cls.h = json.loads((cls.ORG / "hierarchy.json").read_text())
+        cls.smes = {
+            d["id"]: json.loads((cls.ORG / "smes" / f"{d['id']}.json").read_text())["smes"]
+            for d in cls.h["domains"]
+        }
+
+    def test_three_tiers_are_complete(self):
+        self.assertEqual(len(self.h["domains"]), 12)
+        self.assertEqual(sum(len(v) for v in self.smes.values()), 67)
+
+    def test_every_agent_file_was_generated(self):
+        expected = {"master-architect"}
+        expected |= {f"architect-{d['id']}" for d in self.h["domains"]}
+        expected |= {f"sme-{s['id']}" for v in self.smes.values() for s in v}
+        actual = {p.stem for p in self.AGENTS.glob("*.md")}
+        self.assertEqual(expected - actual, set(), "missing agents - run tools/gen_agents.py")
+        self.assertEqual(actual - expected, set(), "stale agents - run tools/gen_agents.py")
+
+    def test_sme_ids_are_unique_across_domains(self):
+        seen = {}
+        for dom, items in self.smes.items():
+            for s in items:
+                self.assertNotIn(s["id"], seen,
+                                 f"{s['id']} in both {dom} and {seen.get(s['id'])}")
+                seen[s["id"]] = dom
+
+    def test_peers_are_same_domain_only(self):
+        # Cross-domain contact goes through escalation, never through a peer link.
+        for dom, items in self.smes.items():
+            local = {s["id"] for s in items}
+            for s in items:
+                for peer in s.get("peers", []):
+                    self.assertIn(peer, local,
+                                  f"{s['id']} peers with {peer} outside {dom}")
+                self.assertNotIn(s["id"], s.get("peers", []), f"{s['id']} peers with itself")
+
+    def test_every_sme_refuses_assumptions_and_asks_owned_questions(self):
+        for items in self.smes.values():
+            for s in items:
+                self.assertTrue(s["never_assume"], f"{s['id']} assumes everything")
+                self.assertTrue(s["must_ask"], f"{s['id']} asks nothing")
+                for q in s["must_ask"]:
+                    self.assertTrue(q.get("of", "").strip(),
+                                    f"{s['id']} has a question with no owner")
+                self.assertTrue(s["escalate_when"], f"{s['id']} never escalates")
+
+    def test_protocol_is_stamped_identically_into_every_agent(self):
+        # An SME's view of when to escalate must not drift from its Architect's
+        # view of when to accept, so both come from one source.
+        rule = self.h["protocols"]["escalation"]["goes_to_master"][0]
+        for d in self.h["domains"]:
+            text = (self.AGENTS / f"architect-{d['id']}.md").read_text()
+            self.assertIn(rule, text, f"architect-{d['id']} missing the escalation protocol")
+        sme_rule = self.h["protocols"]["sme"][0]
+        for items in self.smes.values():
+            for s in items:
+                text = (self.AGENTS / f"sme-{s['id']}.md").read_text()
+                self.assertIn(sme_rule, text, f"sme-{s['id']} missing the isolation protocol")
+
+    def test_every_sme_routes_up_to_its_own_architect(self):
+        for dom, items in self.smes.items():
+            for s in items:
+                text = (self.AGENTS / f"sme-{s['id']}.md").read_text()
+                self.assertIn(f"architect-{dom}", text)
+                self.assertIn("Tier 2", text)
+
+    def test_engine_domain_references_resolve(self):
+        keys = set(CAT.domain_keys())
+        for d in self.h["domains"]:
+            for e in d["eas_domains"]:
+                self.assertIn(e, keys, f"{d['id']} maps to unknown engine domain {e}")
+
+    def test_domains_the_engine_does_not_cover_are_flagged(self):
+        uncovered = {d["id"] for d in self.h["domains"] if not d["eas_domains"]}
+        self.assertEqual(uncovered, {"offsec", "human", "phys", "emrg"})
+        # The Master Architect must say so, or a run that skipped them reads as clean.
+        master = (self.AGENTS / "master-architect.md").read_text()
+        self.assertIn("no counterpart in the Enterprise Architect Strategy engine", master)
+        self.assertIn("incomplete rather than clean", master)
+
+    def test_interfaces_are_symmetric_enough_to_route(self):
+        ids = {d["id"] for d in self.h["domains"]}
+        for d in self.h["domains"]:
+            for other in d.get("interfaces_with", []):
+                self.assertIn(other, ids, f"{d['id']} interfaces with unknown {other}")
+                self.assertNotEqual(other, d["id"], f"{d['id']} interfaces with itself")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

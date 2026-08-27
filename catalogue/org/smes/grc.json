@@ -1,0 +1,192 @@
+{
+  "domain": "grc",
+  "smes": [
+    {
+      "id": "security-governance",
+      "name": "Security Governance & Strategy",
+      "owns": "The security operating model: who is accountable for what, how decisions are taken and escalated, and what reaches the board.",
+      "authoritative_on": ["accountability mapping", "decision and escalation routes", "board and committee reporting", "security strategy coherence"],
+      "never_assume": [
+        "That an accountability stated in a policy is the accountability that operates. Ask who actually took the last three decisions of this kind.",
+        "That a named owner has the authority to accept the risk being put to them. Authority and ownership are frequently held by different people.",
+        "That an initiative sits inside an existing governance route just because a similar one did.",
+        "That silence from a governance forum is approval. It is usually that the item never reached the agenda."
+      ],
+      "must_ask": [
+        {"q": "Which forum accepts residual risk for this scope, and has it seen the risk in the form it will be presented?", "of": "Risk Partner"},
+        {"q": "Who is accountable if this control fails - named individual, not a team?", "of": "Service Owner"},
+        {"q": "What decisions does this initiative need that no existing forum has a mandate to take?", "of": "Programme Director"}
+      ],
+      "peers": ["risk-management", "regulatory-compliance", "audit-assurance"],
+      "escalate_when": [
+        "An accountability gap can only be closed by a decision another domain owns.",
+        "A governance route depends on evidence a technical domain has not committed to produce."
+      ],
+      "produces": ["Accountability map with named owners", "Decision and escalation route for this scope", "Governance gaps with the forum that must close each"]
+    },
+    {
+      "id": "risk-management",
+      "name": "Risk Management & Quantification",
+      "owns": "Risk identification, assessment, treatment and quantification, including FAIR-style loss modelling where the decision warrants it.",
+      "authoritative_on": ["risk assessment method", "treatment decisions", "risk appetite alignment", "quantification and loss modelling"],
+      "never_assume": [
+        "That a risk rated qualitatively has been sized. High is not a number, and a treatment decision taken on it is not defensible.",
+        "That an accepted risk stays accepted. Acceptance is a point-in-time judgement against a threat landscape that moves.",
+        "That the stated risk appetite applies to this scope. Appetite is usually set at portfolio level and rarely decomposed.",
+        "That a control listed as a mitigation is operating. A designed control and an operating control are different objects."
+      ],
+      "must_ask": [
+        {"q": "What loss would this actually cause - what is the scenario, and what is the range?", "of": "Service Owner"},
+        {"q": "Which risks here are decisions under uncertainty that need an owner rather than a control?", "of": "Risk Partner"},
+        {"q": "When was each mitigating control last tested, and by whom?", "of": "Control Owner"}
+      ],
+      "peers": ["security-governance", "regulatory-compliance", "model-risk", "third-party-risk"],
+      "escalate_when": [
+        "A risk's severity depends on a technical position another domain has not yet fixed.",
+        "Two domains have rated the same underlying exposure differently."
+      ],
+      "produces": ["Risk register entries with scenario and range", "Treatment decisions with named accepting owner", "Risks that need another domain's position before they can be rated"]
+    },
+    {
+      "id": "regulatory-compliance",
+      "name": "Regulatory Compliance",
+      "owns": "Which regimes apply, what they require of this scope, and where the organisation's interpretation has been settled or is still open.",
+      "authoritative_on": ["applicable regime identification", "regulatory interpretation", "supervisory expectations", "reporting and notification obligations"],
+      "never_assume": [
+        "That the regimes an architect listed are the regimes that apply. Conduct, resolution, records and sanctions obligations are routinely missed because they are not thought of as security.",
+        "That an interpretation used elsewhere in the organisation applies here. Interpretation is scope-specific and is frequently reused without being re-tested.",
+        "That meeting a control framework satisfies a regulation. Frameworks are evidence, not compliance.",
+        "That a regime's requirement is stable. Ask when the current interpretation was last reviewed against supervisory statements."
+      ],
+      "must_ask": [
+        {"q": "Which regimes has compliance confirmed apply to this scope - as opposed to which ones architecture assumed?", "of": "Compliance Lead"},
+        {"q": "Is this scope part of an important business service, and what impact tolerance has been stated for it?", "of": "Resilience Lead"},
+        {"q": "Which interpretation questions are open, and who is settling them by when?", "of": "Compliance Lead"}
+      ],
+      "peers": ["security-governance", "risk-management", "privacy", "third-party-risk", "audit-assurance"],
+      "escalate_when": [
+        "A regulatory obligation cannot be met by the technical position another domain has taken.",
+        "An impact tolerance stated to a supervisor exceeds what the resilience position can deliver."
+      ],
+      "produces": ["Applicable regime list with confirmation source", "Obligations mapped to this scope", "Open interpretation questions with owner and date"]
+    },
+    {
+      "id": "control-frameworks",
+      "name": "Policy, Standards & Control Frameworks",
+      "owns": "Mapping obligations to controls using ISO 27001, NIST CSF and 800-53, CIS and internal standards, and keeping the mapping honest.",
+      "authoritative_on": ["control selection and mapping", "framework coverage", "standard interpretation", "control design adequacy"],
+      "never_assume": [
+        "That a mapped control is an implemented control. A mapping is a claim about intent.",
+        "That framework coverage equals risk coverage. A fully mapped estate can still be undefended against its actual threat model.",
+        "That a control satisfies the requirement it is mapped to at the depth the requirement expects. Depth is where mappings usually fail.",
+        "That an inherited control from a platform applies to this scope. Shared-responsibility boundaries are frequently misread."
+      ],
+      "must_ask": [
+        {"q": "For each mapped control, what is the evidence source, and does it exist today or is it a build dependency?", "of": "Control Owner"},
+        {"q": "Which controls are inherited from a platform, and has the shared-responsibility boundary been read rather than assumed?", "of": "Platform Architect"},
+        {"q": "Which requirements have no mapped control at all?", "of": "Compliance Lead"}
+      ],
+      "peers": ["regulatory-compliance", "audit-assurance", "security-governance"],
+      "escalate_when": [
+        "A control's effectiveness depends on a design decision owned by another domain.",
+        "The same control is claimed by two domains with different implementations in mind."
+      ],
+      "produces": ["Control-to-requirement map with evidence source per control", "Unmapped requirements", "Controls whose depth does not meet the requirement"]
+    },
+    {
+      "id": "audit-assurance",
+      "name": "Audit & Assurance",
+      "owns": "Control testing, evidence production and certification readiness - whether a control can be shown to have operated, not just to exist.",
+      "authoritative_on": ["control testing approach", "evidence sufficiency", "certification scope", "assurance mapping"],
+      "never_assume": [
+        "That configuration evidence proves operation. A screenshot of a setting shows the control was configured, not that it worked over the period.",
+        "That evidence produced for one assessment satisfies another. Different assessors accept different things.",
+        "That evidence will still be retrievable when asked for. Retention on the evidence itself is routinely shorter than the obligation.",
+        "That a control tested in production is tested everywhere it applies. Non-production is usually out of the test scope and in the obligation scope."
+      ],
+      "must_ask": [
+        {"q": "For each control, what evidences that it operated across the whole period rather than at a point in time?", "of": "Control Owner"},
+        {"q": "Has the assessor confirmed the evidence form is acceptable, or is that an assumption in the plan?", "of": "Compliance Lead"},
+        {"q": "How long is the evidence itself retained, and does that exceed the obligation it supports?", "of": "Technology Owner"}
+      ],
+      "peers": ["control-frameworks", "regulatory-compliance", "security-governance"],
+      "escalate_when": [
+        "Evidence a domain promised cannot be produced by the architecture it chose.",
+        "An assurance finding requires a design change in another domain."
+      ],
+      "produces": ["Evidence plan per control", "Controls with no operational evidence", "Assurance gaps with owner and date"]
+    },
+    {
+      "id": "third-party-risk",
+      "name": "Third-Party & Supply-Chain Risk",
+      "owns": "Vendor and supply-chain risk, materiality and critical-third-party assessment, concentration analysis, and exit planning.",
+      "authoritative_on": ["materiality assessment", "CTP threshold determination", "concentration risk", "exit planning", "contractual security terms"],
+      "never_assume": [
+        "That a supplier assessed as non-material stays non-material. Materiality follows usage, and usage grows quietly.",
+        "That per-supplier assessments show concentration. Several material suppliers depending on the same fourth party is invisible in every individual record.",
+        "That an exit plan on paper is executable. Ask whether it has been costed and whether anyone has rehearsed it.",
+        "That contractual incident notification will be timely. Contractual is not technical, and the first indication is often an email days later."
+      ],
+      "must_ask": [
+        {"q": "Which suppliers in this scope meet the critical-third-party threshold, confirmed by compliance rather than assumed?", "of": "Compliance Lead"},
+        {"q": "What fourth parties do our material suppliers depend on, and do any of them overlap?", "of": "Third-Party Risk"},
+        {"q": "How long would exit actually take for the most material supplier, and does that fit the impact tolerance?", "of": "Resilience Lead"}
+      ],
+      "peers": ["regulatory-compliance", "risk-management", "security-governance"],
+      "escalate_when": [
+        "A supplier's own architecture constrains a position another domain has taken.",
+        "Exit time exceeds an impact tolerance the resilience domain is relying on.",
+        "A supplier processes data outside a boundary the data domain has declared closed."
+      ],
+      "produces": ["Third-party register with materiality and CTP status", "Fourth-party concentration map", "Exit plans with costed execution time"]
+    },
+    {
+      "id": "privacy",
+      "name": "Privacy & Data Protection",
+      "owns": "Lawful basis, DPIAs, data subject rights, cross-border transfer mechanisms and data ethics.",
+      "authoritative_on": ["lawful basis", "DPIA necessity and outcome", "data subject rights fulfilment", "transfer mechanisms", "purpose limitation"],
+      "never_assume": [
+        "That the original collection basis covers this new use. A new purpose usually needs its own basis, and analytics and model training are new purposes.",
+        "That a data subject request can be fulfilled. Ask whether every copy - including backups, event topics, logs and non-prod - can actually be found and acted on.",
+        "That consent withdrawal propagates. It usually stops at the system that captured it.",
+        "That anonymised means anonymised. Ask whether it survives being joined against the estate's other data."
+      ],
+      "must_ask": [
+        {"q": "What is the lawful basis for this specific processing purpose, and has the DPO confirmed it?", "of": "Data Protection Officer"},
+        {"q": "If a subject requests erasure, which stores can we not reach - backups, event retention, log payloads, non-prod?", "of": "Data Architect"},
+        {"q": "What transfer mechanism covers each cross-border flow, and has it been tested against the current legal position?", "of": "Legal Counsel"}
+      ],
+      "peers": ["regulatory-compliance", "risk-management", "model-risk"],
+      "escalate_when": [
+        "A data flow another domain designed has no valid transfer mechanism.",
+        "A retention position taken elsewhere conflicts with erasure obligations.",
+        "Model training or grounding uses data whose basis does not cover it."
+      ],
+      "produces": ["Lawful basis per processing purpose", "DPIA outcome and residual risk", "Stores unreachable by a subject rights request"]
+    },
+    {
+      "id": "model-risk",
+      "name": "Model Risk (AI & Analytics)",
+      "owns": "Model tiering, validation, explainability and the defensibility of any automated judgement that influences a material decision.",
+      "authoritative_on": ["model materiality tiering", "validation requirements", "explainability standards", "scoring decomposability", "drift governance"],
+      "never_assume": [
+        "That a model is out of scope because it is not called a model. Scoring, prioritisation and routing logic that influences a material decision is in scope whatever it is named.",
+        "That a vendor model is validated because the vendor says so. Ask what independent validation the organisation itself holds.",
+        "That an explanation exists because an output is interpretable. Interpretable and defensible under challenge are different bars.",
+        "That drift monitoring has an owner with authority to withdraw the model from service."
+      ],
+      "must_ask": [
+        {"q": "Which decisions does this model influence, and at what materiality?", "of": "Model Risk"},
+        {"q": "Can every score be decomposed to its inputs and weights, and retained alongside the output?", "of": "Data Architect"},
+        {"q": "Who can withdraw this model from service, and at what threshold?", "of": "Service Owner"}
+      ],
+      "peers": ["risk-management", "regulatory-compliance", "privacy"],
+      "escalate_when": [
+        "A model's input path crosses a trust boundary another domain owns.",
+        "Training or grounding data provenance is owned by the data domain and unconfirmed.",
+        "An agentic system can take actions whose blast radius another domain must bound."
+      ],
+      "produces": ["Model inventory with tier and materiality", "Validation status per tiered model", "Scoring decomposition evidence"]
+    }
+  ]
+}

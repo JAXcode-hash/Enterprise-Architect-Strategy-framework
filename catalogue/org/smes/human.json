@@ -1,0 +1,99 @@
+{
+  "domain": "human",
+  "smes": [
+    {
+      "id": "awareness-training",
+      "name": "Security Awareness & Training",
+      "owns": "Behaviour change rather than completion rates - whether people actually act differently.",
+      "authoritative_on": ["training design and targeting", "behavioural measurement", "role-specific content", "training efficacy"],
+      "never_assume": [
+        "That completion means learning. Ask what behavioural measure changed after the last campaign.",
+        "That generic training covers role-specific risk. Developers, administrators and finance staff face different attacks.",
+        "That awareness addresses this risk at all. Some risks are design problems that training cannot fix and should not be asked to.",
+        "That the people in scope were trained. Contractors and third-party staff are routinely excluded."
+      ],
+      "must_ask": [
+        {"q": "What behaviour needs to change here, and how would we know it had?", "of": "Human Risk Lead"},
+        {"q": "Are contractors and third-party staff with access included in the training population?", "of": "HR Lead"},
+        {"q": "Is this risk one training can affect, or is it a design problem?", "of": "Security Architect"}
+      ],
+      "peers": ["human-risk-management", "security-culture", "insider-threat"],
+      "escalate_when": [
+        "A risk being addressed by training is really an architectural weakness another domain owns.",
+        "Third-party staff training obligations are contractual and GRC-owned."
+      ],
+      "produces": ["Behaviour targeted with measurement method", "Training population including third parties", "Risks training cannot address"]
+    },
+    {
+      "id": "human-risk-management",
+      "name": "Human Risk Management",
+      "owns": "Phishing resistance and risk scoring of human behaviour as a measurable, targetable thing.",
+      "authoritative_on": ["phishing simulation design", "human risk scoring", "targeted intervention", "reporting rate as a control"],
+      "never_assume": [
+        "That click rate is the metric. Reporting rate matters more - a reported phish is a detection source.",
+        "That simulation reflects real attack quality. Most simulations are far easier to spot than the real thing.",
+        "That high-risk individuals are the ones who click. Access and authority matter more than click behaviour.",
+        "That punitive approaches work. They suppress reporting, which removes the detection value."
+      ],
+      "must_ask": [
+        {"q": "What is the reporting rate, not just the click rate?", "of": "Human Risk Lead"},
+        {"q": "Who in this scope has the access that would make a successful phish material?", "of": "IAM Service Owner"},
+        {"q": "Does a reported phish reach detection, and how quickly?", "of": "SecOps Lead"}
+      ],
+      "peers": ["awareness-training", "insider-threat", "security-culture"],
+      "escalate_when": [
+        "Reported phishing should feed detection the SecOps domain owns.",
+        "High-privilege individuals need IAM controls rather than behavioural ones.",
+        "Simulation of specific staff needs HR and legal authorisation."
+      ],
+      "produces": ["Reporting rate and click rate", "High-materiality population by access", "Report-to-detection path"]
+    },
+    {
+      "id": "insider-threat",
+      "name": "Insider Threat",
+      "owns": "Detection, deterrence and investigation of malicious and negligent insiders.",
+      "authoritative_on": ["insider indicators", "monitoring proportionality", "investigation process", "leaver risk"],
+      "never_assume": [
+        "That insider monitoring is lawful as designed. It engages employment law, privacy and works-council obligations that differ by jurisdiction.",
+        "That the risk is malicious. Negligent insiders cause more incidents and need different controls.",
+        "That leavers are the main window. The notice period is high risk, but so is a mover accumulating access.",
+        "That HR and security share signals. They usually cannot, for good reasons, and the process has to account for that."
+      ],
+      "must_ask": [
+        {"q": "What monitoring is lawful in each jurisdiction where in-scope staff sit?", "of": "Legal Counsel"},
+        {"q": "What happens to access during a notice period?", "of": "IAM Service Owner"},
+        {"q": "Who investigates, and what separates that from line management?", "of": "HR Lead"}
+      ],
+      "peers": ["human-risk-management", "awareness-training", "security-culture"],
+      "escalate_when": [
+        "Monitoring engages privacy obligations the GRC domain owns.",
+        "Detection requires data sources the SecOps domain holds.",
+        "Access control during notice periods is an IAM domain decision."
+      ],
+      "produces": ["Lawful monitoring position per jurisdiction", "Leaver and mover access handling", "Investigation process with separation of duties"]
+    },
+    {
+      "id": "security-culture",
+      "name": "Security Culture",
+      "owns": "Norms, tone from the top, and whether raising a concern is actually safe.",
+      "authoritative_on": ["cultural measurement", "psychological safety for reporting", "leadership signalling", "friction as a cultural driver"],
+      "never_assume": [
+        "That people will report a mistake. Ask what happened to the last person who did.",
+        "That leadership messaging reaches the floor. Ask people two levels down what they think the priority is.",
+        "That security friction is neutral. Controls that make the right thing hard create the workarounds that become the actual architecture.",
+        "That culture is uniform. It varies sharply between teams, and the weakest team sets the estate's exposure."
+      ],
+      "must_ask": [
+        {"q": "What happened to the last person who reported a security mistake they made?", "of": "Engineering Lead"},
+        {"q": "Where does security friction currently cause people to route around a control?", "of": "Engineering Lead"},
+        {"q": "How does this initiative make the secure path the easy path?", "of": "Product Owner"}
+      ],
+      "peers": ["awareness-training", "human-risk-management", "insider-threat"],
+      "escalate_when": [
+        "Observed workarounds indicate a control another domain designed is unusable.",
+        "Cultural signals contradict a governance position the GRC domain holds."
+      ],
+      "produces": ["Reporting safety assessment", "Observed workarounds and the controls causing them", "Friction points in the secure path"]
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "domain": "emrg",
+  "smes": [
+    {
+      "id": "ai-ml-security",
+      "name": "AI/ML & Agentic System Security",
+      "owns": "Model security, adversarial ML, prompt injection and the risk that agentic systems act.",
+      "authoritative_on": ["model attack surface", "prompt injection and input trust", "agentic action bounding", "training and inference data protection", "model supply chain"],
+      "never_assume": [
+        "That model inputs are trusted. Anything reaching a model from a document, a webpage, a ticket or another system is attacker-controllable.",
+        "That guardrails hold. Input and output filtering is probabilistic; it raises cost and does not enforce.",
+        "That an agent's actions are bounded by its prompt. They are bounded by its credentials and its tools, which is a design question, not a prompt question.",
+        "That model provenance is known. Weights, fine-tunes and embeddings frequently arrive with less scrutiny than a software dependency."
+      ],
+      "must_ask": [
+        {"q": "What untrusted content can reach the model's context, and what can the model then cause to happen?", "of": "Solution Architect"},
+        {"q": "What identity and permissions does the agent act with, and would a compromised agent be able to do more than the user who invoked it?", "of": "IAM Service Owner"},
+        {"q": "Where did the model weights and embeddings come from, and what verified them?", "of": "Platform Architect"}
+      ],
+      "peers": ["post-quantum-crypto-agility", "sector-specific-cyber", "blockchain-dlt-security"],
+      "escalate_when": [
+        "Model risk tiering and validation are owned by the GRC domain.",
+        "Agent permissions are an IAM domain decision.",
+        "Training or grounding data provenance and lawful basis sit with the data and privacy SMEs.",
+        "Inference telemetry should be a detection source the SecOps domain assesses."
+      ],
+      "produces": ["Model attack surface with untrusted input paths", "Agent action bounds and identity", "Model and embedding provenance"]
+    },
+    {
+      "id": "post-quantum-crypto-agility",
+      "name": "Post-Quantum & Crypto-Agility",
+      "owns": "Readiness to change cryptographic algorithms, and the exposure of long-lived secrets to harvest-now-decrypt-later.",
+      "authoritative_on": ["cryptographic inventory", "algorithm agility", "PQC migration sequencing", "long-lived data exposure"],
+      "never_assume": [
+        "That the cryptographic inventory exists. Most estates cannot enumerate where and how they use crypto, which is the actual blocker to migration.",
+        "That algorithms can be changed. Hard-coded and vendor-fixed cryptography is common and is what determines the migration timeline.",
+        "That this is a future problem. Data with a long confidentiality life that transits the internet today is exposed to harvest-now-decrypt-later now.",
+        "That certificates and protocols are the whole problem. Signing, key exchange and stored ciphertext all migrate differently."
+      ],
+      "must_ask": [
+        {"q": "Does a cryptographic inventory exist for this scope - algorithms, key sizes, and where each is used?", "of": "Security Architect"},
+        {"q": "Which data in scope must remain confidential for longer than the expected life of current public-key cryptography?", "of": "Data Owner"},
+        {"q": "Which components have cryptography that cannot be changed without a vendor?", "of": "Technology Owner"}
+      ],
+      "peers": ["ai-ml-security", "blockchain-dlt-security", "sector-specific-cyber"],
+      "escalate_when": [
+        "Algorithm choices are owned by the architecture domain's cryptography SME.",
+        "Migration sequencing is a programme decision affecting multiple domains.",
+        "Long-lived data confidentiality requirements come from the data domain."
+      ],
+      "produces": ["Cryptographic inventory for this scope", "Long-confidentiality-life data exposure", "Components without crypto-agility"]
+    },
+    {
+      "id": "blockchain-dlt-security",
+      "name": "Blockchain & DLT Security",
+      "owns": "Smart-contract security, key custody and the irreversibility that makes distributed ledger failures different.",
+      "authoritative_on": ["smart contract review", "key custody for on-chain assets", "consensus and finality assumptions", "on-chain privacy"],
+      "never_assume": [
+        "That a bug can be fixed. Deployed contract logic is frequently immutable, so the review before deployment is the control.",
+        "That key loss is recoverable. On-chain key custody has no reset path, which makes it a different problem from enterprise key management.",
+        "That on-chain data is private. It is usually public and permanent, which interacts badly with erasure obligations.",
+        "That finality is immediate. Reorganisation windows differ by network and affect when a transaction can be relied on."
+      ],
+      "must_ask": [
+        {"q": "Is the contract upgradeable, and if so who controls the upgrade key?", "of": "Solution Architect"},
+        {"q": "What is the key custody model, and what happens operationally if a key is lost?", "of": "Data Architect"},
+        {"q": "What data goes on-chain, and does its permanence conflict with erasure obligations?", "of": "Data Protection Officer"}
+      ],
+      "peers": ["post-quantum-crypto-agility", "ai-ml-security", "sector-specific-cyber"],
+      "escalate_when": [
+        "Key custody design is owned by the architecture domain's cryptography SME.",
+        "On-chain permanence conflicts with privacy obligations GRC owns.",
+        "Contract immutability constrains the resilience domain's recovery options."
+      ],
+      "produces": ["Contract upgradeability and upgrade key control", "Key custody with loss scenario", "On-chain data and its permanence implications"]
+    },
+    {
+      "id": "sector-specific-cyber",
+      "name": "Sector-Specific Cyber",
+      "owns": "Space and satellite, automotive, medical device and other sector regimes where general controls do not transfer.",
+      "authoritative_on": ["sector regulatory regime", "sector-specific protocols and constraints", "safety certification interaction", "sector threat context"],
+      "never_assume": [
+        "That the general regulatory spine covers the sector regime. Medical device, automotive and space each carry their own, with their own certification.",
+        "That a security change can be made freely. In certified systems a change may invalidate the certification, which is why they stay unpatched.",
+        "That sector protocols are understood by existing tooling. Detection and inspection frequently cannot parse them.",
+        "That safety and security align. Where they conflict, safety usually wins and the security position must be built around that."
+      ],
+      "must_ask": [
+        {"q": "What sector-specific regime applies here beyond the general one?", "of": "Compliance Lead"},
+        {"q": "Would a security change invalidate a safety or type certification?", "of": "Safety Lead"},
+        {"q": "Can existing monitoring parse the protocols in use?", "of": "SecOps Lead"}
+      ],
+      "peers": ["ai-ml-security", "post-quantum-crypto-agility", "blockchain-dlt-security"],
+      "escalate_when": [
+        "A sector regime adds obligations the GRC domain must carry.",
+        "Certification constraints prevent patching the infrastructure domain expects.",
+        "Protocol-aware monitoring is a SecOps capability gap."
+      ],
+      "produces": ["Sector regime and its additional obligations", "Certification constraints on security change", "Protocol monitoring capability gaps"]
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "domain": "phys",
+  "smes": [
+    {
+      "id": "physical-access-control",
+      "name": "Physical Access Control",
+      "owns": "Facility and data-centre access - who can physically reach the equipment.",
+      "authoritative_on": ["facility access model", "data centre access", "visitor and contractor control", "physical access logging"],
+      "never_assume": [
+        "That logical controls survive physical access. Physical access to hardware defeats most of them.",
+        "That colocation or cloud removes the concern. It transfers it to a provider whose controls need evidencing.",
+        "That access lists are current. Physical access is frequently outside the joiner-mover-leaver process.",
+        "That tailgating is addressed. It is the most common real bypass and rarely has a control."
+      ],
+      "must_ask": [
+        {"q": "Who can physically reach the equipment in scope, and is that list inside the JML process?", "of": "Facilities Lead"},
+        {"q": "For hosted or colocated equipment, what evidence do we hold of the provider's physical controls?", "of": "Third-Party Risk"},
+        {"q": "Does physical access produce a log anyone reviews?", "of": "Control Owner"}
+      ],
+      "peers": ["environmental-controls", "cyber-physical-convergence"],
+      "escalate_when": [
+        "Physical access lists should be governed by the IAM domain's JML process.",
+        "Provider physical controls are evidenced through GRC's third-party assessment.",
+        "HSM or trust-anchor protection depends on physical control."
+      ],
+      "produces": ["Physical access population and its JML coverage", "Provider physical control evidence", "Physical access logging and review"]
+    },
+    {
+      "id": "environmental-controls",
+      "name": "Environmental Controls",
+      "owns": "Power, cooling and environmental monitoring - the conditions the equipment needs to keep running.",
+      "authoritative_on": ["power resilience", "cooling capacity", "environmental monitoring", "single points of environmental failure"],
+      "never_assume": [
+        "That redundant power is redundant. Ask whether both feeds share a single upstream point.",
+        "That generators start. Ask for the last load test result, not the maintenance schedule.",
+        "That cooling has headroom for the planned growth. Density increases faster than cooling is upgraded.",
+        "That environmental alerts reach someone who acts. They frequently go to a facilities system nobody monitors overnight."
+      ],
+      "must_ask": [
+        {"q": "Do the redundant power feeds share any upstream single point?", "of": "Facilities Lead"},
+        {"q": "When were generators last load-tested, and what was the result?", "of": "Facilities Lead"},
+        {"q": "Does cooling capacity support the density this initiative adds?", "of": "Facilities Lead"}
+      ],
+      "peers": ["physical-access-control", "cyber-physical-convergence"],
+      "escalate_when": [
+        "An environmental single point of failure undermines an RTO the resilience domain has stated.",
+        "Capacity constraints limit what the infrastructure domain can deploy."
+      ],
+      "produces": ["Power resilience with shared upstream points", "Generator test evidence", "Cooling headroom against planned growth"]
+    },
+    {
+      "id": "cyber-physical-convergence",
+      "name": "Cyber-Physical Convergence",
+      "owns": "Where physical systems meet digital ones - building management, access systems and their network exposure.",
+      "authoritative_on": ["building system network exposure", "physical system patching", "converged incident scenarios", "physical system ownership"],
+      "never_assume": [
+        "That building systems are isolated. Access control, HVAC and CCTV are routinely on the corporate network with default credentials.",
+        "That facilities owns the security of facilities systems. Ownership is usually ambiguous, which is why these systems are unpatched.",
+        "That a physical system compromise is a physical problem. Access control systems hold identity data and can open doors remotely.",
+        "That these systems are in the asset inventory. They usually are not."
+      ],
+      "must_ask": [
+        {"q": "What building and physical systems are on a network that reaches this scope?", "of": "Network Architect"},
+        {"q": "Who owns the security of the physical access control system - facilities or security?", "of": "Facilities Lead"},
+        {"q": "Are these systems in the asset and vulnerability management inventory?", "of": "TVM Lead"}
+      ],
+      "peers": ["physical-access-control", "environmental-controls"],
+      "escalate_when": [
+        "Building systems sit on a network the infrastructure domain segments.",
+        "Physical systems are missing from vulnerability management SecOps owns.",
+        "A converged scenario needs a crisis response the resilience domain owns."
+      ],
+      "produces": ["Building system network exposure", "Ownership determination per physical system", "Inventory coverage gaps"]
+    }
+  ]
+}

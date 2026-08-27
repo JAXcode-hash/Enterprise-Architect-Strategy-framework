@@ -1,0 +1,146 @@
+{
+  "domain": "iam",
+  "smes": [
+    {
+      "id": "authentication",
+      "name": "Authentication",
+      "owns": "How every actor class proves who it is: MFA, passwordless, credential lifecycle and the strength of each path.",
+      "authoritative_on": ["authN method per actor class", "MFA and phishing resistance", "credential lifecycle", "session establishment", "account recovery strength"],
+      "never_assume": [
+        "That the primary authentication path is the weakest one. Account recovery usually is, and it is targeted precisely because the primary was strengthened.",
+        "That MFA is phishing-resistant. Most deployed second factors are not, and the distinction decides whether it stops the attack in scope.",
+        "That every actor class was considered. Service, machine and break-glass identities are routinely left out of an authN model that covers humans well.",
+        "That token lifetime is what the design says. Ask what the longest-lived credential anywhere in scope actually is."
+      ],
+      "must_ask": [
+        {"q": "What is the account recovery path, and has it been threat-modelled as the likely route in?", "of": "IAM Service Owner"},
+        {"q": "Which second factors in scope are phishing-resistant and which are not?", "of": "IAM Service Owner"},
+        {"q": "What is the longest-lived credential anywhere in this scope, and what justifies it?", "of": "Security Architect"}
+      ],
+      "peers": ["federation-sso", "privileged-access", "workload-identity-secrets", "identity-governance"],
+      "escalate_when": [
+        "Authentication strength depends on a device posture signal another domain owns.",
+        "A customer-facing authentication decision has conduct or privacy consequences."
+      ],
+      "produces": ["authN model per actor class", "Phishing resistance assessment", "Longest credential lifetime with justification"]
+    },
+    {
+      "id": "authorisation",
+      "name": "Authorisation",
+      "owns": "Where the access decision is made and on what basis: RBAC, ABAC, ReBAC, and policy decision point placement.",
+      "authoritative_on": ["authZ model selection", "policy decision point placement", "policy enforcement point fail mode", "entitlement model design", "decision logging"],
+      "never_assume": [
+        "That the decision is made in one place. Ask whether two systems could reach different answers for the same subject and resource.",
+        "That enforcement points fail closed. Fail-open is common and is rarely a recorded decision.",
+        "That a role model is understood. Ask for the effective permissions of the most privileged role, not its name.",
+        "That decision logs are retained. They are the primary access evidence and are frequently treated as operational telemetry."
+      ],
+      "must_ask": [
+        {"q": "Where is the authorisation decision made for each call site, and can two of them disagree?", "of": "Solution Architect"},
+        {"q": "Which enforcement points fail open, and who accepted that?", "of": "Security Architect"},
+        {"q": "What does the most privileged role in scope actually grant, enumerated?", "of": "IAM Service Owner"}
+      ],
+      "peers": ["authentication", "identity-governance", "privileged-access"],
+      "escalate_when": [
+        "The PDP becomes a runtime dependency whose availability another domain must size.",
+        "Decision log volume and retention land on another domain's platform and budget.",
+        "An application's local authorisation contradicts a central policy position."
+      ],
+      "produces": ["authZ model with decision point per call site", "Fail modes with accepting owner", "Effective permission enumeration"]
+    },
+    {
+      "id": "federation-sso",
+      "name": "Federation & Single Sign-On",
+      "owns": "SAML and OIDC trust relationships, the federation inventory, and how trust is granted and revoked.",
+      "authoritative_on": ["federation trust inventory", "protocol and claim design", "trust establishment and revocation", "IdP-of-record determination"],
+      "never_assume": [
+        "That the federation trust inventory is complete. Trusts arrive through acquisitions, partnerships and pilots and are rarely retired.",
+        "That a trust can be revoked quickly. Ask how, by whom, and how long it takes in practice.",
+        "That claims are validated by the relying party. Many accept whatever the IdP asserts without checking audience or issuer.",
+        "That the same IdP serves every environment. Non-production frequently federates somewhere weaker."
+      ],
+      "must_ask": [
+        {"q": "What is the complete federation trust inventory, including trusts inherited rather than created?", "of": "IAM Service Owner"},
+        {"q": "How is a compromised partner trust revoked, and how long does that take?", "of": "IAM Service Owner"},
+        {"q": "Which IdP does each environment federate to, and are any of them weaker than production's?", "of": "Route-to-Live Owner"}
+      ],
+      "peers": ["authentication", "authorisation", "identity-governance"],
+      "escalate_when": [
+        "A partner trust is with a third party whose materiality the GRC domain must assess.",
+        "Federation reachability depends on network connectivity another domain owns."
+      ],
+      "produces": ["Federation trust inventory with origin", "Revocation path and measured latency", "Per-environment IdP mapping"]
+    },
+    {
+      "id": "privileged-access",
+      "name": "Privileged Access Management",
+      "owns": "Just-in-time and just-enough elevation, break-glass, session recording and the standing-privilege position.",
+      "authoritative_on": ["privileged access path", "JIT/JEA design", "break-glass procedure", "session recording", "standing privilege inventory"],
+      "never_assume": [
+        "That standing privilege has been removed because JIT exists. Ask for the count of accounts that still hold permanent elevation.",
+        "That break-glass is exceptional. Ask for its usage rate - a rising rate means the normal path is being routed around.",
+        "That approval is independent. Shared accounts and team mailboxes let a requester approve themselves.",
+        "That session recording is reviewed. Recorded and reviewed are different controls with different value."
+      ],
+      "must_ask": [
+        {"q": "How many accounts in scope still hold standing privilege, and what blocks their removal?", "of": "IAM Service Owner"},
+        {"q": "What is the break-glass usage rate, and does its use raise an alert or only a log?", "of": "Security Architect"},
+        {"q": "Can a requester ever be their own approver through a shared identity?", "of": "IAM Service Owner"}
+      ],
+      "peers": ["authentication", "authorisation", "identity-governance", "workload-identity-secrets"],
+      "escalate_when": [
+        "Privileged session evidence is required by an obligation the GRC domain owns.",
+        "Vendor or support access from outside a boundary another domain declared closed.",
+        "Break-glass events need to reach a monitoring function outside this domain."
+      ],
+      "produces": ["Standing privilege inventory", "JIT elevation flow with approval model", "Break-glass procedure with alerting and usage rate"]
+    },
+    {
+      "id": "identity-governance",
+      "name": "Identity Governance & Administration",
+      "owns": "Joiner-mover-leaver, entitlement review, segregation of duties and the accuracy of who holds what.",
+      "authoritative_on": ["JML process coverage", "entitlement review cadence and quality", "segregation of duties", "orphaned and dormant account detection"],
+      "never_assume": [
+        "That leaver deprovisioning reaches everywhere. It commonly covers the IdP and misses local accounts, non-production and third-party-hosted systems.",
+        "That an entitlement review that completed was a review. Ask what proportion of entitlements were revoked - a near-zero revocation rate means rubber-stamping.",
+        "That mover is handled. Accumulated access from previous roles is the most common real over-privilege.",
+        "That segregation of duties holds across systems. It is usually enforced within one and broken across two."
+      ],
+      "must_ask": [
+        {"q": "Which systems in scope are not covered by automated leaver deprovisioning?", "of": "IAM Service Owner"},
+        {"q": "What proportion of entitlements were revoked at the last review?", "of": "IAM Service Owner"},
+        {"q": "Which segregation-of-duties rules span two systems, and what enforces them?", "of": "Control Owner"}
+      ],
+      "peers": ["authorisation", "privileged-access", "authentication", "federation-sso"],
+      "escalate_when": [
+        "Entitlement evidence is needed for an obligation GRC owns.",
+        "A segregation-of-duties conflict spans systems owned by different domains."
+      ],
+      "produces": ["JML coverage map with gaps", "Entitlement review quality metrics", "Cross-system SoD conflicts"]
+    },
+    {
+      "id": "workload-identity-secrets",
+      "name": "Workload Identity & Secrets Management",
+      "owns": "Machine and workload identity, federation over static credentials, and the secret and certificate lifecycle.",
+      "authoritative_on": ["workload identity issuance", "attestation basis", "secret storage and rotation", "credential lifetime", "non-federating exception set"],
+      "never_assume": [
+        "That workloads federate because the capability exists. Ask for the count that cannot, because that exception set becomes the highest-value target once everything else is hardened.",
+        "That the platform attests anything meaningful before issuing an identity. Ask what stops an unverified artefact obtaining a legitimate one.",
+        "That secrets in a managed store are rotated. Storage and rotation are separate controls.",
+        "That short lifetimes are safe operationally. They convert clock skew and refresh bugs into production incidents."
+      ],
+      "must_ask": [
+        {"q": "Which workloads in scope cannot obtain a federated identity, and what compensating control covers each?", "of": "Platform Architect"},
+        {"q": "What does the platform assert about a workload before issuing it an identity?", "of": "Platform Architect"},
+        {"q": "Is the issuance path in non-production the same as production, or stubbed?", "of": "Route-to-Live Owner"}
+      ],
+      "peers": ["authentication", "privileged-access", "authorisation"],
+      "escalate_when": [
+        "Attestation depends on platform provenance another domain must deliver.",
+        "Workload identity is the basis for network policy another domain enforces.",
+        "The trust anchor's protection is a physical or HSM control outside this domain."
+      ],
+      "produces": ["Workload identity issuance path per runtime", "Non-federating exception set with compensating controls", "Secret and certificate lifecycle with rotation evidence"]
+    }
+  ]
+}

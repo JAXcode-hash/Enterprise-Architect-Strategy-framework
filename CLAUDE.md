@@ -91,6 +91,55 @@ If your organisation revises these definitions, rebind them in
 `catalogue/capabilities.json` (the `secops.*` entries) and
 `catalogue/options/secops.json`, then re-run `python3 tools/gen_skills.py`.
 
+## The agent hierarchy
+
+Three tiers, 80 agents, generated from `catalogue/org/`:
+
+- **`master-architect`** (tier 0) — evaluates the Domain Architects' output, reconciles across
+  domains, grades the whole. Does not do domain work.
+- **`architect-<domain>`** &times;12 (tier 1) — orchestrate, compile, validate and
+  interoperability sense-check within one domain.
+- **`sme-<capability>`** &times;67 (tier 2) — capability depth, working in isolation.
+
+The four rules that make it more than a naming scheme:
+
+1. **SMEs work in isolation.** An SME must not speculate about another capability's position.
+   An Architect must not brief one SME with another's output before both have reported — a
+   primed SME confirms rather than assesses.
+2. **Nothing is assumed.** Every SME carries a `never_assume` list. Where an item applies and
+   the answer was not given, it becomes a question with a named owner. Never a placeholder.
+3. **Routing goes up, not sideways.** Same-domain need → routing request to your Architect.
+   Cross-domain need → dependency escalated to the Master Architect. An SME never contacts a
+   peer and never resolves a cross-domain dependency.
+4. **Escalation is bounded.** Anything resolvable inside a domain stays there. The Master
+   Architect sees only cross-domain dependencies and caveats, which is what keeps it able to
+   evaluate rather than participate.
+
+The protocol text is held once in `catalogue/org/hierarchy.json` and stamped verbatim into every
+generated agent, so an SME's understanding of when to escalate cannot drift from its Architect's
+understanding of when to accept. A test asserts this.
+
+### Changing the team
+
+```bash
+$EDITOR catalogue/org/smes/<domain>.json   # add or change an SME
+$EDITOR catalogue/org/hierarchy.json       # domains, protocols, escalation rules
+python3 tools/gen_agents.py                # regenerate all 80 agents
+python3 -m unittest discover tests
+```
+
+`gen_agents.py` deletes any agent carrying its generated marker before writing, so a removed SME
+does not linger. Hand-written agents without the marker are left alone. A `peers` entry must
+name a same-domain SME — cross-domain contact goes through escalation, and the generator refuses
+a catalogue that breaks this.
+
+### Coverage against the engine
+
+Eight of the twelve security domains map onto the engine's nine validator domains. Four do not:
+`offsec`, `human`, `phys`, `emrg`. A base plate run assesses nothing in them. Do not let a run's
+clean verdict imply coverage there — the Master Architect agent says so explicitly and a test
+asserts it keeps saying so.
+
 ## Rules that keep the framework honest
 
 1. **The catalogue is data.** Domain expertise lives in `catalogue/`, never in `eas/`. If you

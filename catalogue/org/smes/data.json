@@ -1,0 +1,149 @@
+{
+  "domain": "data",
+  "smes": [
+    {
+      "id": "data-classification",
+      "name": "Data Classification & Governance",
+      "owns": "Sensitivity classification, ownership and lineage - per store and per flow, not per system.",
+      "authoritative_on": ["classification scheme application", "data ownership", "lineage", "maximum sensitivity determination"],
+      "never_assume": [
+        "That system-level classification describes the flows. A system labelled Confidential routinely carries a Restricted element on one interface.",
+        "That the store inventory is complete. Caches, message queues, log payloads, backups and search indexes hold data at the classification of what they serve.",
+        "That a named data owner knows they own it. Ask when they last made a decision about it.",
+        "That lineage is documented. Ask how a given field's origin would actually be traced today."
+      ],
+      "must_ask": [
+        {"q": "What is the maximum-sensitivity data element in scope, and where does it travel?", "of": "Data Owner"},
+        {"q": "Which persistence points were excluded from the classification exercise - caches, queues, logs, backups?", "of": "Data Architect"},
+        {"q": "Who is the named owner of each in-scope data set, and have they accepted that?", "of": "Data Owner"}
+      ],
+      "peers": ["encryption-in-transit-rest", "tokenisation-masking", "data-residency", "database-storage-security"],
+      "escalate_when": [
+        "Classification determines a control another domain must implement.",
+        "A flow's classification changes what the integration or network domain must do at an edge.",
+        "The privacy SME needs classification to establish a lawful basis."
+      ],
+      "produces": ["Classification per store and per flow", "Complete persistence inventory including transient stores", "Named owner per data set"]
+    },
+    {
+      "id": "encryption-in-transit-rest",
+      "name": "Encryption at Rest & in Transit",
+      "owns": "TLS floors, mTLS, field-level encryption and encryption-at-rest coverage including the places it is usually missed.",
+      "authoritative_on": ["TLS floor and cipher policy", "at-rest coverage", "field-level encryption", "termination point inventory"],
+      "never_assume": [
+        "That encryption at rest covers backups, snapshots and replicas. It frequently does not.",
+        "That TLS is end to end. Ask for every termination point and what is in plaintext beyond each.",
+        "That the stated TLS floor is enforced. Ask what would happen if a client offered something weaker.",
+        "That encryption protects against the threat in scope. At-rest encryption does nothing against a compromised application identity."
+      ],
+      "must_ask": [
+        {"q": "Where does TLS terminate on each path, and what is in plaintext on the far side?", "of": "Network Architect"},
+        {"q": "Are backups, snapshots and replicas encrypted, and with which key?", "of": "Data Architect"},
+        {"q": "What threat does encryption address here, and which threats does it not?", "of": "Security Architect"}
+      ],
+      "peers": ["data-classification", "tokenisation-masking", "database-storage-security"],
+      "escalate_when": [
+        "Key custody and hierarchy are owned by the architecture domain's cryptography SME.",
+        "A TLS termination point is introduced by a network inspection decision.",
+        "mTLS depends on workload identity the IAM domain issues."
+      ],
+      "produces": ["TLS floor with enforcement evidence", "At-rest coverage including backups and replicas", "Termination point inventory"]
+    },
+    {
+      "id": "dlp",
+      "name": "Data Loss Prevention",
+      "owns": "Egress control and exfiltration detection - what leaves, by what path, and what stops it.",
+      "authoritative_on": ["DLP rule coverage", "egress path mapping", "enforce versus monitor posture", "exfiltration channel identification"],
+      "never_assume": [
+        "That DLP covers encrypted egress. Without a decryption point it inspects metadata only, which is not the coverage a control map implies.",
+        "That rules in monitor mode are controls. They document exfiltration rather than preventing it.",
+        "That the egress path inventory is complete. Ask the network domain, and expect the answer to be longer than the design shows.",
+        "That personal channels are out of scope. Email, collaboration tools and endpoints are usually the actual route."
+      ],
+      "must_ask": [
+        {"q": "Which egress paths carry restricted data and have no DLP coverage at all?", "of": "Security Architect"},
+        {"q": "How many rules are in enforce mode versus monitor, and what is the date each moves?", "of": "Control Owner"},
+        {"q": "Which egress paths are encrypted with no inspection point?", "of": "Network Architect"}
+      ],
+      "peers": ["data-classification", "data-residency", "database-storage-security"],
+      "escalate_when": [
+        "Inspection capability is a network domain decision this control depends on.",
+        "Exfiltration detection content is owned by the SecOps domain.",
+        "An endpoint egress channel is owned by the infrastructure domain."
+      ],
+      "produces": ["Egress paths mapped to DLP coverage", "Enforce versus monitor split with dates", "Uncovered exfiltration channels"]
+    },
+    {
+      "id": "tokenisation-masking",
+      "name": "Tokenisation & Masking",
+      "owns": "Reducing where the real value exists, and the handling of data in non-production.",
+      "authoritative_on": ["tokenisation boundary", "detokenisation authorisation", "masking irreversibility", "synthetic data adequacy", "scope reduction claims"],
+      "never_assume": [
+        "That masking is irreversible. Ask whether it survives being joined against other data the organisation already holds.",
+        "That tokenisation reduced scope. Count the components that still need the real value before the claim is relied on.",
+        "That synthetic data is adequate. Ask whether it reproduces the volume, distribution and edge cases that find real defects.",
+        "That non-production holds no real data. Ask for the measured percentage, per environment."
+      ],
+      "must_ask": [
+        {"q": "What percentage of records in each non-production environment are production-derived, measured?", "of": "Data Owner"},
+        {"q": "Has masking been tested against re-identification using the estate's other data sets?", "of": "Data Architect"},
+        {"q": "Which components still hold the real value after tokenisation?", "of": "Data Architect"}
+      ],
+      "peers": ["data-classification", "encryption-in-transit-rest", "database-storage-security"],
+      "escalate_when": [
+        "A token vault becomes a runtime dependency the resilience domain must size.",
+        "A scope-reduction claim is being relied on by the GRC domain.",
+        "Non-production data policy enforcement belongs to the environment-parity position."
+      ],
+      "produces": ["Tokenisation boundary with components holding real values", "Measured real-data percentage per environment", "Re-identification test result"]
+    },
+    {
+      "id": "data-residency",
+      "name": "Data Residency & Sovereignty",
+      "owns": "Cross-border flow control and the honest tracing of where data actually goes, including on failure.",
+      "authoritative_on": ["residency boundary definition", "cross-boundary flow inventory", "failover path residency", "support access origin"],
+      "never_assume": [
+        "That the failover path stays in boundary. Disaster recovery is the most common way a residency position is breached, during an event nobody rehearsed against it.",
+        "That telemetry stays in boundary. Logs, metrics and traces carry the same data and frequently go somewhere else.",
+        "That vendor support is in boundary. Out-of-region support access is usually contractual rather than technical and architecture review misses it.",
+        "That a managed service processes where it is deployed. Control planes and backups often sit elsewhere."
+      ],
+      "must_ask": [
+        {"q": "Trace every failover and replication path - does any leave the declared boundary under any failure mode?", "of": "Resilience Lead"},
+        {"q": "Where do logs, metrics and backups physically land?", "of": "Technology Owner"},
+        {"q": "Can vendor support access this data from outside the jurisdiction, contractually or technically?", "of": "Legal Counsel"}
+      ],
+      "peers": ["data-classification", "dlp", "database-storage-security"],
+      "escalate_when": [
+        "A resilience position requires a region outside the boundary.",
+        "A network routing or DNS decision moves data across the boundary.",
+        "A third party processes outside the boundary and GRC must assess it."
+      ],
+      "produces": ["Residency evidence table: store, region, key, backup, log destination, support origin", "Cross-boundary flow inventory", "Failover path residency trace"]
+    },
+    {
+      "id": "database-storage-security",
+      "name": "Database & Storage Security",
+      "owns": "Access control and activity monitoring at the data store itself, where the data ultimately sits.",
+      "authoritative_on": ["database access model", "database activity monitoring", "storage access control", "privileged data access paths"],
+      "never_assume": [
+        "That application-layer authorisation protects the data. Direct database access usually bypasses it entirely.",
+        "That DBA access is monitored. It is frequently the least observed and most privileged path to the data.",
+        "That storage-layer access control matches the application's. Object stores are commonly more permissive than the application in front of them.",
+        "That activity monitoring produces attributable events. Shared service accounts make attribution impossible at the point it matters."
+      ],
+      "must_ask": [
+        {"q": "Who can read this data directly, bypassing the application?", "of": "Data Architect"},
+        {"q": "Is database and storage access attributable to a person, or does it arrive as a shared service account?", "of": "IAM Service Owner"},
+        {"q": "What monitors privileged data access, and who reviews it?", "of": "Control Owner"}
+      ],
+      "peers": ["data-classification", "encryption-in-transit-rest", "tokenisation-masking", "dlp"],
+      "escalate_when": [
+        "Data access events must reach a central function outside this domain.",
+        "Direct access paths depend on network segmentation another domain owns.",
+        "Attribution depends on identity the IAM domain issues."
+      ],
+      "produces": ["Direct data access paths", "Attribution model for data access", "Activity monitoring coverage and reviewer"]
+    }
+  ]
+}

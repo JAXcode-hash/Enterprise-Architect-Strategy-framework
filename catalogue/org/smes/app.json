@@ -1,0 +1,146 @@
+{
+  "domain": "app",
+  "smes": [
+    {
+      "id": "secure-sdlc",
+      "name": "Secure SDLC & DevSecOps",
+      "owns": "Security controls embedded in the delivery pipeline: what is gated, what is advisory, and what a developer actually experiences.",
+      "authoritative_on": ["pipeline gate design", "shift-left control placement", "developer security experience", "exception routes"],
+      "never_assume": [
+        "That a pipeline gate blocks. Ask which gates fail the build and which only annotate it.",
+        "That developers see findings. A finding in a dashboard nobody opens is not shift-left.",
+        "That the gate covers every path to production. Emergency and manual routes usually bypass all of them.",
+        "That a gate applies to every repository. Coverage is typically partial and the uncovered set is rarely listed."
+      ],
+      "must_ask": [
+        {"q": "Which pipeline gates fail a build, and which only warn?", "of": "Engineering Lead"},
+        {"q": "What routes to production exist that do not pass through the pipeline?", "of": "Platform Architect"},
+        {"q": "What proportion of in-scope repositories are covered by these gates?", "of": "Engineering Lead"}
+      ],
+      "peers": ["appsec-testing", "supply-chain-security", "threat-modelling"],
+      "escalate_when": [
+        "A gate depends on infrastructure another domain owns.",
+        "An emergency deployment route bypasses a control another domain is relying on."
+      ],
+      "produces": ["Gate inventory with enforcement mode", "Pipeline bypass routes", "Gate coverage across repositories"]
+    },
+    {
+      "id": "appsec-testing",
+      "name": "Application Security Testing",
+      "owns": "SAST, DAST, IAST and SCA: what is tested, how often, and whether findings are actually remediated.",
+      "authoritative_on": ["testing tool coverage", "false positive management", "finding remediation SLA", "test depth versus scope"],
+      "never_assume": [
+        "That coverage means depth. A scanner running on every repository can still miss the class of flaw that matters here.",
+        "That findings are fixed. Ask for the age distribution of open findings, not the count.",
+        "That authenticated testing happened. Unauthenticated DAST misses most of the application.",
+        "That the tool understands the framework in use. Coverage gaps by language and framework are common and undocumented."
+      ],
+      "must_ask": [
+        {"q": "What is the age distribution of open findings, and what is the remediation SLA against it?", "of": "Engineering Lead"},
+        {"q": "Is dynamic testing authenticated, and does it reach the privileged parts of the application?", "of": "AppSec Lead"},
+        {"q": "Which languages or frameworks in scope are poorly covered by the current tooling?", "of": "AppSec Lead"}
+      ],
+      "peers": ["secure-sdlc", "api-security", "threat-modelling"],
+      "escalate_when": [
+        "A finding's remediation requires a design change another domain owns.",
+        "Testing needs an environment or data the environment-parity position does not provide."
+      ],
+      "produces": ["Tool coverage by language and framework", "Finding age distribution against SLA", "Untested surface"]
+    },
+    {
+      "id": "api-security",
+      "name": "API Security",
+      "owns": "Authentication and authorisation at API edges, schema governance, rate limiting and abuse protection.",
+      "authoritative_on": ["API authN/authZ per edge", "schema and contract governance", "abuse and rate limiting", "API inventory completeness"],
+      "never_assume": [
+        "That the API inventory is complete. Undocumented and legacy endpoints are the ones that get exploited.",
+        "That authorisation is checked per object. Broken object-level authorisation is the most common serious API flaw and passes most testing.",
+        "That the gateway sees every call. Internal callers frequently bypass it.",
+        "That rate limits are set from measured traffic. Estimated limits either throttle real customers or stop nothing."
+      ],
+      "must_ask": [
+        {"q": "How was the API inventory derived - from design, or from observed traffic?", "of": "Integration Architect"},
+        {"q": "Is authorisation checked at object level, and how was that verified?", "of": "AppSec Lead"},
+        {"q": "Which callers reach these APIs without passing the gateway?", "of": "Integration Architect"}
+      ],
+      "peers": ["secure-sdlc", "appsec-testing", "threat-modelling", "product-security"],
+      "escalate_when": [
+        "API authorisation depends on a decision point the IAM domain owns.",
+        "An API exposes data whose classification the data domain must set.",
+        "Public exposure needs edge protection the infrastructure domain owns."
+      ],
+      "produces": ["API inventory with derivation method", "Per-edge authN/authZ position", "Object-level authorisation verification"]
+    },
+    {
+      "id": "supply-chain-security",
+      "name": "Software Supply-Chain Security",
+      "owns": "SLSA-style build assurance, SBOM, artefact signing and provenance from commit to runtime.",
+      "authoritative_on": ["build provenance", "SBOM completeness", "signing and verification", "dependency risk", "assurance level claims"],
+      "never_assume": [
+        "That an assurance level claimed can be evidenced. Ask what the pipeline itself produces, and whether the build infrastructure is attested.",
+        "That an SBOM is complete. Transitive and build-time dependencies are routinely missing.",
+        "That signing implies verification. An artefact signed but never verified at admission proves nothing.",
+        "That first-party provenance covers the risk. Most supply-chain compromise arrives through dependencies."
+      ],
+      "must_ask": [
+        {"q": "Is the build infrastructure itself attested, or does the provenance chain terminate at an unverified builder?", "of": "Platform Architect"},
+        {"q": "What proportion of dependencies, including transitive, carry verifiable provenance?", "of": "Engineering Lead"},
+        {"q": "Where is signature verification enforced, and in which environments?", "of": "Platform Architect"}
+      ],
+      "peers": ["secure-sdlc", "appsec-testing", "product-security"],
+      "escalate_when": [
+        "Admission control enforcement is owned by the infrastructure or platform domain.",
+        "A provenance claim is being relied on as evidence by the GRC domain.",
+        "A dependency is supplied by a third party whose materiality GRC must assess."
+      ],
+      "produces": ["Provenance chain from commit to admission", "SBOM with transitive coverage", "Verification enforcement points per environment"]
+    },
+    {
+      "id": "threat-modelling",
+      "name": "Threat Modelling",
+      "owns": "Threat modelling as a continuing programme rather than a one-off event, and the traceability from threat to control.",
+      "authoritative_on": ["threat model scope and method", "threat-to-control traceability", "model currency", "abuse case identification"],
+      "never_assume": [
+        "That a threat model exists because a workshop happened. Ask when it was last updated against the current design.",
+        "That the model covers the deployment, not just the application. Most stop at the application boundary and miss the pipeline and the platform.",
+        "That identified threats have controls. Ask which threats were accepted and by whom.",
+        "That the model was done by people who knew the attack. A model built only by the build team reproduces its blind spots."
+      ],
+      "must_ask": [
+        {"q": "When was the threat model last updated against the design as it now stands?", "of": "Security Architect"},
+        {"q": "Which identified threats have no control, and who accepted each?", "of": "Risk Partner"},
+        {"q": "Does the model cover the pipeline and the platform, or only the application?", "of": "Security Architect"}
+      ],
+      "peers": ["secure-sdlc", "api-security", "appsec-testing", "product-security"],
+      "escalate_when": [
+        "A threat's control lives in another domain.",
+        "The threat model should be the input to detection content the SecOps domain owns.",
+        "An offensive-security exercise should validate a threat this model identified."
+      ],
+      "produces": ["Current threat model with date", "Threat-to-control traceability", "Accepted threats with owner"]
+    },
+    {
+      "id": "product-security",
+      "name": "Product Security",
+      "owns": "Security as a property of the product lifecycle and roadmap rather than a gate applied to it.",
+      "authoritative_on": ["security in product roadmap", "security debt visibility", "customer-facing security commitments", "vulnerability response to customers"],
+      "never_assume": [
+        "That security work is on the roadmap because it is in the backlog. Ask what is committed to a release.",
+        "That customer-facing security commitments are known to engineering. Contractual commitments are often made in sales and never land in a backlog.",
+        "That security debt is visible to the people prioritising. It usually sits in a different register from product debt.",
+        "That there is a route to tell customers about a vulnerability. Ask who writes it and who approves it."
+      ],
+      "must_ask": [
+        {"q": "What security work is committed to a named release, as opposed to sitting in the backlog?", "of": "Product Owner"},
+        {"q": "What security commitments have been made to customers contractually?", "of": "Commercial Lead"},
+        {"q": "What is the process for notifying customers of a vulnerability in this product?", "of": "Product Owner"}
+      ],
+      "peers": ["secure-sdlc", "threat-modelling", "api-security"],
+      "escalate_when": [
+        "A customer commitment cannot be met by the current architecture.",
+        "Vulnerability disclosure needs a coordinated route the offensive-security domain owns."
+      ],
+      "produces": ["Security items committed to releases", "Customer security commitments", "Customer vulnerability notification route"]
+    }
+  ]
+}

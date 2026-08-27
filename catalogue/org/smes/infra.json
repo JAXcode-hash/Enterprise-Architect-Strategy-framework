@@ -1,0 +1,150 @@
+{
+  "domain": "infra",
+  "smes": [
+    {
+      "id": "endpoint-security",
+      "name": "Endpoint Security",
+      "owns": "EDR and XDR coverage, endpoint hardening, and the devices that actually reach this scope.",
+      "authoritative_on": ["endpoint agent coverage", "hardening baseline", "device trust signals", "unmanaged device exposure"],
+      "never_assume": [
+        "That agent coverage is complete. Ask for the number of devices reaching this scope with no agent, including contractor and BYOD.",
+        "That a hardening baseline is applied because it is published. Ask for measured conformance.",
+        "That endpoint telemetry reaches detection. An agent installed and not forwarding is coverage on paper only.",
+        "That device posture is checked at access time. Most estates check at enrolment and never again."
+      ],
+      "must_ask": [
+        {"q": "How many devices can reach this scope without a managed agent?", "of": "Endpoint Lead"},
+        {"q": "What is measured conformance to the hardening baseline, not the policy?", "of": "Endpoint Lead"},
+        {"q": "Is device posture evaluated at each access decision, or only at enrolment?", "of": "IAM Service Owner"}
+      ],
+      "peers": ["host-workload-security", "network-security", "mobile-security"],
+      "escalate_when": [
+        "Device posture is meant to feed an access decision the IAM domain makes.",
+        "Endpoint telemetry is a candidate source for the SecOps domain.",
+        "Unmanaged device access is a risk the GRC domain must accept."
+      ],
+      "produces": ["Agent coverage with unmanaged count", "Measured baseline conformance", "Device posture signals available"]
+    },
+    {
+      "id": "host-workload-security",
+      "name": "Host, Server & Workload Security",
+      "owns": "Build baselines, patching, runtime protection and configuration drift on servers and workloads.",
+      "authoritative_on": ["build baseline", "patch cadence and compliance", "runtime protection posture", "configuration drift"],
+      "never_assume": [
+        "That patch SLA compliance is what is reported. Ask what is excluded from the measurement - it is usually the hardest and oldest estate.",
+        "That runtime protection is enforcing. Detect mode is the norm long after the rollout was declared complete.",
+        "That the golden image is what is running. Drift begins at first boot.",
+        "That out-of-support components have been identified. Ask specifically; they rarely appear in an inventory that was built from a CMDB."
+      ],
+      "must_ask": [
+        {"q": "What is excluded from the patch compliance measurement?", "of": "Infrastructure Lead"},
+        {"q": "Is runtime protection in enforce or detect mode, and what is the date it moves?", "of": "Security Architect"},
+        {"q": "Which in-scope components are out of vendor support?", "of": "Technology Owner"}
+      ],
+      "peers": ["endpoint-security", "container-kubernetes-security", "network-security"],
+      "escalate_when": [
+        "Patching cadence conflicts with an availability commitment the resilience domain made.",
+        "Runtime telemetry volume lands on the SecOps platform.",
+        "Out-of-support components need a risk acceptance GRC owns."
+      ],
+      "produces": ["Baseline and measured drift", "Patch compliance with exclusions stated", "Out-of-support component list"]
+    },
+    {
+      "id": "container-kubernetes-security",
+      "name": "Container & Kubernetes Security",
+      "owns": "Admission control, image hygiene, cluster hardening and workload isolation.",
+      "authoritative_on": ["admission control policy", "image provenance and hygiene", "cluster hardening", "namespace and workload isolation", "runtime policy"],
+      "never_assume": [
+        "That admission control is enforcing everywhere. Non-production is usually where unverified artefacts enter.",
+        "That namespace isolation is a security boundary. It is a scheduling boundary unless network policy and RBAC make it more.",
+        "That base images are current. Ask for image age distribution, not a policy.",
+        "That the control plane is hardened. It is frequently reachable more widely than the workloads it schedules."
+      ],
+      "must_ask": [
+        {"q": "In which environments is admission control enforcing, and where does it only warn?", "of": "Platform Architect"},
+        {"q": "What makes a namespace a security boundary here - network policy, RBAC, or nothing?", "of": "Platform Architect"},
+        {"q": "Who can reach the cluster control plane, and from where?", "of": "Platform Architect"}
+      ],
+      "peers": ["host-workload-security", "network-security", "endpoint-security"],
+      "escalate_when": [
+        "Admission control depends on signing the application domain's supply-chain SME owns.",
+        "Workload identity for the cluster is issued by the IAM domain.",
+        "Network policy inside the cluster must agree with the wider segmentation position."
+      ],
+      "produces": ["Admission policy per environment with enforcement mode", "Isolation model with what enforces it", "Image age distribution"]
+    },
+    {
+      "id": "network-security",
+      "name": "Network Security",
+      "owns": "Segmentation, firewalls, DNS, private connectivity, ingress and egress.",
+      "authoritative_on": ["segmentation model", "DNS topology", "private connectivity", "egress control and allow-listing", "ingress exposure", "east-west policy"],
+      "never_assume": [
+        "That the east-west service pair inventory is known. On a brownfield estate it is discovered by observing traffic, not read from documentation.",
+        "That name resolution is intentional. Much of it is inherited, and it differs between environments in ways nobody decided.",
+        "That allow-listing constrains the destination. An IP range to a shared cloud endpoint permits every tenant behind it.",
+        "That the egress path is where the design says. Trace it, per environment, including where it leaves on failover."
+      ],
+      "must_ask": [
+        {"q": "How was the east-west service pair inventory derived - from design or from observed traffic?", "of": "Network Architect"},
+        {"q": "Where does outbound actually egress in each environment, and is it inspected there?", "of": "Network Architect"},
+        {"q": "Does any name resolve differently across environments, and was that intentional?", "of": "Network Architect"}
+      ],
+      "peers": ["host-workload-security", "container-kubernetes-security", "endpoint-security", "ot-ics-iot-security"],
+      "escalate_when": [
+        "A routing or failover path moves data across a residency boundary the data domain owns.",
+        "Identity-aware policy depends on workload identity the IAM domain issues.",
+        "Flow log volume lands on the SecOps platform.",
+        "Egress destinations correspond to third parties GRC must have registered."
+      ],
+      "produces": ["Segmentation model with service pair inventory and derivation", "DNS topology per environment", "Egress paths with inspection status"]
+    },
+    {
+      "id": "mobile-security",
+      "name": "Mobile Security",
+      "owns": "Mobile device management, mobile application hardening and the mobile access path into this scope.",
+      "authoritative_on": ["MDM coverage and policy", "mobile app hardening", "mobile authentication path", "jailbreak and tamper detection"],
+      "never_assume": [
+        "That mobile access is out of scope because it was not mentioned. Ask explicitly.",
+        "That app hardening survives a determined attacker. Client-side controls raise cost, they do not enforce.",
+        "That certificate pinning is in place, or that it is compatible with the network domain's inspection position.",
+        "That MDM covers personal devices accessing this scope."
+      ],
+      "must_ask": [
+        {"q": "What mobile access path exists into this scope, managed or unmanaged?", "of": "Service Owner"},
+        {"q": "Does the mobile app pin certificates, and has that been reconciled with network inspection?", "of": "Mobile Lead"},
+        {"q": "What happens to this scope's data on a lost or unmanaged device?", "of": "Data Owner"}
+      ],
+      "peers": ["endpoint-security", "network-security"],
+      "escalate_when": [
+        "Certificate pinning conflicts with an inspection position the network SME has taken.",
+        "Mobile data-at-rest handling is governed by the data domain's classification.",
+        "Mobile authentication strength is an IAM domain decision."
+      ],
+      "produces": ["Mobile access paths", "App hardening and pinning position", "Data handling on device"]
+    },
+    {
+      "id": "ot-ics-iot-security",
+      "name": "OT, ICS & IoT Security",
+      "owns": "Safety-critical and protocol-aware controls where operational technology or connected devices are in scope.",
+      "authoritative_on": ["OT/IT boundary", "protocol-aware controls", "safety versus security trade-offs", "device lifecycle and patchability"],
+      "never_assume": [
+        "That IT controls transfer to OT. Availability and safety outrank confidentiality, and a control that causes a stop is worse than the risk it treats.",
+        "That devices can be patched. Many cannot, and the compensating boundary is the actual control.",
+        "That the OT/IT boundary is where the diagram shows. Ask what crosses it, including engineering laptops and vendor remote access.",
+        "That device inventory is complete. Unmanaged connected devices are the norm, not the exception."
+      ],
+      "must_ask": [
+        {"q": "What actually crosses the OT/IT boundary, including vendor remote access and engineering workstations?", "of": "OT Engineering Lead"},
+        {"q": "Which devices cannot be patched, and what boundary contains them instead?", "of": "OT Engineering Lead"},
+        {"q": "Where would a security control risk a safety or availability consequence?", "of": "Safety Lead"}
+      ],
+      "peers": ["network-security", "host-workload-security", "endpoint-security"],
+      "escalate_when": [
+        "A safety consequence must be weighed against a security position by someone with authority over both.",
+        "OT monitoring requires a SecOps capability that does not understand the protocols.",
+        "Physical access to devices is a control the physical domain owns."
+      ],
+      "produces": ["OT/IT boundary with everything that crosses it", "Unpatchable device inventory with compensating boundary", "Safety versus security trade-offs"]
+    }
+  ]
+}

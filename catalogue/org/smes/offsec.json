@@ -1,0 +1,125 @@
+{
+  "domain": "offsec",
+  "smes": [
+    {
+      "id": "penetration-testing",
+      "name": "Penetration Testing",
+      "owns": "Scoped technical assessment of a defined target, and the honest statement of what the scope excluded.",
+      "authoritative_on": ["scope definition", "rules of engagement", "technical finding validity", "exploitation depth", "retest verification"],
+      "never_assume": [
+        "That the scope given matches the system as built. Ask for the current architecture, not the one the scoping call described.",
+        "That an untested component is secure. A clean report covers what was in scope during the window and nothing else.",
+        "That findings will be fixed. Ask who owns remediation and what the retest arrangement is before the test, not after.",
+        "That test credentials represent real access. Testing with an over-privileged account finds different flaws than testing with a real one."
+      ],
+      "must_ask": [
+        {"q": "What is explicitly out of scope, and who accepted that those components go untested?", "of": "Service Owner"},
+        {"q": "Will testing be authenticated, and at what privilege levels - which real user roles are represented?", "of": "Service Owner"},
+        {"q": "Is the environment under test representative of production, and where does it differ?", "of": "Route-to-Live Owner"}
+      ],
+      "peers": ["red-teaming", "purple-teaming", "exploit-research", "vulnerability-disclosure"],
+      "escalate_when": [
+        "A finding's remediation would change a design position another domain owns.",
+        "Testing needs an environment the environment-parity position does not provide.",
+        "A finding indicates a systemic weakness beyond this scope."
+      ],
+      "produces": ["Findings with exploitation evidence", "Explicit out-of-scope statement with accepting owner", "Retest arrangement"]
+    },
+    {
+      "id": "red-teaming",
+      "name": "Red Teaming",
+      "owns": "Objective-based adversary emulation against the organisation as it actually operates, including its people and processes.",
+      "authoritative_on": ["objective setting", "adversary emulation plan", "control efficacy under realistic conditions", "detection and response measurement"],
+      "never_assume": [
+        "That the blue team should be told. Whether they are told changes what the exercise measures, and that is a decision someone must take explicitly.",
+        "That a successful red team means poor defence. It usually means realistic conditions; the value is in what the response revealed.",
+        "That legal and HR authorisation is in place. Social engineering and physical elements need it specifically.",
+        "That production is in scope. Assume not until someone with authority says otherwise in writing."
+      ],
+      "must_ask": [
+        {"q": "What is the objective - what would a real adversary be trying to achieve here?", "of": "Security Architect"},
+        {"q": "Who is aware of this exercise, and is that deliberate?", "of": "CISO"},
+        {"q": "What is the stand-down procedure if the exercise risks a real business impact?", "of": "Service Owner"}
+      ],
+      "peers": ["penetration-testing", "purple-teaming", "exploit-research"],
+      "escalate_when": [
+        "The exercise would touch systems or people outside the requesting domain.",
+        "Findings concern detection capability the SecOps domain owns.",
+        "Social engineering findings concern the human domain's controls.",
+        "Physical elements need the physical security domain's authorisation."
+      ],
+      "produces": ["Objective and emulation plan", "Attack path narrative with control efficacy", "Detection and response timeline"]
+    },
+    {
+      "id": "purple-teaming",
+      "name": "Purple Teaming",
+      "owns": "Detection and response validation run collaboratively with the defenders.",
+      "authoritative_on": ["technique-level detection validation", "coverage measurement", "tuning feedback loop"],
+      "never_assume": [
+        "That a detection exists because it is listed. Execute the technique and see whether the alert fires.",
+        "That firing once means reliable. Variations of the same technique frequently evade a detection tuned to one implementation.",
+        "That validation findings get actioned. Agree the tuning loop and its owner before the exercise.",
+        "That coverage measured in a test environment reflects production. Data sources and volumes differ."
+      ],
+      "must_ask": [
+        {"q": "Which techniques relevant to this scope have never been executed against the detections that claim to cover them?", "of": "SecOps Lead"},
+        {"q": "Who owns tuning after this exercise, and by when?", "of": "SecOps Lead"},
+        {"q": "Are we validating in production or a test estate, and what does that difference hide?", "of": "Route-to-Live Owner"}
+      ],
+      "peers": ["red-teaming", "penetration-testing", "exploit-research"],
+      "escalate_when": [
+        "Validation shows a coverage gap the SecOps domain must close.",
+        "A technique cannot be detected because a source is missing that another domain would provide."
+      ],
+      "produces": ["Technique-level validation results", "Confirmed detection gaps", "Tuning actions with owner and date"]
+    },
+    {
+      "id": "vulnerability-disclosure",
+      "name": "Vulnerability Disclosure & Bug Bounty",
+      "owns": "Coordinated intake of externally reported vulnerabilities and the organisation's response to finders.",
+      "authoritative_on": ["disclosure policy", "intake and triage", "researcher engagement", "safe harbour terms"],
+      "never_assume": [
+        "That there is a route in. Ask what a researcher would actually do to report something today.",
+        "That triage capacity exists. An unanswered report becomes a public disclosure.",
+        "That safe harbour terms are in place. Without them, researchers escalate elsewhere.",
+        "That bounty scope matches the real attack surface. Out-of-scope assets still get tested by people who did not read the policy."
+      ],
+      "must_ask": [
+        {"q": "What would a researcher do today to report a vulnerability in this scope, and who would receive it?", "of": "Security Architect"},
+        {"q": "What is the triage and response SLA, and is it resourced?", "of": "SecOps Lead"},
+        {"q": "Do the disclosure terms give researchers safe harbour?", "of": "Legal Counsel"}
+      ],
+      "peers": ["penetration-testing", "exploit-research", "purple-teaming"],
+      "escalate_when": [
+        "A report concerns a third-party component GRC has registered.",
+        "Customer notification is required and the product domain owns the route.",
+        "A report indicates active exploitation and incident response must take over."
+      ],
+      "produces": ["Disclosure route and intake process", "Triage SLA and capacity", "Safe harbour position"]
+    },
+    {
+      "id": "exploit-research",
+      "name": "Exploit & Security Research",
+      "owns": "Capability development and deep technical research into how a specific technology actually fails.",
+      "authoritative_on": ["technology-specific attack research", "exploitability determination", "novel technique assessment", "proof-of-concept development"],
+      "never_assume": [
+        "That a vendor's severity rating reflects exploitability in this environment. Configuration and exposure change it materially.",
+        "That research findings can be shared freely. Ask what disclosure obligations and restrictions apply.",
+        "That a proof of concept is safe to run anywhere. Agree the environment and the blast radius first.",
+        "That theoretical means low risk. Ask what would need to be true for it to be practical here."
+      ],
+      "must_ask": [
+        {"q": "In this specific configuration, is the vulnerability actually exploitable, and what would it take?", "of": "Security Architect"},
+        {"q": "Where can a proof of concept be run safely, and who authorises it?", "of": "Platform Architect"},
+        {"q": "What disclosure obligations apply to what we find?", "of": "Legal Counsel"}
+      ],
+      "peers": ["penetration-testing", "red-teaming", "purple-teaming", "vulnerability-disclosure"],
+      "escalate_when": [
+        "Research indicates a systemic weakness affecting multiple domains.",
+        "A finding requires coordinated disclosure involving a third party GRC manages.",
+        "Exploitability changes a risk rating the GRC domain holds."
+      ],
+      "produces": ["Exploitability assessment in this configuration", "Proof of concept with agreed blast radius", "Disclosure obligations"]
+    }
+  ]
+}

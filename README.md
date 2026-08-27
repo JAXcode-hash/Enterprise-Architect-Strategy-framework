@@ -210,31 +210,87 @@ skills and the engine can never disagree about what a domain covers.
 
 ---
 
-## Claude Code integration
+## The security architecture team
+
+Above the engine sits an organisation of agents — an amalgamous security architecture function
+with SME depth that can be rationalised and sense-checked against other SMEs' knowledge.
+
+```
+                      master-architect                     tier 0   evaluates, reconciles, grades
+                             |
+        +--------------------+--------------------+
+        |                    |                    |
+  architect-grc        architect-iam        architect-secops  ...   tier 1  x12  orchestrate,
+        |                    |                    |                          compile, validate,
+   +----+----+          +----+----+          +----+----+                     sense-check
+   |         |          |         |          |         |
+ sme-...   sme-...    sme-...   sme-...    sme-...   sme-...        tier 2  x67  capability depth,
+                                                                             in isolation
+```
+
+**Tier 2 — 67 SMEs.** One per capability in the cyber security taxonomy: penetration testing,
+key management, insider threat, post-quantum readiness, OT/ICS, and so on. Each works in
+isolation and must not speculate about another capability's position. Each carries an explicit
+list of things that look settled and are not — where one applies and the answer was not given,
+it becomes a question with a named owner, never a placeholder or a plausible guess.
+
+**Tier 1 — 12 Domain Architects.** Orchestrators, compilers, validators and interoperability
+sense-checkers. They fan out to their own SMEs, reconcile disagreement rather than averaging it,
+check each position against its peers for compatibility, and ask what an SME assumed when it
+returned no questions against a thin brief.
+
+**Tier 0 — Master Architect.** Evaluates the Domain Architects' output and reconciles across
+domains. It does not do domain work — an architect who does SME work stops being able to
+evaluate it. It is the only tier that can see the **Assumed** state: two domains that have each
+assumed the other handles something, which from inside either domain looks like a reasonable
+reading of the other's scope.
+
+### Routing
+
+| You have | Engage | |
+|---|---|---|
+| A question inside one capability | `sme-<capability>` | Depth, in isolation |
+| A question spanning one domain | `architect-<domain>` | Fans out and reconciles its own SMEs |
+| Anything touching two or more domains | `master-architect` | Cross-domain dependencies and caveats only |
+
+Routing goes up, never sideways: an SME needing a peer returns a request to its Architect rather
+than contacting the peer; an SME needing another domain returns a dependency rather than
+resolving it. Anything resolvable inside a domain stays inside it.
+
+### Coverage against the engine
+
+The engine's nine validator domains cover eight of the twelve security domains. Four have no
+counterpart at all — **offensive security**, **human and organisational**, **physical and
+environmental**, and **emerging and specialised**. A base plate run assesses nothing in them, so
+a position that never engaged those Architects is incomplete rather than clean. The division is
+deliberate: the engine holds what is stable, the SMEs hold what changes.
+
+### Skills
 
 | Skill | Purpose |
 |---|---|
-| `eas-baseplate` | Run the framework end to end against a brief. |
-| `orchestrate-baseplate` | The reconciliation method, for working a base plate by hand. |
-| `validate-*` &times; 9 | One per domain: the four artefacts, the options, the hooks. |
+| `security-architecture-team` | The org chart, routing rules and how to engage a tier |
+| `eas-baseplate` | Run the framework end to end against a brief |
+| `orchestrate-baseplate` | The reconciliation method, for working a base plate by hand |
+| `validate-*` &times; 9 | One per engine domain: the four artefacts, the options, the hooks |
 
-Plus `.claude/agents/baseplate-orchestrator.md`, a subagent that runs the engine in an isolated
-context, checks its reasoning, researches anything that turns on current fact, and reports back.
-
----
+The 80 agents and the 9 validator skills are all **generated** from `catalogue/`, so the org
+chart and the engine can never disagree about what a domain covers.
 
 ## Repository layout
 
 ```
 catalogue/          the framework's content — domains, capabilities, options, rules, signals
+  org/              the security architecture org chart — hierarchy, protocols, 67 SME knowledge bases
 eas/                the engine — intake, selector, orchestrator, roadmap, renderers, CLI, server
   render/           lld, hld, exec_pack, baseplate, diagram, html, md2html
-.claude/skills/     eleven skills; the nine validators are generated
-.claude/agents/     the orchestrator subagent
+.claude/agents/     80 generated agents - 1 master, 12 domain architects, 67 SMEs
+.claude/skills/     twelve skills; the nine validators are generated
 briefs/             three worked examples, simple through strategic
 projects/           one isolated directory per assessment
 tests/              42 tests, stdlib unittest
 tools/gen_skills.py regenerates the validator skills from the catalogue
+tools/gen_agents.py regenerates the 80 agents from catalogue/org/
 ```
 
 ## Origin
