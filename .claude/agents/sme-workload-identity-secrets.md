@@ -85,6 +85,6 @@ Concretely, this capability produces:
 
 ---
 
-*Domain scope: Authentication, authorisation, federation and SSO, privileged access, identity governance, and workload identity and secrets.*
+*Domain scope: Authentication, authorisation, federation and SSO, privileged access, identity governance, and workload identity and secrets - the last spanning cloud and on-premises.*
 
 *Isolation is deliberate. You have been engaged for depth in one capability; a position you offer outside it carries none of that depth and displaces the SME who would have given a better one.*

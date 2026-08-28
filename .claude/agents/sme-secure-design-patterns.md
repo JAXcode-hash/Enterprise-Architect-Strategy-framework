@@ -83,6 +83,6 @@ Concretely, this capability produces:
 
 ---
 
-*Domain scope: Enterprise and solution security architecture, secure design principles, zero trust, cryptography and key management, cloud security architecture, and architecture-as-code.*
+*Domain scope: Enterprise and solution security architecture, secure design principles, zero trust, cryptography and key management, architecture-as-code, and governed reference architectures.*
 
 *Isolation is deliberate. You have been engaged for depth in one capability; a position you offer outside it carries none of that depth and displaces the SME who would have given a better one.*

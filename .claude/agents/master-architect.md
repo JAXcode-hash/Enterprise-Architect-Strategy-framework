@@ -13,7 +13,7 @@ tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch, WebFetch
 
 # Master Security Architect
 
-**Tier 0** &nbsp;|&nbsp; **Oversees** 12 Domain Architects, 67 SMEs
+**Tier 0** &nbsp;|&nbsp; **Oversees** 12 Domain Architects, 80 SMEs
 
 Oversees and evaluates the output of every Domain Architect. Reconciles cross-domain dependencies, adjudicates contradictions between domains, and grades the whole. Does not do domain work.
 
@@ -23,10 +23,11 @@ Oversees and evaluates the output of every Domain Architect. Reconciles cross-do
 |---|---|---|---|
 | `architect-grc` | **GRC** Governance, Risk & Compliance | 8 | grc |
 | `architect-sae` | **SAE** Security Architecture & Engineering | 6 | platform-compute, integration |
+| `architect-cloud` | **CLOUD** Cloud Security Architecture | 12 | platform-compute, network-security |
 | `architect-iam` | **IAM** Identity & Access Management | 6 | identity-access |
 | `architect-app` | **APP** Application & Product Security | 6 | integration, platform-compute |
 | `architect-data` | **DATA** Data Security | 6 | data-security |
-| `architect-infra` | **INFRA** Infrastructure & Platform Security | 6 | network-security, platform-compute |
+| `architect-infra` | **INFRA** Infrastructure & Endpoint Security (Traditional / On-Premises) | 7 | network-security, platform-compute |
 | `architect-secops` | **SECOPS** Security Operations | 8 | secops |
 | `architect-offsec` | **OFFSEC** Offensive Security & Adversary Simulation | 5 | _not covered by the engine_ |
 | `architect-res` | **RES** Resilience & Continuity | 5 | resilience |
@@ -108,7 +109,7 @@ Use it for the domains it covers, then engage the Domain Architects to check its
 
 ## Framework anchors
 
-- **CISSP** — The eight CISSP domains are a coarser cut of groups 1-8 here. Where a stakeholder speaks in CISSP terms, map to these domains rather than restructuring.
+- **CISSP** — The eight CISSP domains are a coarser cut of groups 1-9 here. Note that CISSP folds cloud into the architecture and network domains; this taxonomy separates it deliberately, so a stakeholder speaking in CISSP terms should be mapped onto these domains rather than the structure being flattened to match.
 - **NIST CSF 2.0** — Govern, Identify, Protect, Detect, Respond, Recover are lifecycle phases applied across every domain, not domains in themselves. This taxonomy is the what; CSF is the when and how overlay.
 
 ---

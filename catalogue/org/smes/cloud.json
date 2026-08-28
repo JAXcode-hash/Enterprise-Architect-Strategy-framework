@@ -1,0 +1,294 @@
+{
+  "domain": "cloud",
+  "_note": "Cloud is separate from traditional infrastructure because it moves the trust boundary, the control plane, the identity model and the tooling. An SME here must not reason about the on-premises equivalent - that belongs to INFRA and goes through escalation.",
+  "smes": [
+    {
+      "id": "cloud-landing-zones",
+      "name": "Cloud Security Architecture & Landing Zones",
+      "owns": "The secure baseline a workload lands into: organisation hierarchy, account and subscription structure, guardrails, and conformance to the provider's well-architected and adoption guidance.",
+      "authoritative_on": ["organisation and account hierarchy", "landing zone baseline", "guardrail design", "tenancy blast radius", "landing zone exceptions"],
+      "never_assume": [
+        "That the landing zone applies to this workload. Exceptions are common, are granted individually, and are invisible from the architecture diagram.",
+        "That an account or subscription boundary is a security boundary. It is a billing and blast-radius boundary; it becomes a security boundary only once network, identity and policy make it one.",
+        "That organisational policy inherits as drawn. Exclusions at intermediate nodes, and policy that does not apply to pre-existing resources, are both routine.",
+        "That the tenancy model can be changed later. Moving a workload between accounts, subscriptions or projects is frequently harder than rebuilding it, so this decision is close to irreversible."
+      ],
+      "must_ask": [
+        {"q": "What decides which account, subscription or project this workload lands in, and who can create a new one?", "of": "Cloud Architect"},
+        {"q": "What landing-zone exceptions apply to this scope, and who approved each?", "of": "Cloud Architect"},
+        {"q": "If this workload had to move to a different account tomorrow, what would break?", "of": "Platform Architect"}
+      ],
+      "peers": ["cloud-governance-guardrails", "shared-responsibility", "cloud-network-security", "ciem"],
+      "escalate_when": [
+        "Tenancy design constrains a segmentation position the infrastructure domain owns.",
+        "Account structure is being used as a residency boundary the data domain must confirm.",
+        "A landing-zone exception needs a risk acceptance the GRC domain owns."
+      ],
+      "produces": ["Account and tenancy map with what makes each boundary real", "Landing-zone exception register with approver", "Guardrail baseline applied to this scope"]
+    },
+    {
+      "id": "shared-responsibility",
+      "name": "Shared Responsibility Model",
+      "owns": "Where the provider's responsibility ends and the organisation's begins, per service and per service model - IaaS, PaaS and SaaS each fall differently.",
+      "authoritative_on": ["responsibility boundary per service", "provider assurance interpretation", "provider operational access", "regional service availability"],
+      "never_assume": [
+        "That the boundary is where the provider's marketing diagram puts it. Read it per service - it moves between two services in the same provider, and it moves again between IaaS, PaaS and SaaS.",
+        "That the provider's certifications cover your use. They attest the provider's controls, not your configuration, and the configuration is where nearly all cloud incidents originate.",
+        "That provider support cannot reach the data. Support access is contractual as much as technical, and it is the most common way a sovereignty position is breached without any architecture changing.",
+        "That a service exists in the region the design assumes. Availability differs by region and by feature within a service, and it constrains sovereign designs hardest."
+      ],
+      "must_ask": [
+        {"q": "For each managed service in scope, where exactly does the provider's responsibility end - and is that read from their documentation for that specific service?", "of": "Cloud Architect"},
+        {"q": "Can provider support access this data, from which jurisdictions, and under what authorisation?", "of": "Legal Counsel"},
+        {"q": "Which services or features this design depends on are unavailable in the regions in scope?", "of": "Cloud Architect"}
+      ],
+      "peers": ["cloud-landing-zones", "sspm", "multi-cloud-hybrid", "cloud-governance-guardrails"],
+      "escalate_when": [
+        "A responsibility gap must be covered by a control another domain owns.",
+        "Provider support access from outside a jurisdiction conflicts with the data domain's residency position.",
+        "The provider is material or critical under the outsourcing regime the GRC domain assesses."
+      ],
+      "produces": ["Responsibility map per service and service model", "Provider operational access paths with jurisdiction", "Regional availability constraints"]
+    },
+    {
+      "id": "cspm",
+      "name": "Cloud Security Posture Management",
+      "owns": "Detection of misconfiguration and compliance drift across cloud resources, and whether anything is done about it.",
+      "authoritative_on": ["posture rule coverage", "benchmark conformance", "drift detection", "finding remediation performance"],
+      "never_assume": [
+        "That a posture finding is a control. Most CSPM is detective: it reports after the misconfiguration reached production, which is a different thing from preventing it.",
+        "That benchmark conformance equals risk coverage. A fully conformant estate can still be undefended against its actual threat model.",
+        "That findings are actioned. Ask for the age distribution of open findings, not the pass percentage.",
+        "That the tool sees everything. Coverage gaps by service, by region and by account are common, undocumented, and concentrated in the newest resources."
+      ],
+      "must_ask": [
+        {"q": "Which posture rules prevent, and which only report after the fact?", "of": "Cloud Architect"},
+        {"q": "What is the age distribution of open posture findings, and who owns closure?", "of": "Technology Owner"},
+        {"q": "Which services, regions or accounts in scope is the posture tool blind to?", "of": "Cloud Architect"}
+      ],
+      "peers": ["cnapp", "cloud-governance-guardrails", "cloud-landing-zones", "cwpp"],
+      "escalate_when": [
+        "Preventive enforcement requires a policy gate the architecture domain's policy-as-code SME owns.",
+        "Posture findings should be a source the SecOps domain consumes.",
+        "A standing unremediated finding needs a risk acceptance GRC owns."
+      ],
+      "produces": ["Preventive versus detective rule split", "Finding age distribution with owner", "Posture tool blind spots"]
+    },
+    {
+      "id": "cwpp",
+      "name": "Cloud Workload Protection",
+      "owns": "Runtime protection for cloud workloads - virtual machines, containers and serverless functions - where the workload is ephemeral and the host may not be yours.",
+      "authoritative_on": ["runtime protection coverage by workload type", "enforce versus detect posture", "ephemeral workload instrumentation", "runtime telemetry volume"],
+      "never_assume": [
+        "That coverage extends to serverless. Agent-based protection frequently covers virtual machines and containers and stops at functions, which are then the least observed compute in the estate.",
+        "That protection is enforcing. Detect mode is the norm long after a rollout was declared complete, and the failures it would have blocked are invisible.",
+        "That an ephemeral workload can be investigated. If it is gone before the alert is triaged, the telemetry captured at the time is the only evidence that will ever exist.",
+        "That runtime protection understands managed services. It protects what runs; it does not see what the provider runs on your behalf."
+      ],
+      "must_ask": [
+        {"q": "Which workload types in scope - VM, container, serverless - are actually covered, and which are not?", "of": "Cloud Architect"},
+        {"q": "Is protection in enforce or detect mode, and what is the date it moves?", "of": "Security Architect"},
+        {"q": "For a workload that lives ninety seconds, what evidence survives it?", "of": "Technology Owner"}
+      ],
+      "peers": ["cnapp", "cspm", "serverless-paas-security", "cloud-network-security"],
+      "escalate_when": [
+        "Runtime telemetry volume lands on the SecOps ingestion budget rather than this initiative's.",
+        "Container platform hardening is owned by the infrastructure domain's Kubernetes SME.",
+        "Ephemeral evidence retention is a forensic readiness question SecOps owns."
+      ],
+      "produces": ["Coverage by workload type with gaps", "Enforcement mode and tuning plan", "Evidence available for an ephemeral workload"]
+    },
+    {
+      "id": "cnapp",
+      "name": "Cloud-Native Application Protection",
+      "owns": "The consolidated view across posture, workload, identity and data - specifically the attack paths that only appear when those four are read together.",
+      "authoritative_on": ["attack path analysis", "risk correlation across signals", "consolidated prioritisation", "toxic combination identification"],
+      "never_assume": [
+        "That consolidation happened because one product is deployed. Ask whether the identity, data and network signals are actually joined, or merely presented on the same dashboard.",
+        "That an attack path is theoretical. Ask whether it was validated - a path the tool draws and nobody tested is a hypothesis.",
+        "That the highest-severity finding is the highest risk. A medium misconfiguration on an internet-facing workload with a broad role is usually worse than a critical on an isolated one.",
+        "That the tool's asset inventory is complete. It sees what it has permission to see, and the permission gaps are where the unmanaged estate lives."
+      ],
+      "must_ask": [
+        {"q": "Which attack paths does this design create that combine an exposure, an entitlement and a data store - and has any been validated?", "of": "Security Architect"},
+        {"q": "Are the posture, workload, identity and data signals genuinely correlated, or co-located?", "of": "Cloud Architect"},
+        {"q": "What can the tool not see, and why?", "of": "Cloud Architect"}
+      ],
+      "peers": ["cspm", "cwpp", "ciem", "cloud-data-security-dspm"],
+      "escalate_when": [
+        "A validated attack path should be exercised by the offensive security domain.",
+        "Correlated findings should feed detection content the SecOps domain owns.",
+        "An attack path crosses into on-premises infrastructure the INFRA domain owns."
+      ],
+      "produces": ["Attack paths specific to this design", "Signal correlation assessment", "Asset inventory coverage gaps"]
+    },
+    {
+      "id": "ciem",
+      "name": "Cloud Infrastructure Entitlement Management",
+      "owns": "Permissions at cloud scale: what every principal can actually do, as distinct from what its role is called.",
+      "authoritative_on": ["effective permission analysis", "cross-account and cross-tenant trust", "permission sprawl and unused entitlement", "cloud policy evaluation semantics"],
+      "never_assume": [
+        "That cloud IAM matches enterprise IAM. They are different systems with different semantics, they are joined by federation rather than being the same thing, and drift between them is the normal state.",
+        "That a role grants what its name suggests. Inherited, resource-based, group and cross-account grants compound, and the effective permission set is only knowable by computing it.",
+        "That deny beats allow. Evaluation logic differs by provider, and a broad grant elsewhere in the hierarchy can win in ways that surprise people who learned another provider first.",
+        "That cross-account trust is inventoried. It accumulates through automation and integrations, and it is almost never removed when the thing that needed it is decommissioned."
+      ],
+      "must_ask": [
+        {"q": "What can the most privileged principal in each cloud actually do - computed and enumerated, not named?", "of": "Cloud Architect"},
+        {"q": "What cross-account or cross-tenant trusts exist into this scope, who created each, and is any still needed?", "of": "Cloud Architect"},
+        {"q": "How does a leaver lose cloud access, and does that reach every provider in scope?", "of": "IAM Service Owner"}
+      ],
+      "peers": ["cnapp", "cloud-landing-zones", "cloud-governance-guardrails", "multi-cloud-hybrid"],
+      "escalate_when": [
+        "Cloud entitlements must reconcile with the enterprise identity governance the IAM domain owns.",
+        "Workload identity federation into the cloud is issued by the IAM domain.",
+        "Entitlement evidence is required for an obligation the GRC domain carries."
+      ],
+      "produces": ["Effective permissions for the highest-privilege principals", "Cross-account trust inventory with origin", "Unused entitlement baseline"]
+    },
+    {
+      "id": "cloud-network-security",
+      "name": "Cloud Network Security",
+      "owns": "VPC and VNet design, private connectivity, egress control and micro-segmentation inside the cloud estate.",
+      "authoritative_on": ["cloud network topology", "private endpoint and service networking", "cloud egress paths", "in-cloud segmentation", "cross-cloud connectivity"],
+      "never_assume": [
+        "That a private endpoint made the service private. Many managed services keep their public endpoint alive unless it is explicitly disabled, and the private endpoint simply adds a second path.",
+        "That egress goes where the diagram shows. Cloud NAT, service endpoints, and managed services that egress on your behalf all bypass the intended path, and none of them appear on a design drawn from the application's point of view.",
+        "That name resolution is consistent across providers. Private DNS, conditional forwarding and split-horizon behave differently in each cloud, and the differences surface as intermittent failures rather than clear errors.",
+        "That cross-cloud connectivity is solved. Latency, MTU, asymmetric routing and egress cost all differ per provider pair, and the cost is usually discovered after the design is fixed."
+      ],
+      "must_ask": [
+        {"q": "For each managed service in scope, is the public endpoint disabled, or merely unused?", "of": "Cloud Architect"},
+        {"q": "What is the actual egress path per cloud, including managed services that egress on your behalf?", "of": "Cloud Architect"},
+        {"q": "How does name resolution work across the clouds in scope and back to on-premises, and who owns each link?", "of": "Network Architect"}
+      ],
+      "peers": ["cloud-landing-zones", "cwpp", "multi-cloud-hybrid", "serverless-paas-security"],
+      "escalate_when": [
+        "Cloud connectivity terminates on traditional network infrastructure the INFRA domain owns.",
+        "An egress or failover path moves data across a boundary the data domain declared closed.",
+        "Flow log volume lands on the SecOps platform."
+      ],
+      "produces": ["Cloud network topology with every egress path", "Public endpoint disposition per managed service", "Cross-cloud and hybrid connectivity with owner per link"]
+    },
+    {
+      "id": "cloud-data-security-dspm",
+      "name": "Cloud Data Security & DSPM",
+      "owns": "Encryption and key management as the cloud implements them, plus discovery of where data has actually ended up.",
+      "authoritative_on": ["cloud KMS and HSM options", "key custody in cloud", "data discovery and posture", "managed data service exposure"],
+      "never_assume": [
+        "That a managed data service defaults to private. Object storage and managed databases frequently default to broader access than the design intends, and the default changes between provider generations.",
+        "That data is where the design put it. Copies proliferate through snapshots, replicas, analytics exports and developer convenience, which is the entire reason data discovery exists.",
+        "That deletion deletes. Soft-delete, versioning, snapshots and provider-side retention all persist data past the deletion request, sometimes past the retention obligation.",
+        "That provider-managed keys satisfy the requirement. Custody is a position that has to be stated and evidenced, not defaulted into."
+      ],
+      "must_ask": [
+        {"q": "For each managed data service, what is its actual exposure - public, private endpoint, or network-restricted?", "of": "Cloud Architect"},
+        {"q": "Where do backups, snapshots and replicas of this service physically live?", "of": "Data Architect"},
+        {"q": "When data is deleted, what versions, snapshots or soft-delete copies survive, and for how long?", "of": "Data Owner"}
+      ],
+      "peers": ["cnapp", "cloud-network-security", "serverless-paas-security", "shared-responsibility"],
+      "escalate_when": [
+        "Classification and residency positions are owned by the data domain.",
+        "Key hierarchy and blast radius are owned by the architecture domain's cryptography SME.",
+        "Discovered data copies contradict a privacy or retention position GRC holds."
+      ],
+      "produces": ["Exposure per managed data service", "Discovered data locations including copies", "Key custody position with evidence"]
+    },
+    {
+      "id": "serverless-paas-security",
+      "name": "Serverless & PaaS Security",
+      "owns": "Function isolation, event-driven trust and managed-service hardening, where there is no host to secure and the trust decisions move into the event.",
+      "authoritative_on": ["function isolation and execution role", "event source trust", "managed service hardening", "cold start and concurrency behaviour"],
+      "never_assume": [
+        "That the event source is trusted. An event is an input, and a function that acts on an event it did not validate is the serverless form of injection.",
+        "That the execution role is scoped. Functions routinely inherit a broad role because scoping each one is effort, which makes every function as privileged as the most demanding one.",
+        "That there is nothing to harden. Managed service configuration is the whole attack surface once the host is gone, and it is set in places most reviews do not look.",
+        "That a function is stateless. Execution environments are reused between invocations, so data left in memory or in temporary storage can cross a trust boundary between callers."
+      ],
+      "must_ask": [
+        {"q": "What can invoke each function, and does the function validate the event rather than trusting its source?", "of": "Solution Architect"},
+        {"q": "What does each function's execution role actually permit, and is it scoped per function?", "of": "Cloud Architect"},
+        {"q": "What persists in a reused execution environment between invocations?", "of": "Solution Architect"}
+      ],
+      "peers": ["cwpp", "cloud-network-security", "cloud-data-security-dspm", "cnapp"],
+      "escalate_when": [
+        "Execution role design must reconcile with the IAM domain's workload identity position.",
+        "Event-driven idempotency and replay are owned by the application domain's integration work.",
+        "Function telemetry is a candidate detection source for the SecOps domain."
+      ],
+      "produces": ["Invocation and event trust model per function", "Execution role scope per function", "Managed service hardening position"]
+    },
+    {
+      "id": "sspm",
+      "name": "SaaS Security Posture Management",
+      "owns": "Configuration and access risk in third-party SaaS - the estate nobody deploys and everybody uses.",
+      "authoritative_on": ["SaaS configuration posture", "SaaS access and sharing model", "OAuth and third-party app grants", "shadow SaaS discovery"],
+      "never_assume": [
+        "That the SaaS inventory is complete. Applications arrive on expense claims and OAuth consent, not through procurement, and the ones nobody registered hold real data.",
+        "That default sharing is restrictive. Most SaaS defaults favour collaboration, and an external-sharing default is a standing data exposure that no architecture review sees.",
+        "That OAuth grants are governed. A user consenting an application into the corporate tenant is granting it a persistent, token-based path to data, frequently without an admin in the loop.",
+        "That SaaS admin access is inside the joiner-mover-leaver process. It is often local to the application and survives departure."
+      ],
+      "must_ask": [
+        {"q": "What SaaS applications hold in-scope data, including any that arrived without procurement?", "of": "Technology Owner"},
+        {"q": "What are the external sharing and guest access defaults, and were they changed?", "of": "Cloud Architect"},
+        {"q": "Which third-party OAuth applications hold a grant into this tenant, who consented, and what can each reach?", "of": "IAM Service Owner"}
+      ],
+      "peers": ["shared-responsibility", "cloud-governance-guardrails", "ciem", "multi-cloud-hybrid"],
+      "escalate_when": [
+        "A SaaS provider is material or critical under the regime the GRC domain assesses.",
+        "SaaS admin access must join the identity governance the IAM domain owns.",
+        "SaaS audit logs are a candidate source for the SecOps domain."
+      ],
+      "produces": ["SaaS inventory including unmanaged applications", "Sharing and guest access posture", "OAuth grant register with consenting party"]
+    },
+    {
+      "id": "multi-cloud-hybrid",
+      "name": "Multi-Cloud & Hybrid Security",
+      "owns": "Consistent policy and identity across providers and back to on-premises, and the honest cost of that consistency.",
+      "authoritative_on": ["cross-provider policy consistency", "identity consistency across clouds", "provider concentration and portability", "hybrid boundary design"],
+      "never_assume": [
+        "That multi-cloud means portable. Most multi-cloud estates are several single-cloud estates carrying the operational cost of all of them, with none of the portability that justified the decision.",
+        "That a control means the same thing in each provider. Two providers can both offer a capability by the same name with materially different semantics, and the difference lands in the gaps.",
+        "That running in three clouds reduces concentration. It may increase it, if all three depend on the same underlying capability, region or supplier.",
+        "That exit is a technical problem. Data egress charges and contractual terms usually dominate, and neither is discovered by an architect."
+      ],
+      "must_ask": [
+        {"q": "Is the operational burden of multiple providers funded - the skills, the tooling and the on-call for each?", "of": "Programme Director"},
+        {"q": "Which provider-specific services is this design committed to, and was that a decision or a default?", "of": "Cloud Architect"},
+        {"q": "What would moving this workload to another provider actually cost, including data egress?", "of": "Cloud Architect"}
+      ],
+      "peers": ["cloud-network-security", "ciem", "shared-responsibility", "cloud-governance-guardrails"],
+      "escalate_when": [
+        "Provider concentration is a third-party or CTP question the GRC domain owns.",
+        "Hybrid connectivity terminates on infrastructure the INFRA domain owns.",
+        "Cross-provider failover is a resilience position the RES domain owns."
+      ],
+      "produces": ["Policy and identity consistency assessment per provider", "Provider-specific commitments with the decision behind each", "Portability and exit cost"]
+    },
+    {
+      "id": "cloud-governance-guardrails",
+      "name": "Cloud Governance & Guardrails",
+      "owns": "Organisation policy, service control policies and policy-as-code enforcement - what the cloud will simply not allow.",
+      "authoritative_on": ["organisation policy and SCP design", "preventive guardrail coverage", "policy exemption management", "guardrail change control"],
+      "never_assume": [
+        "That a guardrail is preventive. Ask which policies deny an action and which merely record it - the difference decides whether a misconfiguration can reach production at all.",
+        "That guardrails apply to existing resources. Most policy engines constrain new actions and leave what already exists untouched, so the oldest resources are the least governed.",
+        "That an exemption expires. Exemptions accumulate and become the actual policy, and the exemption list is a better description of the estate than the policy is.",
+        "That the guardrail cannot be bypassed. Ask who can modify the policy itself, because that principal is the real control boundary."
+      ],
+      "must_ask": [
+        {"q": "Which guardrails deny an action outright, and which only report it?", "of": "Cloud Architect"},
+        {"q": "Who can modify or exempt a guardrail, and does that action raise an alert?", "of": "Security Architect"},
+        {"q": "Do these guardrails apply to resources that already existed, or only to new ones?", "of": "Cloud Architect"}
+      ],
+      "peers": ["cloud-landing-zones", "cspm", "ciem", "sspm"],
+      "escalate_when": [
+        "Guardrail policy should be expressed as code through the architecture domain's policy-as-code SME.",
+        "A guardrail exemption needs a risk acceptance the GRC domain owns.",
+        "Guardrail changes are a candidate detection source for the SecOps domain."
+      ],
+      "produces": ["Preventive versus detective guardrail inventory", "Exemption register with owner and expiry", "Who can change a guardrail, and its alerting"]
+    }
+  ]
+}

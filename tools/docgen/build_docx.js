@@ -19,6 +19,12 @@ const STATS = JSON.parse(execSync(
   {cwd: ROOT, encoding: 'utf8'}));
 const AGENTS = execSync('ls .claude/agents/*.md | wc -l',
   {cwd: ROOT, encoding: 'utf8'}).trim();
+const TEAM = JSON.parse(execSync(
+  'python3 -c "import json,glob;' +
+  'h=json.load(open(\'catalogue/org/hierarchy.json\'));' +
+  'n=sum(len(json.load(open(f))[\'smes\']) for f in glob.glob(\'catalogue/org/smes/*.json\'));' +
+  'print(json.dumps({\'domains\':len(h[\'domains\']),\'smes\':n}))"',
+  {cwd: ROOT, encoding: 'utf8'}));
 const {Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell,
        WidthType, ShadingType, AlignmentType, BorderStyle, PageBreak, LevelFormat,
        TableOfContents, Footer, PageNumber} = d;
@@ -102,13 +108,13 @@ A(new Paragraph({spacing:{before:1800, after:0},
   new Paragraph({spacing:{after:400},
    children:[new TextRun({text:"Setup, operating flow and worked examples", size:28, color:MUTE})]}),
   RULE(),
-  RUNS([{t:"A repeatable method for standing up an architecture direction: a deterministic base-plate engine over nine validator domains, and a three-tier security architecture team of 80 agents over twelve. This document covers how to set it up, how work flows through it, where the hand-offs are, and what it produces.", size:22, color:MUTE}], {after:300}),
+  RUNS([{t:`A repeatable method for standing up an architecture direction: a deterministic base-plate engine over nine validator domains, and a three-tier security architecture team of ${AGENTS} agents over ${TEAM.domains} security domains. This document covers how to set it up, how work flows through it, where the hand-offs are, and what it produces.`, size:22, color:MUTE}], {after:300}),
   TBL(["", ""], [
     ["Repository", "Enterprise-Architect-Strategy-framework"],
     ["Branch", "claude/enterprise-architect-strategy-app-8vp6mr"],
     ["Runtime", "Python 3.9+ standard library only — no dependencies"],
     ["Engine", `${STATS.domains} validator domains, ${STATS.options} options, ${STATS.capabilities} capabilities, ${STATS.rules} cross-domain rules, ${STATS.signals} intake signals`],
-    ["Team", `1 Master Architect, 12 Domain Architects, 67 capability SMEs (${AGENTS} agent definitions)`],
+    ["Team", `1 Master Architect, ${TEAM.domains} Domain Architects, ${TEAM.smes} capability SMEs (${AGENTS} agent definitions)`],
     ["Worked examples", "SASE migration to Prisma Access; AI agents in the CI/CD pipeline"],
   ], [2400, 6626]),
   new Paragraph({children:[new PageBreak()]}));

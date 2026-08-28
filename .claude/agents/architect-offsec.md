@@ -82,7 +82,8 @@ Escalate with the specific dependency, the SME position that created it, and wha
 
 - **Security Operations** (`architect-secops`) — Security monitoring and SIEM, detection engineering, threat intelligence, threat hunting, incident response, digital forensics, vulnerability and threat management, and SOAR.
 - **Application & Product Security** (`architect-app`) — Secure SDLC and DevSecOps, application security testing, API security, software supply chain, threat modelling, and product security.
-- **Infrastructure & Platform Security** (`architect-infra`) — Endpoint, host and workload security, container and Kubernetes security, network security, mobile security, and OT/ICS/IoT.
+- **Infrastructure & Endpoint Security (Traditional / On-Premises)** (`architect-infra`) — Endpoint security, server and host security, data centre and virtualisation, traditional network security including perimeter, NAC and remote access, container and Kubernetes platform security, mobile, and OT/ICS/IoT.
+- **Cloud Security Architecture** (`architect-cloud`) — Landing zones and guardrails, the shared responsibility boundary, posture and workload protection (CSPM/CWPP/CNAPP), entitlements at scale (CIEM), cloud network and data security, serverless and PaaS, SaaS posture, and multi-cloud consistency.
 - **Governance, Risk & Compliance** (`architect-grc`) — Security governance and strategy, risk management, regulatory compliance, policy and control frameworks, audit and assurance, third-party risk, privacy, and model risk.
 - **Human & Organisational Security** (`architect-human`) — Security awareness and training, human risk management, insider threat, and security culture.
 

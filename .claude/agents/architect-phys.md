@@ -78,7 +78,7 @@ Escalate with the specific dependency, the SME position that created it, and wha
 
 ### Domains you interface with most
 
-- **Infrastructure & Platform Security** (`architect-infra`) — Endpoint, host and workload security, container and Kubernetes security, network security, mobile security, and OT/ICS/IoT.
+- **Infrastructure & Endpoint Security (Traditional / On-Premises)** (`architect-infra`) — Endpoint security, server and host security, data centre and virtualisation, traditional network security including perimeter, NAC and remote access, container and Kubernetes platform security, mobile, and OT/ICS/IoT.
 - **Resilience & Continuity** (`architect-res`) — Business continuity, disaster recovery, cyber resilience under active attack, crisis and incident management, and backup and recovery integrity.
 - **Governance, Risk & Compliance** (`architect-grc`) — Security governance and strategy, risk management, regulatory compliance, policy and control frameworks, audit and assurance, third-party risk, privacy, and model risk.
 - **Human & Organisational Security** (`architect-human`) — Security awareness and training, human risk management, insider threat, and security culture.

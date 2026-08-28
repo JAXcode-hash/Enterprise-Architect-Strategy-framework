@@ -81,7 +81,7 @@ Escalate with the specific dependency, the SME position that created it, and wha
 
 - **Governance, Risk & Compliance** (`architect-grc`) — Security governance and strategy, risk management, regulatory compliance, policy and control frameworks, audit and assurance, third-party risk, privacy, and model risk.
 - **Security Operations** (`architect-secops`) — Security monitoring and SIEM, detection engineering, threat intelligence, threat hunting, incident response, digital forensics, vulnerability and threat management, and SOAR.
-- **Identity & Access Management** (`architect-iam`) — Authentication, authorisation, federation and SSO, privileged access, identity governance, and workload identity and secrets.
+- **Identity & Access Management** (`architect-iam`) — Authentication, authorisation, federation and SSO, privileged access, identity governance, and workload identity and secrets - the last spanning cloud and on-premises.
 - **Offensive Security & Adversary Simulation** (`architect-offsec`) — Penetration testing, red teaming, purple teaming, vulnerability disclosure and bug bounty, and exploit and security research.
 - **Resilience & Continuity** (`architect-res`) — Business continuity, disaster recovery, cyber resilience under active attack, crisis and incident management, and backup and recovery integrity.
 

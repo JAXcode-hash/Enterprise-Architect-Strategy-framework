@@ -1,7 +1,6 @@
 {
   "schema_version": "1.0",
-  "_note": "The security architecture team as an org chart. Three tiers: one Master Architect who evaluates and reconciles; twelve Domain Architects who orchestrate, compile, validate and interoperability sense-check within their domain; and the SMEs beneath them who hold capability depth and work in isolation. The protocols below are stamped verbatim into every generated agent so routing cannot drift between them.",
-
+  "_note": "The security architecture team as an org chart. Three tiers: one Master Architect who evaluates and reconciles; thirteen Domain Architects who orchestrate, compile, validate and interoperability sense-check within their domain; and the SMEs beneath them who hold capability depth and work in isolation. The protocols below are stamped verbatim into every generated agent so routing cannot drift between them. Structure follows docs/cyber-security-domains.md.",
   "master": {
     "id": "master-architect",
     "name": "Master Security Architect",
@@ -18,7 +17,6 @@
       "Average two conflicting domain positions. Put the specific conflict back to both Domain Architects with the question that separates them."
     ]
   },
-
   "protocols": {
     "sme": [
       "Work only within your capability. Isolation is deliberate: you must not speculate about another capability's position, even one you understand well.",
@@ -52,88 +50,267 @@
       ]
     },
     "artefact": {
-      "sme": ["Position", "What I refused to assume", "Questions (with the role that owns each)", "Same-domain routing requests", "Cross-domain dependencies", "Basis for the position"],
-      "domain_architect": ["Domain position", "SMEs engaged and what each contributed", "Reconciled disagreements and how", "Open questions with owners", "Interoperability findings within the domain", "Cross-domain dependencies escalated"],
-      "master": ["Whole-estate position", "Domain positions received", "Cross-domain contradictions", "Unresolved dependencies with owning domain", "Questions that must be answered before this is committed", "Verdict"]
+      "sme": [
+        "Position",
+        "What I refused to assume",
+        "Questions (with the role that owns each)",
+        "Same-domain routing requests",
+        "Cross-domain dependencies",
+        "Basis for the position"
+      ],
+      "domain_architect": [
+        "Domain position",
+        "SMEs engaged and what each contributed",
+        "Reconciled disagreements and how",
+        "Open questions with owners",
+        "Interoperability findings within the domain",
+        "Cross-domain dependencies escalated"
+      ],
+      "master": [
+        "Whole-estate position",
+        "Domain positions received",
+        "Cross-domain contradictions",
+        "Unresolved dependencies with owning domain",
+        "Questions that must be answered before this is committed",
+        "Verdict"
+      ]
     }
   },
-
   "domains": [
-    {"id": "grc", "code": "GRC", "order": 1,
-     "name": "Governance, Risk & Compliance",
-     "scope": "Security governance and strategy, risk management, regulatory compliance, policy and control frameworks, audit and assurance, third-party risk, privacy, and model risk.",
-     "eas_domains": ["grc"],
-     "interfaces_with": ["sae", "data", "secops", "res", "app"]},
-
-    {"id": "sae", "code": "SAE", "order": 2,
-     "name": "Security Architecture & Engineering",
-     "scope": "Enterprise and solution security architecture, secure design principles, zero trust, cryptography and key management, cloud security architecture, and architecture-as-code.",
-     "eas_domains": ["platform-compute", "integration"],
-     "interfaces_with": ["iam", "data", "infra", "app", "grc"]},
-
-    {"id": "iam", "code": "IAM", "order": 3,
-     "name": "Identity & Access Management",
-     "scope": "Authentication, authorisation, federation and SSO, privileged access, identity governance, and workload identity and secrets.",
-     "eas_domains": ["identity-access"],
-     "interfaces_with": ["sae", "app", "infra", "secops", "grc"]},
-
-    {"id": "app", "code": "APP", "order": 4,
-     "name": "Application & Product Security",
-     "scope": "Secure SDLC and DevSecOps, application security testing, API security, software supply chain, threat modelling, and product security.",
-     "eas_domains": ["integration", "platform-compute"],
-     "interfaces_with": ["sae", "iam", "offsec", "secops", "data"]},
-
-    {"id": "data", "code": "DATA", "order": 5,
-     "name": "Data Security",
-     "scope": "Data classification and governance, encryption at rest and in transit, data loss prevention, tokenisation and masking, residency and sovereignty, and database and storage security.",
-     "eas_domains": ["data-security"],
-     "interfaces_with": ["grc", "sae", "infra", "secops", "app"]},
-
-    {"id": "infra", "code": "INFRA", "order": 6,
-     "name": "Infrastructure & Platform Security",
-     "scope": "Endpoint, host and workload security, container and Kubernetes security, network security, mobile security, and OT/ICS/IoT.",
-     "eas_domains": ["network-security", "platform-compute"],
-     "interfaces_with": ["sae", "iam", "secops", "data", "res"]},
-
-    {"id": "secops", "code": "SECOPS", "order": 7,
-     "name": "Security Operations",
-     "scope": "Security monitoring and SIEM, detection engineering, threat intelligence, threat hunting, incident response, digital forensics, vulnerability and threat management, and SOAR.",
-     "eas_domains": ["secops"],
-     "interfaces_with": ["infra", "iam", "app", "offsec", "res", "grc"]},
-
-    {"id": "offsec", "code": "OFFSEC", "order": 8,
-     "name": "Offensive Security & Adversary Simulation",
-     "scope": "Penetration testing, red teaming, purple teaming, vulnerability disclosure and bug bounty, and exploit and security research.",
-     "eas_domains": [],
-     "interfaces_with": ["secops", "app", "infra", "grc", "human"]},
-
-    {"id": "res", "code": "RES", "order": 9,
-     "name": "Resilience & Continuity",
-     "scope": "Business continuity, disaster recovery, cyber resilience under active attack, crisis and incident management, and backup and recovery integrity.",
-     "eas_domains": ["resilience"],
-     "interfaces_with": ["secops", "infra", "data", "grc", "human"]},
-
-    {"id": "human", "code": "HUMAN", "order": 10,
-     "name": "Human & Organisational Security",
-     "scope": "Security awareness and training, human risk management, insider threat, and security culture.",
-     "eas_domains": [],
-     "interfaces_with": ["grc", "secops", "iam", "offsec", "res"]},
-
-    {"id": "phys", "code": "PHYS", "order": 11,
-     "name": "Physical & Environmental Security",
-     "scope": "Physical access control, environmental controls, and cyber-physical convergence.",
-     "eas_domains": [],
-     "interfaces_with": ["infra", "res", "grc", "human"]},
-
-    {"id": "emrg", "code": "EMRG", "order": 12,
-     "name": "Emerging & Specialised",
-     "scope": "AI/ML security including agentic-system risk, post-quantum and crypto-agility, blockchain and DLT, and sector-specific cyber.",
-     "eas_domains": [],
-     "interfaces_with": ["sae", "data", "grc", "app", "secops"]}
+    {
+      "id": "grc",
+      "code": "GRC",
+      "order": 1,
+      "name": "Governance, Risk & Compliance",
+      "scope": "Security governance and strategy, risk management, regulatory compliance, policy and control frameworks, audit and assurance, third-party risk, privacy, and model risk.",
+      "eas_domains": [
+        "grc"
+      ],
+      "interfaces_with": [
+        "sae",
+        "cloud",
+        "data",
+        "secops",
+        "res",
+        "app"
+      ]
+    },
+    {
+      "id": "sae",
+      "code": "SAE",
+      "order": 2,
+      "name": "Security Architecture & Engineering",
+      "scope": "Enterprise and solution security architecture, secure design principles, zero trust, cryptography and key management, architecture-as-code, and governed reference architectures.",
+      "eas_domains": [
+        "platform-compute",
+        "integration"
+      ],
+      "interfaces_with": [
+        "cloud",
+        "iam",
+        "data",
+        "infra",
+        "app",
+        "grc"
+      ]
+    },
+    {
+      "id": "cloud",
+      "code": "CLOUD",
+      "order": 3,
+      "name": "Cloud Security Architecture",
+      "scope": "Landing zones and guardrails, the shared responsibility boundary, posture and workload protection (CSPM/CWPP/CNAPP), entitlements at scale (CIEM), cloud network and data security, serverless and PaaS, SaaS posture, and multi-cloud consistency.",
+      "eas_domains": [
+        "platform-compute",
+        "network-security"
+      ],
+      "interfaces_with": [
+        "sae",
+        "iam",
+        "infra",
+        "data",
+        "secops",
+        "grc",
+        "res"
+      ]
+    },
+    {
+      "id": "iam",
+      "code": "IAM",
+      "order": 4,
+      "name": "Identity & Access Management",
+      "scope": "Authentication, authorisation, federation and SSO, privileged access, identity governance, and workload identity and secrets - the last spanning cloud and on-premises.",
+      "eas_domains": [
+        "identity-access"
+      ],
+      "interfaces_with": [
+        "sae",
+        "cloud",
+        "app",
+        "infra",
+        "secops",
+        "grc"
+      ]
+    },
+    {
+      "id": "app",
+      "code": "APP",
+      "order": 5,
+      "name": "Application & Product Security",
+      "scope": "Secure SDLC and DevSecOps, application security testing, API security, software supply chain, threat modelling, and product security.",
+      "eas_domains": [
+        "integration",
+        "platform-compute"
+      ],
+      "interfaces_with": [
+        "sae",
+        "cloud",
+        "iam",
+        "offsec",
+        "secops",
+        "data"
+      ]
+    },
+    {
+      "id": "data",
+      "code": "DATA",
+      "order": 6,
+      "name": "Data Security",
+      "scope": "Data classification and governance, encryption at rest and in transit, data loss prevention, tokenisation and masking, residency and sovereignty, and database and storage security.",
+      "eas_domains": [
+        "data-security"
+      ],
+      "interfaces_with": [
+        "grc",
+        "sae",
+        "cloud",
+        "infra",
+        "secops",
+        "app"
+      ]
+    },
+    {
+      "id": "infra",
+      "code": "INFRA",
+      "order": 7,
+      "name": "Infrastructure & Endpoint Security (Traditional / On-Premises)",
+      "scope": "Endpoint security, server and host security, data centre and virtualisation, traditional network security including perimeter, NAC and remote access, container and Kubernetes platform security, mobile, and OT/ICS/IoT.",
+      "eas_domains": [
+        "network-security",
+        "platform-compute"
+      ],
+      "interfaces_with": [
+        "sae",
+        "cloud",
+        "iam",
+        "secops",
+        "data",
+        "res",
+        "phys"
+      ]
+    },
+    {
+      "id": "secops",
+      "code": "SECOPS",
+      "order": 8,
+      "name": "Security Operations",
+      "scope": "Security monitoring and SIEM, detection engineering, threat intelligence, threat hunting, incident response, digital forensics, vulnerability and threat management, and SOAR.",
+      "eas_domains": [
+        "secops"
+      ],
+      "interfaces_with": [
+        "infra",
+        "cloud",
+        "iam",
+        "app",
+        "offsec",
+        "res",
+        "grc"
+      ]
+    },
+    {
+      "id": "offsec",
+      "code": "OFFSEC",
+      "order": 9,
+      "name": "Offensive Security & Adversary Simulation",
+      "scope": "Penetration testing, red teaming, purple teaming, vulnerability disclosure and bug bounty, and exploit and security research.",
+      "eas_domains": [],
+      "interfaces_with": [
+        "secops",
+        "app",
+        "infra",
+        "cloud",
+        "grc",
+        "human"
+      ]
+    },
+    {
+      "id": "res",
+      "code": "RES",
+      "order": 10,
+      "name": "Resilience & Continuity",
+      "scope": "Business continuity, disaster recovery, cyber resilience under active attack, crisis and incident management, and backup and recovery integrity.",
+      "eas_domains": [
+        "resilience"
+      ],
+      "interfaces_with": [
+        "secops",
+        "infra",
+        "cloud",
+        "data",
+        "grc",
+        "human"
+      ]
+    },
+    {
+      "id": "human",
+      "code": "HUMAN",
+      "order": 11,
+      "name": "Human & Organisational Security",
+      "scope": "Security awareness and training, human risk management, insider threat, and security culture.",
+      "eas_domains": [],
+      "interfaces_with": [
+        "grc",
+        "secops",
+        "iam",
+        "offsec",
+        "res"
+      ]
+    },
+    {
+      "id": "phys",
+      "code": "PHYS",
+      "order": 12,
+      "name": "Physical & Environmental Security",
+      "scope": "Physical access control, environmental controls, and cyber-physical convergence.",
+      "eas_domains": [],
+      "interfaces_with": [
+        "infra",
+        "res",
+        "grc",
+        "human"
+      ]
+    },
+    {
+      "id": "emrg",
+      "code": "EMRG",
+      "order": 13,
+      "name": "Emerging & Specialised",
+      "scope": "AI/ML security including agentic-system risk, post-quantum and crypto-agility, blockchain and DLT, and sector-specific cyber.",
+      "eas_domains": [],
+      "interfaces_with": [
+        "sae",
+        "cloud",
+        "data",
+        "grc",
+        "app",
+        "secops"
+      ]
+    }
   ],
-
   "framework_anchors": {
-    "cissp": "The eight CISSP domains are a coarser cut of groups 1-8 here. Where a stakeholder speaks in CISSP terms, map to these domains rather than restructuring.",
+    "cissp": "The eight CISSP domains are a coarser cut of groups 1-9 here. Note that CISSP folds cloud into the architecture and network domains; this taxonomy separates it deliberately, so a stakeholder speaking in CISSP terms should be mapped onto these domains rather than the structure being flattened to match.",
     "nist_csf_2": "Govern, Identify, Protect, Detect, Respond, Recover are lifecycle phases applied across every domain, not domains in themselves. This taxonomy is the what; CSF is the when and how overlay."
-  }
+  },
+  "cloud_vs_traditional": "Cloud (CLOUD) is kept deliberately separate from traditional and on-premises infrastructure (INFRA). The split is intentional: cloud shifts the trust boundary (shared responsibility), the control plane (API-driven, ephemeral), the identity model (entitlements at scale) and the tooling (CSPM/CNAPP/CIEM) far enough from data-centre security that treating them as one domain hides real risk. Where a concern genuinely spans both - container and Kubernetes platforms, workload identity - it is owned by one domain and noted by the other rather than duplicated. An Architect who finds itself reasoning about the other side of this line should escalate rather than absorb it."
 }

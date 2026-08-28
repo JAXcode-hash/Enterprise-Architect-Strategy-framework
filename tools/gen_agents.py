@@ -218,6 +218,12 @@ def render_architect(h: dict, dom: dict, smes: list[dict], all_domains: dict[str
         "Silence in a domain artefact is the most common route to an unexamined assumption "
         "reaching a design.",
         "",
+    ] + ([
+        "## Cloud and traditional infrastructure",
+        "",
+        h["cloud_vs_traditional"],
+        "",
+    ] if dom["id"] in ("cloud", "infra") else []) + [
         "## Escalation",
         "",
         "### Resolve inside this domain",

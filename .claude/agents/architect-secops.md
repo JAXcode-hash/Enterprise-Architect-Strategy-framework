@@ -83,8 +83,9 @@ Escalate with the specific dependency, the SME position that created it, and wha
 
 ### Domains you interface with most
 
-- **Infrastructure & Platform Security** (`architect-infra`) — Endpoint, host and workload security, container and Kubernetes security, network security, mobile security, and OT/ICS/IoT.
-- **Identity & Access Management** (`architect-iam`) — Authentication, authorisation, federation and SSO, privileged access, identity governance, and workload identity and secrets.
+- **Infrastructure & Endpoint Security (Traditional / On-Premises)** (`architect-infra`) — Endpoint security, server and host security, data centre and virtualisation, traditional network security including perimeter, NAC and remote access, container and Kubernetes platform security, mobile, and OT/ICS/IoT.
+- **Cloud Security Architecture** (`architect-cloud`) — Landing zones and guardrails, the shared responsibility boundary, posture and workload protection (CSPM/CWPP/CNAPP), entitlements at scale (CIEM), cloud network and data security, serverless and PaaS, SaaS posture, and multi-cloud consistency.
+- **Identity & Access Management** (`architect-iam`) — Authentication, authorisation, federation and SSO, privileged access, identity governance, and workload identity and secrets - the last spanning cloud and on-premises.
 - **Application & Product Security** (`architect-app`) — Secure SDLC and DevSecOps, application security testing, API security, software supply chain, threat modelling, and product security.
 - **Offensive Security & Adversary Simulation** (`architect-offsec`) — Penetration testing, red teaming, purple teaming, vulnerability disclosure and bug bounty, and exploit and security research.
 - **Resilience & Continuity** (`architect-res`) — Business continuity, disaster recovery, cyber resilience under active attack, crisis and incident management, and backup and recovery integrity.

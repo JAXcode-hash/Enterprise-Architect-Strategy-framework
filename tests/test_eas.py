@@ -448,11 +448,30 @@ class TestSecurityArchitectureTeam(unittest.TestCase):
         }
 
     def test_three_tiers_are_complete(self):
-        self.assertEqual(len(self.h["domains"]), 12)
-        self.assertEqual(sum(len(v) for v in self.smes.values()), 67)
+        # Structure follows docs/cyber-security-domains.md.
+        self.assertEqual(len(self.h["domains"]), 13)
+        self.assertEqual(sum(len(v) for v in self.smes.values()), 80)
+
+    def test_cloud_is_separate_from_traditional_infrastructure(self):
+        # The split is deliberate: cloud moves the trust boundary, the control
+        # plane, the identity model and the tooling. Collapsing them hides risk.
+        ids = {d["id"] for d in self.h["domains"]}
+        self.assertIn("cloud", ids)
+        self.assertIn("infra", ids)
+        self.assertTrue(self.h.get("cloud_vs_traditional"), "the split must be stated")
+        cloud = {s["id"] for s in self.smes["cloud"]}
+        infra = {s["id"] for s in self.smes["infra"]}
+        self.assertEqual(cloud & infra, set(), "a capability must sit on one side of the line")
+        # Each side must carry its own network SME - that is the sharpest edge.
+        self.assertIn("cloud-network-security", cloud)
+        self.assertIn("network-security", infra)
+        for dom in ("cloud", "infra"):
+            text = (self.AGENTS / f"architect-{dom}.md").read_text()
+            self.assertIn(self.h["cloud_vs_traditional"][:60], text,
+                          f"architect-{dom} must carry the cloud/traditional split")
 
     def test_every_agent_file_was_generated(self):
-        expected = {"master-architect"}
+        expected = {"master-architect"}  # 1 + 13 + 80 = 94
         expected |= {f"architect-{d['id']}" for d in self.h["domains"]}
         expected |= {f"sme-{s['id']}" for v in self.smes.values() for s in v}
         actual = {p.stem for p in self.AGENTS.glob("*.md")}

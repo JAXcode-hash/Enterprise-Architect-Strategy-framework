@@ -1,8 +1,8 @@
 ---
 name: security-architecture-team
 description: >-
-  Engage the security architecture team - a Master Architect over twelve Domain Architects over
-  sixty-seven capability SMEs. Use when a security question needs more depth than one person
+  Engage the security architecture team - a Master Architect over thirteen Domain Architects over
+  eighty capability SMEs. Use when a security question needs more depth than one person
   holds, when a position must be sense-checked across security domains, or when you need to know
   which questions have not been asked. Also for "get the SMEs on this", "what would a security
   architect ask", "is this coherent across domains", or picking the right agent for a security topic.
@@ -19,11 +19,11 @@ they were not told.
                              |
         +--------------------+--------------------+
         |                    |                    |
-  architect-grc        architect-iam        architect-secops  ...  tier 1  x12  orchestrate,
+  architect-grc      architect-cloud      architect-secops  ...  tier 1  x13  orchestrate,
         |                    |                    |                         compile, validate,
    +----+----+          +----+----+          +----+----+                    sense-check
    |         |          |         |          |         |
- sme-...   sme-...    sme-...   sme-...    sme-...   sme-...       tier 2  x67  capability depth,
+ sme-...   sme-...    sme-...   sme-...    sme-...   sme-...       tier 2  x80  capability depth,
                                                                             working in isolation
 ```
 
@@ -39,16 +39,17 @@ they were not told.
 Start at the lowest tier that can hold the whole question. Going straight to the Master Architect
 for a single-domain question wastes the independent check that the tier exists to provide.
 
-## The twelve domains
+## The thirteen domains
 
 | Architect | Domain | SMEs | Covered by the engine |
 |---|---|---|---|
 | `architect-grc` | Governance, Risk & Compliance | 8 | yes |
 | `architect-sae` | Security Architecture & Engineering | 6 | partly |
+| `architect-cloud` | Cloud Security Architecture | 12 | partly |
 | `architect-iam` | Identity & Access Management | 6 | yes |
 | `architect-app` | Application & Product Security | 6 | partly |
 | `architect-data` | Data Security | 6 | yes |
-| `architect-infra` | Infrastructure & Platform Security | 6 | yes |
+| `architect-infra` | Infrastructure & Endpoint Security (traditional / on-prem) | 7 | yes |
 | `architect-secops` | Security Operations | 8 | yes |
 | `architect-offsec` | Offensive Security & Adversary Simulation | 5 | **no** |
 | `architect-res` | Resilience & Continuity | 5 | yes |
@@ -77,6 +78,11 @@ does not resolve it.
 sees only cross-domain dependencies and caveats — which is what keeps it able to evaluate rather
 than participate.
 
+**Cloud and traditional infrastructure are separate domains.** Cloud moves the trust boundary,
+the control plane, the identity model and the tooling far enough from data-centre security that
+one domain would hide real risk. Each has its own network SME. A concern spanning both is owned by
+one and escalated by the other, never duplicated.
+
 **Disagreement is a finding.** Two SMEs disagreeing is not averaged. The Architect identifies the
 fact that separates them and routes it back as a specific question.
 
@@ -103,7 +109,7 @@ The org chart is data. Agents are generated, so edit the catalogue and regenerat
 ```bash
 $EDITOR catalogue/org/smes/<domain>.json     # add or change an SME
 $EDITOR catalogue/org/hierarchy.json         # domains, protocols, escalation rules
-python3 tools/gen_agents.py                  # regenerate all 80 agents
+python3 tools/gen_agents.py                  # regenerate all 94 agents
 python3 -m unittest discover tests
 ```
 

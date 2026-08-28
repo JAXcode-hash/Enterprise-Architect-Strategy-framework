@@ -83,7 +83,8 @@ Escalate with the specific dependency, the SME position that created it, and wha
 
 ### Domains you interface with most
 
-- **Security Architecture & Engineering** (`architect-sae`) — Enterprise and solution security architecture, secure design principles, zero trust, cryptography and key management, cloud security architecture, and architecture-as-code.
+- **Security Architecture & Engineering** (`architect-sae`) — Enterprise and solution security architecture, secure design principles, zero trust, cryptography and key management, architecture-as-code, and governed reference architectures.
+- **Cloud Security Architecture** (`architect-cloud`) — Landing zones and guardrails, the shared responsibility boundary, posture and workload protection (CSPM/CWPP/CNAPP), entitlements at scale (CIEM), cloud network and data security, serverless and PaaS, SaaS posture, and multi-cloud consistency.
 - **Data Security** (`architect-data`) — Data classification and governance, encryption at rest and in transit, data loss prevention, tokenisation and masking, residency and sovereignty, and database and storage security.
 - **Security Operations** (`architect-secops`) — Security monitoring and SIEM, detection engineering, threat intelligence, threat hunting, incident response, digital forensics, vulnerability and threat management, and SOAR.
 - **Resilience & Continuity** (`architect-res`) — Business continuity, disaster recovery, cyber resilience under active attack, crisis and incident management, and backup and recovery integrity.
