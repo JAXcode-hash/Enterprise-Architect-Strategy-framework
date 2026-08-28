@@ -17,3 +17,17 @@ letting the document drift from what the engine actually produces:
 python3 -m eas new --brief briefs/example-sase-migration.md
 python3 -m eas new --brief briefs/example-agentic-sdlc.md
 ```
+
+## The briefing document
+
+`docs/eas-briefing.docx` is a separate, self-contained generator for a stakeholder
+audience — the case for adopting the method, not instructions for running it.
+
+```bash
+node tools/docgen/briefing.js docs/eas-briefing.docx
+```
+
+Every figure in it is read from the repository at build time — catalogue counts,
+domain and SME counts, agent count, test count. Nothing is transcribed, so the
+document cannot drift from what the framework actually is. The worked examples in
+section 5 come from real runs of the briefs in `briefs/`.
